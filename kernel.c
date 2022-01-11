@@ -15,17 +15,24 @@ void init_uart() {
   
 
 void putchar(char* str) {
-  while(*str != '\0') {
+  while (*str != '\0') {
     *uart = *str;
     str++;
   }
 }
 
+volatile unsigned char* LSR = (unsigned char *)0x10000000 + 5;
 
 char getchar() {
-  while(1) {
-    *uart = *uart;
+  while (1) {
+    if ((*LSR & 1) == 0) {
+      continue;
+    }
+    else {
+      return *uart;
+    }
   }
+
 }
 
 
@@ -36,22 +43,6 @@ void enter() {
   putchar("Hello World\n");
   getchar();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
