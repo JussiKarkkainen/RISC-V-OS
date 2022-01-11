@@ -1,22 +1,58 @@
-typedef unsigned char uint8_t;
+volatile unsigned char* uart = (unsigned char *)0x10000000;
+volatile unsigned char* IER = (unsigned char *)0x10000000 + 1;
+volatile unsigned char* FCR = (unsigned char *)0x10000000 + 2;
+volatile unsigned char* LCR = (unsigned char *)0x10000000 + 3; 
 
-static volatile uint8_t *uart = (void *)0x10000000;
 
+void init_uart() {
+  int set = (1 << 0) | (1 << 1);        // Set first and second bit of LCR to one
+  *LCR |= set;                          // Sets word length to 8 bits 
+  
+  *FCR |= (1 << 0);                     // Set FIFO
 
-static int putchar(uint8_t ch) {
-  static uint8_t THR = 0x00;
-  static uint8_t LSR = 0x05;
-  static uint8_t LSR_RI = 0x40;
+  *IER |= (1 << 0);                     // Enable interrupts 
+}
+  
 
-  while ((uart[LSR] & LSR_RI) == 0);
-  return uart[THR] = ch;
+void putchar(char* str) {
+  while(*str != '\0') {
+    *uart = *str;
+    str++;
+  }
 }
 
-void puts(char *s) {
-  while (*s) putchar(*s++);
-  putchar('\n');
+
+char getchar() {
+  while(1) {
+    *uart = *uart;
+  }
 }
+
+
 
 void enter() {
-  puts("Start of an os");
+  putchar("Working\n");
+  init_uart();
+  putchar("Hello World\n");
+  getchar();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
