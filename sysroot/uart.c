@@ -4,13 +4,12 @@
 #define LCR_8BIT 0x3
 #define FIFO_ENABLE 0x1
 #define IER_ENABLE 0xf
-#define ERROR_BITMASK 0x71 
-
+#define ERROR_BITMASK 0x8e 
+#define DATA_MASK 0xff
 
 typedef volatile struct __attribute__((packed)) {   // Tell compiler to not padd struct
     uint8_t BF;            // Read/Write registers
-    uint8_t IER;           // Interrupr enable register
-    uint8_t const IIR;     // Interrupt ident. register, read only
+    uint8_t IER;           // Interrupt enable register
     uint8_t FCR;           // FIFO control register
     uint8_t LCR;           // Line control register
     uint8_t MCR;           // MODEM control register
@@ -20,12 +19,13 @@ typedef volatile struct __attribute__((packed)) {   // Tell compiler to not padd
 } uart_regs;
 
 
-static volatile uart_regs* uart = (uart_regs*)0x10000000;
+static volatile uart_regs* uart = (uart_regs *)0x10000000;
 
 
 typedef enum {     
     UART_OK = 0,
-    UART_FAIL
+    UART_FAIL,
+    UART_NODATA
 } uart_return;
 
 
@@ -49,9 +49,9 @@ uart_return uart_configure(uart_init* init) {
 
         default: uart->LCR |= LCR_8BIT;
             break;
-
     }
-    // set FIFO
+
+// set FIFO
     if (init->FIFO == 1) {
         uart->FCR |= FIFO_ENABLE;
     }
@@ -72,7 +72,10 @@ uart_return uart_configure(uart_init* init) {
   
 
 void putchar(char c) {
-    uart->BF = c;
+    
+    if (uart->LSR & (1 << 6)) {
+        uart->BF = c;
+    }
 }
 
 void write_uart(char* data) {
@@ -84,31 +87,49 @@ void write_uart(char* data) {
 
 uart_return read_uart(char* c) {
     
-    *c = uart->BF;
+    if ((uart->LSR & 1) == 0) {
+        return UART_NODATA;
+    }
+
+    *c = uart->BF & DATA_MASK;
+    
+     
     if (uart->LSR & ERROR_BITMASK) {    // Check for errors
-        uart->LSR &= ERROR_BITMASK;     // Reset error register
+        uart->LSR &= ~ERROR_BITMASK;     // Reset error register
         return UART_FAIL;
     } 
-
-
+     
+    
     return UART_OK;
+    
 }
 
 
 int main() {
     
-    uart_init init = {
+    uart_init config = {
         .word_length = 8,
         .FIFO = 1,
         .interrupt_enable = 1
-        //.baud_rate = 9600            // This isn't used
+        //.baud_rate = 9600          
     };
 
-    uart_configure(&init);
+    uart_configure(&config);
 
     putchar('A');
     putchar('\n');
     write_uart("Hello World\n");
+
+    
+    while (1) {
+        char c;
+        if (read_uart(&c) == UART_OK) {
+            putchar(c);
+            if (c == '\r') {
+                write_uart("\n");
+            }
+        }
+    }
 
     return 0;
 }
