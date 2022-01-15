@@ -8,8 +8,9 @@ versions will run on real hardware.
 
 # UART driver
 - Main input-output goes through the NS16550A UART of the virt board.
-  ```uart.c``` first configures the UART and gives simple putchar, write and read
-  functions for debugging rest of the OS.
+  Even though QEMU seems to work fine without initialization ```uart.c``` first 
+  configures the UART and gives simple write and read functions and a console that
+  echoes what you type to it.
 
 
 # TO-DO
