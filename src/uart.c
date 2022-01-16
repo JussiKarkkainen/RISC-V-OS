@@ -116,10 +116,8 @@ int main() {
 
     uart_configure(&config);
 
-    putchar('A');
-    putchar('\n');
-    write_uart("Hello World\n");
-
+    write_uart("Type a command to continue\n");
+    write_uart("$ ");
     
     while (1) {
         char c;
@@ -127,6 +125,7 @@ int main() {
             putchar(c);
             if (c == '\r') {
                 write_uart("\n");
+                write_uart("$ ");
             }
         }
     }
