@@ -1,19 +1,24 @@
 .option norvc
+/*
+.section .data
+
+.section .text
+*/
 
 .global _start
 
 _start:
-
-.option push
-.option norelax
-  la gp, global_pointer
-.option pop
 
   csrr t0, mhartid        # read hart id into temporary register
   bnez t0, park           # Check if hart id is zero, if not send to park
   
 
   csrw satp, zero         # Write zero to SATP register, used later to control MMU
+
+.option push
+.option norelax
+  la gp, global_pointer
+.option pop
 
   la t5, bss_start        # Load bss_start and end addresses to tmp regs and clear bss
   la t6, bss_end          # bss_start and end are defined in linker script.
