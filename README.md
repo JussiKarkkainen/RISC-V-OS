@@ -2,7 +2,7 @@
 
 A simple operating system designed to run on 32-bit RISC-V. 
 Currently mainly useful for educational purposes as speed or usability
-are not priorities. The OS is developed using QEMUs virt board, but future
+are not priorities. The OS is developed using [QEMUs virt] (https://www.qemu.org/docs/master/system/riscv/virt.html) board, but future
 versions will run on real hardware.
 
 
