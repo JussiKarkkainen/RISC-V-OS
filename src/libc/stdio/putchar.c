@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include <4uart.c>
+#include <uart.h>
 
 int putchar(int c) {
     char s = (char) c;
-    uart_putchar(&s);
+    write_uart(&s);
     return c;
 }
