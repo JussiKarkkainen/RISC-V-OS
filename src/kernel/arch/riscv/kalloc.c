@@ -5,7 +5,6 @@ typedef struct {
     uint8_t flags;
 } page_info;
 
-
 typedef enum {
     EMPTY = 0;
     TAKEN = 1 << 0;
@@ -21,11 +20,10 @@ int align(int value, int align) {
 int align = 12;
 int ALLOC_START;
 int page_size = 1 << 12;
+int num_pages = heap_size / page_size; 
 
-// Initialize descriptors
 void init() {
-    int num_pages = heap_size / page_size; 
-    
+
     // Clear pages
     int *start_addr = HEAP_START;
     for (int i=0; i<= num_pages; i++) {
@@ -36,11 +34,29 @@ void init() {
     // Determine location of useful memory
     ALLOC_START = align(HEAP_START + (num_pages * page_size,
                         align);
+}
+
+void clear(addr) {
+    *addr = page_bits->EMPTY;
+}
+
+bool is_taken(flags) {
+    if (flags & (page_bits->LAST) != 0) {
 
 }
 
+void set_flags() {
+}
 
 void kalloc(size_t num_pages) {
+    int *start_addr = HEAP_START;
+    for (int i=0; 1<=num_pages; i++) {
+        int found = 0;
+        
+        if (is_free(*ptr) == 1) {
+            found = 1;
+
+
 }
 
 
