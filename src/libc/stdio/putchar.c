@@ -1,8 +1,7 @@
-#include <stdio.h>
-#include <uart.h>
+#include "../../kernel/arch/riscv/uart.h"
 
-int putchar(int c) {
+int putchar(char c) {
     char s = (char) c;
-    write_uart(&s);
+    uart_putchar(s);
     return c;
 }
