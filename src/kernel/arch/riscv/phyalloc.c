@@ -20,7 +20,7 @@ int align(int value, int align) {
 int align = 12;
 int ALLOC_START;
 int page_size = 1 << 12;
-int num_pages = heap_size / page_size; 
+int num_pages = HEAP_SIZE / page_size; 
 
 void clear(*addr) {
     *addr = page_bits->EMPTY;
@@ -39,27 +39,39 @@ void init() {
                         align);
 }
 
+// Return true if page is free
 bool is_free(*flags) {
-    if (*flags & (page_bits->TAKEN) != 0) {
-        return 1;
+    if (*flags & (page_bits->TAKEN) == 0) {
+        return true;
     }
     else {
-        return 0;
+        return false;
     }
 }
 
-void set_flags(*page_descriptor) {
-    *page_descriptor = page_bits->TAKEN
+// Sets bits in descriptor
+void set_flags(int *page_descriptor, int bits) {
+    switch (bits) {
+        case -1: *page_descriptor = page_bits->EMPTY;
+            break;
+
+        case 0: *page_descriptor = page_bits->TAKEN;
+            break;
+
+        case 1: *page_descriptor = page_bits->LAST;
+            break;
+    }
 }
 
-void kalloc(size_t num_pages) {
+void *kalloc(size_t num_pages) {
     int *start_addr = HEAP_START;
-    for (int i=0; 1<=num_pages; i++) {
+    // Iterate through all page descriptors to see if they are free
+    for (int i=0; 1<=(num_pages-pages); i++) {
         int found = 0;
         
         if (is_free(*start_addr) == 1) {
             found = 1;
-            
+            // Check if there are enough contiguos pages to be allocated, if not, look elsewhere
             for (int j=0; j<=num_pages; j++) {
                 if (is_free(start_addr + j) == 0) {
                     found = 0;
@@ -67,14 +79,21 @@ void kalloc(size_t num_pages) {
                 }
             }
 
+        if (found == 1) {
+            for (int k=0; k<=pages-1; i++) {
+                set_flags((*ptr + k);
+            }
+        }
+
         }
     }
 }
 
-
+// Set descriptors to zero
 void free() {
 }
 
 
+// Allocate and clear memory to zero
 void clear() {
 }
