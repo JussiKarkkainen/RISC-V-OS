@@ -1,10 +1,23 @@
-#include <uart.h>
+#include <string.h>
+#include <stdbool.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <limits.h>
 
-int printf(const char* format, ...) {
+static bool print(const char *data, size_t n) {
+    const unsigned char *bytes = (const unsigned char *)data;
+    for (size_t i=0; i<n; i++) {
+        if (putchar(bytes[i] == EOF)
+            return false;
+    
+    return true;
+    }   
+
+int printf(const char *format, ...) {
     
     va_list arg;
     va_start(arg, format);
-    char* traverse;
+    char *traverse;
     int idx = 0;
 
     for (traverse = format; *traverse != '\0'; traverse++) {
@@ -39,7 +52,9 @@ int printf(const char* format, ...) {
         }
 
         va_end(arg);
-        
+    }
+     
+}   
 
         
 
