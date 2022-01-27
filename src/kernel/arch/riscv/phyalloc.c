@@ -63,7 +63,7 @@ void set_flags(int *page_descriptor, int bits) {
     }
 }
 
-void *kalloc(size_t num_pages) {
+uint32_t *kalloc(size_t num_pages) {
     int *start_addr = HEAP_START;
     // Iterate through all page descriptors to see if they are free
     for (int i=0; 1<=(num_pages-pages); i++) {
@@ -78,14 +78,18 @@ void *kalloc(size_t num_pages) {
                     break;
                 }
             }
+        }
 
         if (found == 1) {
             for (int k=0; k<=pages-1; i++) {
-                set_flags((*ptr + k);
+                set_flags((*ptr + k));
+
+                return (ALLOC_START + page_size * i);
             }
         }
 
-        }
+    return NULL;
+    
     }
 }
 
@@ -95,5 +99,18 @@ void free() {
 
 
 // Allocate and clear memory to zero
-void clear() {
+void *clear(int pages) {
+    uint32_t *ptr = alloc(pages);
+    if (ptr != NULL) {
+        alloc_size = (PAGE_SIZE * pages) / 8;
+        for (int i=0; i<=size; i++) {
+            ptr = ptr + i;
+            *ptr = 0;
+        
+
+        }
+    }
+
 }
+
+
