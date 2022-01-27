@@ -12,11 +12,14 @@ versions will run on real hardware.
   configures the UART and gives write and read functions that are used to make
   a simple console.
 
-
-
+## Memory allocation
+### Physical memory allocations
+- The physical memory allocator can be found in ```kernel/arch/riscv/phyalloc.c```. It uses a [bitmap](https://wiki.osdev.org/Page_Frame_Allocation) 
+  to keep track of allocated and free pages. 
+ 
 
 ## TO-DO
 - Interrupt handling
-- Virtual memory allocation
+- Memory allocation and programming the MMU
 - Filesystem
 - User-space
