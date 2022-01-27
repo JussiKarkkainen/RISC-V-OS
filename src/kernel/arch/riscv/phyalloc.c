@@ -1,5 +1,10 @@
 #include <stdint.h>
 
+/*
+This implementation uses 2 bits to describe pages, EMPTY, TAKEN, LAST.
+The LAST bit could propably be removed to simplify the allocator
+*/
+
 // Need to have one page_info for each page
 typedef struct {
     uint8_t flags;
@@ -93,10 +98,26 @@ uint32_t *kalloc(size_t num_pages) {
     }
 }
 
+// This can be simplified
+
 // Set descriptors to zero
-void free() {
+void free(uint32_t *addr) {
+    if (addr != NULL) {
+
+        start = HEAP_START + (addr - ALLOC_START) / PAGE_SIZE;
+        page_info *p = start;
+
+        while (is_taken(*p) == true && is_last(*p) != true) {
+            clear(*p);
+            p = p + 1;
+        }
+        clear(*p);
+    }
+
 }
 
+
+// What and when to return
 
 // Allocate and clear memory to zero
 void *clear(int pages) {
