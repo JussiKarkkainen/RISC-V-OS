@@ -1,24 +1,33 @@
-#include <string.h>
-#include <stdbool.h>
 #include <stdarg.h>
-#include <stdio.h>
-#include <limits.h>
+#include "../../kernel/arch/riscv/uart.h"
+#include "putchar.c"
 
-static bool print(const char *data, size_t n) {
-    const unsigned char *bytes = (const unsigned char *)data;
-    for (size_t i=0; i<n; i++) {
-        if (putchar(bytes[i] == EOF)
-            return false;
+char *convert(unsigned int num, int base) {
+    static char value[] = "0123456789ABCDEF";
+    static char buffer[50];
+    char *ptr;
+
+    ptr = &buffer[49];
+    *ptr = '\0';
+
+    do {
+        *--ptr = value[num&base];
+        num /= base;
+    }while(num != 0);
+
+    return ptr;
+}
+
+
+void kprintf(char *format, ...) {
     
-    return true;
-    }   
-
-int printf(const char *format, ...) {
+    int i;
+    char *str;
+    char *traverse;
     
     va_list arg;
     va_start(arg, format);
-    char *traverse;
-    int idx = 0;
+
 
     for (traverse = format; *traverse != '\0'; traverse++) {
         while (*traverse != '%') {
@@ -31,34 +40,27 @@ int printf(const char *format, ...) {
         switch(*traverse) {
 
             case 'c' : i = va_arg(arg, int);
-                uart_putchar(i);
+                putchar(i);
                 break;
             
-            case 'd' : i = va_srg(arg, int);
+            case 'd' : i = va_arg(arg, int);
                 if (i<0) {
                     i = -i;
-                    uart_putchar('-');
+                    putchar('-');
                 }
-                puts(i);
+                write_uart(convert(i, 10));
                 break;
 
-            case 's' : s = va_arg(char *);
-                uart_putchar(s);
+            case 's' : str = va_arg(arg, char *);
+                write_uart(str);
                 break;
 
-            case 'x' : i = va_arg(unsigned int);
-                uart_putchar(i);
+            case 'x' : i = va_arg(arg, unsigned int);
+                write_uart(convert(i, 16));
                 break;
         }
 
-        va_end(arg);
     }
-     
+
+    va_end(arg);
 }   
-
-        
-
-
-
-
-
