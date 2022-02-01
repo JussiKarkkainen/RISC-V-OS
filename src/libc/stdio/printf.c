@@ -35,7 +35,7 @@ void kprintf(char *format, ...) {
             traverse++;
         }
         
-        traverse++;
+        //traverse++;
 
         switch(*traverse) {
 
