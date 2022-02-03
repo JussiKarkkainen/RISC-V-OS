@@ -2,7 +2,32 @@
 #include "../../kernel/arch/riscv/uart.h"
 #include "putchar.c"
 
+void hexprint(num) {
+    
+    int rem; 
+    int i = 0;
+    char buffer[50];
 
+    while(num != 0) {
+        rem = num % 16;  // get the right most digit
+
+        if (rem < 10) {
+            buffer[i++] = 48 + rem;
+        }
+        else {
+            buffer[i++] = 55 + rem;
+        }
+
+        num /= 16;  // get the quotient
+    }
+    
+    char *str = "0x";
+    write_uart(str);
+
+    for(int j = i - 1; j >= 0 ; j--) {
+        putchar(buffer[j]);
+    } 
+}
 
 
 void kprintf(char *format, ...) {
@@ -38,9 +63,9 @@ void kprintf(char *format, ...) {
                     putchar(i);
                     break;
 
-                case 'x' : i = va_arg(arg int);
-                    putchar(convert(i, 16);
-                    break
+                case 'x' : i = va_arg(arg, int);
+                    hexprint(i);
+                    break;
 
             }
         }
