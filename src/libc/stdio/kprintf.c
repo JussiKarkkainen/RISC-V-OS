@@ -18,7 +18,7 @@ void kprintf(char *format, ...) {
         if (*traverse != '%') {
             uart_putchar(*traverse);
         }
-        else if (*traverse == '%') {
+        else {
             traverse++;
             switch (*traverse) {
                 
@@ -26,9 +26,22 @@ void kprintf(char *format, ...) {
                     putchar(i);
                     break;
                 
-                case 's' : str = va_arg(arg, char *) // Returns pointer to beginning of string.
+                case 's' : str = va_arg(arg, char *); // Returns pointer to beginning of string.
                     write_uart(str);
                     break;
+
+                case 'd' : i = va_arg(arg, int);
+                    if (i<0) {
+                        i = -i;
+                        putchar('-');
+                    }
+                    putchar(i);
+                    break;
+
+                case 'x' : i = va_arg(arg int);
+                    putchar(convert(i, 16);
+                    break
+
             }
         }
         traverse++;
