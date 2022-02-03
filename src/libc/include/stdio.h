@@ -1,5 +1,4 @@
-#define EOF (-1)
 
-int printf(const char*, ...);
+void kprintf(const char*, ...);
 int putchar(int);
 int puts(const char*);
