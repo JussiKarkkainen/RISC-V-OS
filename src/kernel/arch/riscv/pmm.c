@@ -45,9 +45,6 @@ uint32_t *kalloc(size_t n) {
     // Search for contiguos blockof free memory of size "size"
     uint32_t *ptr;
     for (ptr = start_addr; start_addr < (start_sddr + bitmap_size); start_addr++) {
-         
-            
-
 
 
 }
@@ -62,19 +59,29 @@ void free(uint32_t *ptr, size_t n) {
 
         if (addr >= HEAP_START && addr < (HEAP_SIZE + HEAP_SIZE)) {
             for (int i = 0; i <= n; i++) {
-                if *addr = 0; {
-                    addr++;
-                }
+                *addr = 0; 
+                addr++;
+                
             } 
-        
         }
-    
     }
-
-
 }
 
 
-
 void zalloc(int size) {
+}
+
+void test_alloc() {
+    // Used to verify that allocations work as expected
+    
+    int num_pages = HEAP_SIZE / page_size;
+    int start = HEAP_START;
+    int end = start + num_pages;
+    int alloc_start = ALLOC_START;
+    int alloc_end = ALLOC_START + num_pages * page_size;
+
+    kprintf("Page allocation tables:\n Bitmap: 0x%x\n PhyAlloc: 0x%x\n
+            ------------------------------------\n", start, end, alloc_start, alloc_end);
+
+
 }
