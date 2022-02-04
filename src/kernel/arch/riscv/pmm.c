@@ -20,7 +20,7 @@ int align(int value, int align) {
 
 
 // Initializes the bitmap by clearing required area
-void init() {
+void pmm_init() {
     // Bitmap starts at HEAP_START
     uint32_t *start_addr = HEAP_START;
     
@@ -44,9 +44,31 @@ uint32_t *kalloc(size_t n) {
     
     // Search for contiguos blockof free memory of size "size"
     uint32_t *ptr;
-    for (ptr = start_addr; start_addr < (start_sddr + bitmap_size); start_addr++) {
+    
+    for (int i = 0; i < num_pages; i++) {
+        int found = false;
 
+        if (ptr + i == 0) {
+            found = true;
 
+            for (int j = 0; j <= (i + n); j++) {
+
+                if (ptr + j == 1) {
+                    found = false;
+                    break;
+                }
+            }
+        }
+
+        // If found is true, we have a contiguos area to allocate
+        if (found) {
+            for (int k = 0; k <= pages; k++) {
+                *ptr = 1;
+            
+            uint32_t *ret_addr = ALLOC_START + page_size * i;
+            
+            return  ret_addr;
+    }
 }
 
 
