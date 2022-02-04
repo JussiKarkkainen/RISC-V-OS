@@ -35,13 +35,43 @@ void init() {
 }
 
 
-// Allocates "size" amount of pages
-void kalloc(int size) {
+// Allocates n amount of pages, by setting bits in bitmap to 1, 
+// and returning pointer to start of allocated memory
+uint32_t *kalloc(size_t n) {
+   
+    uint32_t *start_addr = HEAP_START;
+    int bitmap_size = HEAP_SIZE / page_size;
+    
+    // Search for contiguos blockof free memory of size "size"
+    uint32_t *ptr;
+    for (ptr = start_addr; start_addr < (start_sddr + bitmap_size); start_addr++) {
+         
+            
+
+
+
 }
 
 
+// Free size n amount of pages
+void free(uint32_t *ptr, size_t n) {
+    if (ptr != NULL) {
+        
+        // Calculate where the corresponding bit is bitmap is
+        uint32_t *addr = HEAP_START + (ptr - ALLOC_START) / page_size;
 
-void free(int size) {
+        if (addr >= HEAP_START && addr < (HEAP_SIZE + HEAP_SIZE)) {
+            for (int i = 0; i <= n; i++) {
+                if *addr = 0; {
+                    addr++;
+                }
+            } 
+        
+        }
+    
+    }
+
+
 }
 
 
