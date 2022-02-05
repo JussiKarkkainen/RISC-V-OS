@@ -71,6 +71,21 @@ uint32_t *kalloc(size_t n) {
     }
 }
 
+// Zero allocates n amount of pages
+void zalloc(size_t n) {
+
+    uint32_t *addr = kalloc(n);
+
+    if (ret != NULL) {
+        uint32_t *ptr = addr;
+        int size = (page_size * n) / 8;
+        
+        for (int i = 0; i <= size; i++) {
+            *ptr = 0;
+            ptr++;
+        }
+    }
+}
 
 // Free size n amount of pages
 void free(uint32_t *ptr, size_t n) {
@@ -89,9 +104,6 @@ void free(uint32_t *ptr, size_t n) {
     }
 }
 
-
-void zalloc(int size) {
-}
 
 void test_alloc() {
     // Used to verify that allocations work as expected
