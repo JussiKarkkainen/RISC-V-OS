@@ -23,3 +23,6 @@ versions will run on real hardware.
 - Memory allocation and programming the MMU
 - Filesystem
 - User-space
+### Issues
+- Fix infinite loops, that are caused by writing to uart. Can be avoided by calling console_init(), but isn't ideal.
+
