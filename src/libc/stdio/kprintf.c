@@ -2,14 +2,14 @@
 #include "../../kernel/arch/riscv/uart.h"
 #include "putchar.c"
 
-void hexprint(num) {
+void hexprint(int num) {
     
     int rem; 
     int i = 0;
     char buffer[50];
 
     while(num != 0) {
-        rem = num % 16;  // get the right most digit
+        rem = num % 16;  
 
         if (rem < 10) {
             buffer[i++] = 48 + rem;
@@ -18,7 +18,7 @@ void hexprint(num) {
             buffer[i++] = 55 + rem;
         }
 
-        num /= 16;  // get the quotient
+        num /= 16;  
     }
     
     char *str = "0x";
@@ -42,6 +42,7 @@ void kprintf(char *format, ...) {
     while (*traverse != '\0') {
         if (*traverse != '%') {
             uart_putchar(*traverse);
+
         }
         else {
             traverse++;
@@ -69,6 +70,7 @@ void kprintf(char *format, ...) {
 
             }
         }
+
         traverse++;
     }
 

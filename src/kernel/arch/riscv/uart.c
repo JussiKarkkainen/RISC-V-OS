@@ -38,7 +38,6 @@ uart_return uart_configure(uart_init* init) {
   
 
 void uart_putchar(char c) {
-    
     if (uart->LSR & (1 << 6)) {
         uart->BF = c;
     }

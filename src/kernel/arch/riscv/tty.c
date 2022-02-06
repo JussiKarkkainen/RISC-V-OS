@@ -10,7 +10,8 @@ int console_init() {
     };
 
     uart_configure(&config);
-
+    
+    
     write_uart("Type a command to continue\n");
     write_uart("$ ");
     
