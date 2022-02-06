@@ -72,7 +72,7 @@ uint32_t *kalloc(size_t n) {
 }
 
 // Zero allocates n amount of pages
-void zalloc(size_t n) {
+uint32_t *zalloc(size_t n) {
 
     uint32_t *addr = kalloc(n);
 
@@ -83,6 +83,9 @@ void zalloc(size_t n) {
         for (int i = 0; i <= size; i++) {
             *ptr = 0;
             ptr++;
+        
+    return addr;
+
         }
     }
 }
