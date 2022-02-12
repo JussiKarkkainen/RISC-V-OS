@@ -14,9 +14,11 @@ versions will run on real hardware.
 
 ## Memory allocation
 ### Physical memory allocations
-- The physical memory allocator can be found in ```kernel/arch/riscv/phyalloc.c```. It uses a [bitmap](https://wiki.osdev.org/Page_Frame_Allocation) 
+- The physical memory allocator can be found in ```kernel/pmm.c```. It uses a [bitmap](https://wiki.osdev.org/Page_Frame_Allocation) 
   to keep track of allocated and free pages. 
- 
+
+## Virtual memory
+- Implements the Sv32 Page-Based Virtual Memory System described in the [RISC-V Instruction set manual Volume II: Priviliged Architecture](https://riscv.org/technical/specifications/) 
 
 ## TO-DO
 - Interrupt handling
