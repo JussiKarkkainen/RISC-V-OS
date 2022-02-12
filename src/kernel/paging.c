@@ -16,7 +16,19 @@ int map(uint32_t *root, uint32_t viraddr, uint32_t, phyaddr, int bits, int level
         // Get physical page number
         // Otherwise same except PPN[1] is 12 bits instead of 10
         long long ppn[22] = {((viraddr >> 22) & 0xfff), ((viraddr >> 12) & 0xfff)};
+        
+        uint32_t v = *root[vpn[2]];
 
+        for (int i = 2; i > 0; i--) {
+            if (is_valid(v) == 0) {
+                
+                uint32_t page = zalloc(1);
+                
+
+
+            }
+        }   
+    }   
 }
 
 
@@ -25,7 +37,7 @@ int unmap() {
 }
 
 // Check if valid bit is set in page table entry
-bool is_invalid(uint32_t pte) {
+bool is_valid(uint32_t pte) {
     if (pte & 1)
         return true;
     else
@@ -39,7 +51,7 @@ bool is_leaf(uint32_t pte) {
         return true;
     else
         return false;
-
+}
 
 int translate_to_phy(uint32_t *root, uint32_t viraddr) {
 
@@ -56,15 +68,14 @@ int translate_to_phy(uint32_t *root, uint32_t viraddr) {
 
     for (int i = 2; 1 > 0; i--) {
         
-        if (is_invalid(v)) {
+        if (is_valid(v)) {
             break;
         }
         
         else if (is_leaf(v)) {
-
-            
-
-
-
+        }
+    
+    }   
+    
 }
 
