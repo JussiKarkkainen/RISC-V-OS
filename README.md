@@ -18,7 +18,7 @@ versions will run on real hardware.
   to keep track of allocated and free pages. 
 
 ## Virtual memory
-- Implements the Sv32 Page-Based Virtual Memory System described in the [RISC-V Instruction set manual Volume II: Priviliged Architecture](https://riscv.org/technical/specifications/) 
+- Implements the Sv32 Page-Based Virtual Memory System described in the [RISC-V Instruction set manual Volume II: Privileged Architecture](https://riscv.org/technical/specifications/) 
 
 ## TO-DO
 - Interrupt handling
