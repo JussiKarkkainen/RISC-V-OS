@@ -1,6 +1,8 @@
 #include "pmm.c"
 #include <stdint.h>
 
+#define PTE_V 1
+#define PTE_RX 0x6
 
 // Mapping a virtual address to a physical address
 
@@ -38,7 +40,7 @@ int unmap() {
 
 // Check if valid bit is set in page table entry
 bool is_valid(uint32_t pte) {
-    if (pte & 1)
+    if (pte & PTE_V)
         return true;
     else
         return false;
@@ -47,7 +49,7 @@ bool is_valid(uint32_t pte) {
 // Check if page table entry is a leaf
 bool is_leaf(uint32_t pte) {
     // pte is leaf if any of the rx bits are set
-    if (pte & 0x6) 
+    if (pte & PTE_RX) 
         return true;
     else
         return false;
