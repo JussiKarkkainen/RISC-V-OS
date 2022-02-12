@@ -5,10 +5,15 @@ Currently mainly useful for educational purposes as speed or usability
 are not priorities. The OS is developed using [QEMUs virt](https://www.qemu.org/docs/master/system/riscv/virt.html) board, but future
 versions will run on real hardware.
 
+## Table of contents
+- [IO](https://github.com/JussiKarkkainen/RISC-V-OS#io)
+- [Memory Allocations](https://github.com/JussiKarkkainen/RISC-V-OS#memory-allocation)
+- [TO-DO](https://github.com/JussiKarkkainen/RISC-V-OS#to-do)
+- [Issues](https://github.com/JussiKarkkainen/RISC-V-OS#issues)
 
-## UART driver
+## IO
 - Main input-output goes through the NS16550A UART of the virt board.
-  Even though QEMU seems to work fine without initialization ```uart.c``` first 
+  Even though QEMU seems to work fine without initialization ```kernel/arch/riscv/uart.c``` first 
   configures the UART and gives write and read functions that are used to make
   a simple console.
 
