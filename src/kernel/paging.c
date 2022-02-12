@@ -32,6 +32,14 @@ bool is_invalid(uint32_t pte) {
         return false;
 }
 
+// Check if page table entry is a leaf
+bool is_leaf(uint32_t pte) {
+    // pte is leaf if any of the wrx bits are set
+    if (pte & 0xe) 
+        return true;
+    else
+        return false;
+
 
 int translate_to_phy(uint32_t *root, uint32_t viraddr) {
 
@@ -51,6 +59,8 @@ int translate_to_phy(uint32_t *root, uint32_t viraddr) {
         if (is_invalid(v)) {
             break;
         }
+        
+        else if (is_leaf(v)) {
 
 
 
