@@ -2,10 +2,6 @@
 #include <stdint.h>
 #include "paging.h"
 
-#define PTE_V 1
-#define PTE_RX 0x6
-
-
 //typedef uint32_t *pagetable; // Pointer to a pagetable that contains 1024 PTEs
 
 uint32_t *kernel_pagetable;
@@ -17,7 +13,7 @@ uint32_t *kpagemake(void) {
     uint32_t *kpage;
 
     // Create a virtual memory map
-    kmap(kpage, UART0);
+    kmap(kpage, UART0, UART0);
 
     kmap(kpage, VIRTIO0);
 
@@ -50,9 +46,6 @@ void init_paging() {
     satp_write(kpagetable);
     flush_tlb();
 }
-
-
-
 
 // Mapping a virtual address to a physical address
 
