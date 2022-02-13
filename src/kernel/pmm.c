@@ -20,7 +20,7 @@ int align(int value, int align) {
 
 
 // Initializes the bitmap by clearing required area
-void pmm_init() {
+void pmm_init(void) {
     // Bitmap starts at HEAP_START
     uint32_t *start_addr = HEAP_START;
     
@@ -108,7 +108,7 @@ void free(uint32_t *ptr, size_t n) {
 }
 
 
-void test_alloc() {
+void test_alloc(void) {
     // Used to verify that allocations work as expected
     
     int num_pages = HEAP_SIZE / page_size;

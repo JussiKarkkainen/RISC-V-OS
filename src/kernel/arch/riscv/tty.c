@@ -1,6 +1,6 @@
 #include "uart.h"
 
-int console_init() {
+int console_init(void) {
     
     uart_init config = {
         .word_length = 8,
