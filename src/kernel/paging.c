@@ -1,5 +1,6 @@
 #include "pmm.c"
 #include <stdint.h>
+#include "paging.h"
 
 #define PTE_V 1
 #define PTE_RX 0x6
