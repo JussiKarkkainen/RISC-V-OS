@@ -16,7 +16,25 @@ uint32_t *kpagemake(void) {
     uint32_t *kpage;
 
     // Create a virtual memory map
+    kmap(kpage, UART0);
 
+    kmap(kpage, VIRTIO0);
+
+    kmap(kpage, PLIC);
+
+    kmap(kpage, HEAP_START);
+
+    kmap(kpage, TEXT_START);
+
+    kmap(kpage, RODATA_START);
+
+    kmap(kpage, DATA_START);
+
+    kmap(kpage, BSS_START);
+
+    kmap(kpage, KERNEL_STACK_START);
+
+    return kpage;
 }
 
 
