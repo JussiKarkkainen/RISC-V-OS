@@ -4,6 +4,18 @@
 #define PTE_V 1
 #define PTE_RX 0x6
 
+
+//typedef uint32_t *pagetable; // Pointer to a pagetable that contains 1024 PTEs
+
+uint32_t *kernel_pagetable;
+
+
+// Initializes the kernel page table
+void kpage_init(void) {
+    kpagetable = kpagemake();
+}
+
+
 // Mapping a virtual address to a physical address
 
 int map(uint32_t *root, uint32_t viraddr, uint32_t, phyaddr, int bits, int level){
