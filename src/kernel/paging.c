@@ -10,6 +10,16 @@
 uint32_t *kernel_pagetable;
 
 
+// create the kernel pagetable
+uint32_t *kpagemake(void) {
+
+    uint32_t *kpage;
+
+    // Create a virtual memory map
+
+}
+
+
 // Initializes the kernel page table
 void kpage_init(void) {
     kpagetable = kpagemake();
