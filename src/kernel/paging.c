@@ -16,6 +16,15 @@ void kpage_init(void) {
 }
 
 
+// Write address of kernel/root pagetable to satp reg and flush TLBs
+void init_paging() {
+    satp_write(kpagetable);
+    flush_tlb();
+}
+
+
+
+
 // Mapping a virtual address to a physical address
 
 int map(uint32_t *root, uint32_t viraddr, uint32_t, phyaddr, int bits, int level){
