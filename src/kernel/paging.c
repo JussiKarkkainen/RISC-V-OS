@@ -17,7 +17,7 @@ uint32_t *kpagemake(void) {
     uint32_t *kpage;
 
     // Create a virtual memory map
-    kmap(kpage, UART0, UART0);
+    kmap(kpage, UART0, UART0, pgsize, PTE_R | PTE_W);
 
     kmap(kpage, VIRTIO0);
 
@@ -51,9 +51,14 @@ void init_paging() {
     flush_tlb();
 }
 
+static inline void satp_write(uint32_t kpage) {
+    asm volatile("csrw %0, satp", : : "r" (kpage));
+}
+
+
 // Mapping a virtual address to a physical address
 
-int map(uint32_t *root, uint32_t viraddr, uint32_t, phyaddr, int bits, int level){
+int kmap(uint32_t *root, uint32_t viraddr, uint32_t, phyaddr, int bits, int level){
     
     // Check if READ, WRITE, and EXECUTE bits are set
     if (bits & 0xe != 0) {
@@ -82,7 +87,7 @@ int map(uint32_t *root, uint32_t viraddr, uint32_t, phyaddr, int bits, int level
 
 
 
-int unmap() {
+int kunmap() {
 }
 
 // Check if valid bit is set in page table entry
@@ -122,9 +127,12 @@ int translate_to_phy(uint32_t *root, uint32_t viraddr) {
         }
         
         else if (is_leaf(v)) {
+     
+
         }
     
     }   
     
 }
+
 
