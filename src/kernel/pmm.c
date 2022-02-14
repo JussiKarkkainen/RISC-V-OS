@@ -7,6 +7,7 @@ Implementation of a physical memory allocator. It uses a bitmap
 to keep track of size 4096 pages
 */
 
+extern uint32_t HEAP_START, HEAP_SIZE
 
 uint32_t ALLOC_START
 int page_size = 1 << 12;    // 4096 kib
@@ -22,16 +23,16 @@ int align(int value, int align) {
 // Initializes the bitmap by clearing required area
 void pmm_init(void) {
     // Bitmap starts at HEAP_START
-    uint32_t *start_addr = HEAP_START;
+    uint32_t *start_addr = &HEAP_START;
     
     // Calculate number of bits needed for bitmap  
-    int bitmap_size = HEAP_SIZE / page_size;
+    int bitmap_size = &HEAP_SIZE / page_size;
     
     // Clear bits in bitmap
     memset(start_addr, 0, bitmap_size);
 
     // Find where allocations begin aligned to a 4K boundary
-    ALLOC_START = align(HEAP_START + bitmap_size, page_align);
+    ALLOC_START = align(&HEAP_START + bitmap_size, page_align);
 }
 
 
@@ -39,8 +40,8 @@ void pmm_init(void) {
 // and returning pointer to start of allocated memory
 uint32_t *kalloc(size_t n) {
    
-    uint32_t *start_addr = HEAP_START;
-    int bitmap_size = HEAP_SIZE / page_size;
+    uint32_t *start_addr = &HEAP_START;
+    int bitmap_size = &HEAP_SIZE / page_size;
     
     // Search for contiguos blockof free memory of size "size"
     uint32_t *ptr;
@@ -95,9 +96,9 @@ void free(uint32_t *ptr, size_t n) {
     if (ptr != NULL) {
         
         // Calculate where the corresponding bit is bitmap is
-        uint32_t *addr = HEAP_START + (ptr - ALLOC_START) / page_size;
+        uint32_t *addr = &HEAP_START + (ptr - ALLOC_START) / page_size;
 
-        if (addr >= HEAP_START && addr < (HEAP_SIZE + HEAP_SIZE)) {
+        if (addr >= &HEAP_START && addr < (&HEAP_SIZE + &HEAP_SIZE)) {
             for (int i = 0; i <= n; i++) {
                 *addr = 0; 
                 addr++;
@@ -111,8 +112,8 @@ void free(uint32_t *ptr, size_t n) {
 void test_alloc(void) {
     // Used to verify that allocations work as expected
     
-    int num_pages = HEAP_SIZE / page_size;
-    int start = HEAP_START;
+    int num_pages = &HEAP_SIZE / page_size;
+    int start = &HEAP_START;
     int end = start + num_pages;
     int alloc_start = ALLOC_START;
     int alloc_end = ALLOC_START + num_pages * page_size;
