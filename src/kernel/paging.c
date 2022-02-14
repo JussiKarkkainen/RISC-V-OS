@@ -21,19 +21,19 @@ uint32_t *kpagemake(void) {
 
     kmap(kpage, VIRTIO0);
 
-    kmap(kpage, PLIC);
+    kmap(kpage, PLIC, PLIC);
 
-    kmap(kpage, &HEAP_START);
+    kmap(kpage, &HEAP_START, &HEAP_START);
 
-    kmap(kpage, &TEXT_START);
+    kmap(kpage, &TEXT_START, &HEAP_START);
 
-    kmap(kpage, &RODATA_START);
+    kmap(kpage, &RODATA_START, &RODATA_START);
 
-    kmap(kpage, &DATA_START);
+    kmap(kpage, &DATA_START, &DATA_START);
 
-    kmap(kpage, &BSS_START);
+    kmap(kpage, &BSS_START, &BSS_START);
 
-    kmap(kpage, &KERNEL_STACK_START);
+    kmap(kpage, &KERNEL_STACK_START, &KERNEL_STACK_START);
 
     return kpage;
 }
