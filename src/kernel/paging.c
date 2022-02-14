@@ -2,8 +2,12 @@
 #include <stdint.h>
 #include "paging.h"
 
-//typedef uint32_t *pagetable; // Pointer to a pagetable that contains 1024 PTEs
 
+extern uint32_t HEAP_START, TEXT_START, RODATA_START, DATA_START,
+                BSS_START, KERNEL_STACK_START;
+
+
+//typedef uint32_t *pagetable; // Pointer to a pagetable that contains 1024 PTEs
 uint32_t *kernel_pagetable;
 
 
@@ -19,17 +23,17 @@ uint32_t *kpagemake(void) {
 
     kmap(kpage, PLIC);
 
-    kmap(kpage, HEAP_START);
+    kmap(kpage, &HEAP_START);
 
-    kmap(kpage, TEXT_START);
+    kmap(kpage, &TEXT_START);
 
-    kmap(kpage, RODATA_START);
+    kmap(kpage, &RODATA_START);
 
-    kmap(kpage, DATA_START);
+    kmap(kpage, &DATA_START);
 
-    kmap(kpage, BSS_START);
+    kmap(kpage, &BSS_START);
 
-    kmap(kpage, KERNEL_STACK_START);
+    kmap(kpage, &KERNEL_STACK_START);
 
     return kpage;
 }
