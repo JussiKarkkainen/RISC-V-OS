@@ -1,5 +1,7 @@
 #define PTE_V 1
 #define PTE_RX 0x6
+#define PGEOFFSET 12
+#define VPNMASK 0x3ff
 
 #define UART0 0x10000000
 #define VIRTIO0 0x10001000
