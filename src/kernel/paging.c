@@ -74,14 +74,20 @@ uint32_t *walk(uint32_t pagetable, uint32_t vir_addr, int alloc) {
     for (int i = 2; i > 0; i--) {
         uint32_t *pte = &pagetable[(vir_addr >> (PGEOFFSET + 10 * i) & VPNMASK)];
         
+        // Turn pte into phy_addr
         if (*pte & PTE_V) {
-           pagetable = (uint32_t) 
-
+            // Shift PPNs to correct places from pte
+            pagetable = (uint32_t)((*pte >> 10) << 12);
         }
-
-
-
+        // Turn phy_addr into pte
+        else {
+            if (!alloc || (pagetable = (uint32_t*)zalloc(1) == 0)) {
+                return 0;
+            }
+            *pte = ((pagetable >> 12) << 10) | PTE_V;
+        }
     }
+    return &pagetable[((vir_addr >> PGEOFFSET) & VPNMASK)];
 }   
 
 // 
