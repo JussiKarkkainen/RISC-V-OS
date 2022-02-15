@@ -70,6 +70,42 @@ bool is_leaf(uint32_t pte) {
     return (pte & PTE_RX); 
 }
 
+uint32_t *walk(uint32_t pagetable, uint32_t vir_addr, int alloc) {
+    for (int i = 2; i > 0; i--) {
+        uint32_t *pte = &pagetable[(vir_addr >> (PGEOFFSET + 10 * i) & VPNMASK)];
+        
+        if (*pte & PTE_V) {
+           pagetable = (uint32_t) 
+
+        }
+
+
+
+    }
+}   
+
+// 
+int map(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int permissions) {
+
+    uint32_t *pte;
+    uint32_t last;
+
+    if (size) {
+        last = vir_addr + size - 1;
+
+        if (*pte & PTE_V) {
+
+            // Get VPN
+            vpn = PGEOFFSET
+
+}
+
+
+
+
+
+
+
 // Mapping a virtual address to a physical address
 // root = address to kernel pagetable
 int kmap(uint32_t *root, uint32_t viraddr, uint32_t, phyaddr, int bits, int level){
@@ -87,9 +123,7 @@ int kmap(uint32_t *root, uint32_t viraddr, uint32_t, phyaddr, int bits, int leve
         
         uint32_t v = *root[vpn[2]];
 
-        for (int i = 2; i > 0; i--) {
-            if (is_valid(v) == 0) {
-                
+               
                 uint32_t page = zalloc(1);
                  
 
@@ -123,7 +157,7 @@ int translate_to_phy(uint32_t *root, uint32_t viraddr) {
         }
         
         else if (is_leaf(v)) {
-     
+                 
 
         }
     
