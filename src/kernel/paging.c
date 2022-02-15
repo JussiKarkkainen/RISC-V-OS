@@ -14,7 +14,7 @@ uint32_t *kernel_pagetable;
 // create the kernel pagetable
 uint32_t *kpagemake(void) {
 
-    uint32_t *kpage;
+    uint32_t *kpage = zalloc(1);
 
     // Create a virtual memory map
     kmap(kpage, UART0, UART0, pgsize, PTE_R | PTE_W);
