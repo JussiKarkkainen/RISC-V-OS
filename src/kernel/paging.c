@@ -60,17 +60,6 @@ static inline void satp_write(uint32_t kpage) {
 }
 
 
-// Check if valid bit is set in page table entry
-bool is_valid(uint32_t pte) {
-    return (pte & PTE_V);
-}
-
-// Check if page table entry is a leaf
-bool is_leaf(uint32_t pte) {
-    // pte is leaf if any of the rx bits are set
-    return (pte & PTE_RX); 
-}
-
 uint32_t *walk(uint32_t pagetable, uint32_t vir_addr, int alloc) {
     for (int i = 2; i > 0; i--) {
         uint32_t *pte = &pagetable[(vir_addr >> (PGEOFFSET + 10 * i) & VPNMASK)];
@@ -91,7 +80,7 @@ uint32_t *walk(uint32_t pagetable, uint32_t vir_addr, int alloc) {
     return &pagetable[((vir_addr >> PGEOFFSET) & VPNMASK)];
 }   
 
-// 
+ 
 int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int permissions) {
 
     uint32_t *pte;
