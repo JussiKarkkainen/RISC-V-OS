@@ -3,6 +3,8 @@
 #define PTE_W 0x2
 #define PGEOFFSET 12
 #define VPNMASK 0x3ff
+#define PGESIZE (1 << 12)
+
 
 #define UART0 0x10000000
 #define VIRTIO0 0x10001000
