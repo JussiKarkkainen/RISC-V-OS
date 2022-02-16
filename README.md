@@ -17,9 +17,9 @@ versions will run on real hardware.
 This assumes that you have already installed [QEMU](https://www.qemu.org/download/) and the [RISC-V Gnu Toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain).
 
 - Clone the repo and boot:
-```git clone https://github.com/JussiKarkkainen/RISC-V-OS.git" cd RISC-V-OS ./compile.sh ./run.sh```
+```git clone https://github.com/JussiKarkkainen/RISC-V-OS.git"\n cd RISC-V-OS\n ./compile.sh\n ./run.sh```
 
-#Specification
+# Specification
 ## IO
 - Main input-output goes through the NS16550A UART of the virt board.
   Even though QEMU seems to work fine without initialization ```kernel/arch/riscv/uart.c``` first 
