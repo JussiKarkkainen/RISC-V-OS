@@ -61,10 +61,7 @@ static inline void satp_write(uint32_t kpage) {
 
 // Check if valid bit is set in page table entry
 bool is_valid(uint32_t pte) {
-    if (pte & PTE_V)
-        return true;
-    else
-        return false;
+    return (pte & PTE_V);
 }
 
 // Check if page table entry is a leaf
