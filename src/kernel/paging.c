@@ -95,15 +95,23 @@ int map(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, in
 
     uint32_t *pte;
     uint32_t last;
+    uint32_t vir;
 
-    if (size) {
+    if (size > 0) {
         last = vir_addr + size - 1;
+        vir = vir_addr;
 
-        if (*pte & PTE_V) {
+        while(1) {
+            pte = walk(kpage, vir_addr, 1);
+            if (pte == 0)
+                return -1;
+            if (*pte & PTE_V == 0) {
+                
 
-            // Get VPN
-            vpn = PGEOFFSET
-
+            }
+    
+        
+        }
 }
 
 
