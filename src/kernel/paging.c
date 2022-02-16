@@ -91,7 +91,7 @@ uint32_t *walk(uint32_t pagetable, uint32_t vir_addr, int alloc) {
 }   
 
 // 
-int map(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int permissions) {
+int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int permissions) {
 
     uint32_t *pte;
     uint32_t last;
@@ -103,14 +103,20 @@ int map(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, in
 
         while(1) {
             pte = walk(kpage, vir_addr, 1);
-            if (pte == 0)
+            if (pte == 0) {
                 return -1;
-            if (*pte & PTE_V == 0) {
-                
-
             }
-    
+            if (*pte & PTE_V == 0) {
+                *pte = (phy_addr >> 12) << 10;
+
+                if (vir = last) {
+                    break;
+                }
+                a += PGESIZE;
+                phy_addr += PGESIZE;
+            }
         
+        return 0;
         }
 }
 
@@ -122,7 +128,7 @@ int map(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, in
 
 // Mapping a virtual address to a physical address
 // root = address to kernel pagetable
-int kmap(uint32_t *root, uint32_t viraddr, uint32_t, phyaddr, int bits, int level){
+int oldkmap(uint32_t *root, uint32_t viraddr, uint32_t, phyaddr, int bits, int level){
     
     // Check if READ, WRITE, and EXECUTE bits are set
     if (bits & 0xe != 0) {
