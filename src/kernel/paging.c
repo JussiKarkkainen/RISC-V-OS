@@ -54,8 +54,9 @@ void init_paging() {
     flush_tlb();
 }
 
+// Write kernel pagetable root address to satp and set mmu to sv32
 static inline void satp_write(uint32_t kpage) {
-    asm volatile("csrw %0, satp", : : "r" (kpage));
+    asm volatile("csrw %0, satp", : : "r" (1 | (kpage >> 12));
 }
 
 
