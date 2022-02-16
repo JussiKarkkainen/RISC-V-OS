@@ -1,7 +1,7 @@
 #include "pmm.c"
 #include <stdint.h>
 #include "paging.h"
-
+#include "arch/riscv/mem.S"
 
 extern uint32_t HEAP_START, TEXT_START, RODATA_START, DATA_START,
                 BSS_START, KERNEL_STACK_START;
@@ -21,19 +21,19 @@ uint32_t *kpagemake(void) {
 
     kmap(kpage, VIRTIO0, VIRTIO0, pgsize, PTE_R | PTE_W);
 
-    kmap(kpage, PLIC, PLIC, pgsize, PTE_R | PTE_W);
+    kmap(kpage, PLIC, PLIC, PLICSIZE, PTE_R | PTE_W);
 
-    kmap(kpage, &HEAP_START, &HEAP_START, PTE_R | PTE_W);
+    kmap(kpage, &HEAP_START, &HEAP_START, HEAP_SIZE, PTE_R | PTE_W);
 
-    kmap(kpage, &TEXT_START, &TEXT_START, PTE_R | PTE_X);
+    kmap(kpage, &TEXT_START, &TEXT_START, TEXT_SIZE, PTE_R | PTE_X);
 
-    kmap(kpage, &RODATA_START, &RODATA_START, PTE_R | PTE_X);
+    kmap(kpage, &RODATA_START, &RODATA_START, RODATA_SIZE, PTE_R | PTE_X);
 
-    kmap(kpage, &DATA_START, &DATA_START, PTE_R | PTE_W);
+    kmap(kpage, &DATA_START, &DATA_START, DATA_SIZE, PTE_R | PTE_W);
 
-    kmap(kpage, &BSS_START, &BSS_START, PTE_R | PTE_W);
+    kmap(kpage, &BSS_START, &BSS_START, BSS_SIZE, PTE_R | PTE_W);
 
-    kmap(kpage, &KERNEL_STACK_START, &KERNEL_STACK_START, PTE_R | PTE_W);
+    kmap(kpage, &KERNEL_STACK_START, &KERNEL_STACK_START, KERNEL_STACK_SIZE, PTE_R | PTE_W);
 
     return kpage;
 }
