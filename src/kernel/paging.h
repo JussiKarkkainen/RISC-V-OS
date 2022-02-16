@@ -1,5 +1,6 @@
 #define PTE_V 1
 #define PTE_RX 0x6
+#define PTE_W 0x2
 #define PGEOFFSET 12
 #define VPNMASK 0x3ff
 
