@@ -18,8 +18,9 @@ This assumes that you have already installed [QEMU](https://www.qemu.org/downloa
 
 - Clone the repo and boot:
 ```
-git clone https://github.com/JussiKarkkainen/RISC-V-OS.git" 
-cd RISC-V-OS ./compile.sh
+git clone https://github.com/JussiKarkkainen/RISC-V-OS.git
+cd RISC-V-OS 
+./compile.sh
 ./run.sh
 ```
 
