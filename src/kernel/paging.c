@@ -8,7 +8,7 @@ extern uint32_t HEAP_START, TEXT_START, RODATA_START, DATA_START,
 
 
 //typedef uint32_t *pagetable; // Pointer to a pagetable that contains 1024 PTEs
-uint32_t *kernel_pagetable;
+uint32_t *kpagetable;
 
 
 // create the kernel pagetable
@@ -44,6 +44,9 @@ void kpage_init(void) {
     kpagetable = kpagemake();
 }
 
+static inline void(void) {
+    asm volatile("sfence.vma zero, zero");
+}
 
 // Write address of kernel/root pagetable to satp reg and flush TLBs
 void init_paging() {
