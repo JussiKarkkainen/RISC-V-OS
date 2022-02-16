@@ -23,17 +23,17 @@ uint32_t *kpagemake(void) {
 
     kmap(kpage, PLIC, PLIC, pgsize, PTE_R | PTE_W);
 
-    kmap(kpage, &HEAP_START, &HEAP_START);
+    kmap(kpage, &HEAP_START, &HEAP_START, PTE_R | PTE_W);
 
-    kmap(kpage, &TEXT_START, &HEAP_START);
+    kmap(kpage, &TEXT_START, &TEXT_START, PTE_R | PTE_X);
 
-    kmap(kpage, &RODATA_START, &RODATA_START);
+    kmap(kpage, &RODATA_START, &RODATA_START, PTE_R | PTE_X);
 
-    kmap(kpage, &DATA_START, &DATA_START);
+    kmap(kpage, &DATA_START, &DATA_START, PTE_R | PTE_W);
 
-    kmap(kpage, &BSS_START, &BSS_START);
+    kmap(kpage, &BSS_START, &BSS_START, PTE_R | PTE_W);
 
-    kmap(kpage, &KERNEL_STACK_START, &KERNEL_STACK_START);
+    kmap(kpage, &KERNEL_STACK_START, &KERNEL_STACK_START, PTE_R | PTE_W);
 
     return kpage;
 }
