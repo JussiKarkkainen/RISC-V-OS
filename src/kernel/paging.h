@@ -1,4 +1,16 @@
-#include "mem.S"
+#ifndef PAGING_H
+#define PAGING_H
+
+#include "arch/riscv/mem.S"
+#include <stdint.h>
+
+extern uint32_t HEAP_START; 
+extern uint32_t TEXT_START;
+extern uint32_t RODATA_START; 
+extern uint32_t DATA_START;
+extern uint32_t BSS_START; 
+extern uint32_t KERNEL_STACK_START;
+
 
 #define PTE_V 1
 #define PTE_RX 0x6
@@ -13,3 +25,5 @@
 #define VIRTIO0 0x10001000
 #define PLIC 0xc000000
 #define PLICSIZE 0x2000
+
+#endif
