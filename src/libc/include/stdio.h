@@ -1,4 +1,8 @@
+#ifndef STDIO_H
+#define STDIO_H
 
-void kprintf(const char*, ...);
-int putchar(int);
-int puts(const char*);
+void kprintf(char *format, ...);
+int putchar(char c);
+int puts(const char *string);
+
+#endif

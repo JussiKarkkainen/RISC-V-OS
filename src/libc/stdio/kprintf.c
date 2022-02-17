@@ -1,6 +1,7 @@
 #include <stdarg.h>
 #include "../../kernel/arch/riscv/uart.h"
 #include "putchar.c"
+#include "../include/stdio.h"
 
 void hexprint(int num) {
     
