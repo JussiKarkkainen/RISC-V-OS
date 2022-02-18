@@ -26,7 +26,7 @@ int page_align = 12;
 void pmm_init(void) {
 
     // Bitmap starts at HEAP_START
-    uint32_t *start_addr = HEAP_START;
+    uint32_t *start_addr = (uint32_t *)HEAP_START;
     
     // Calculate number of bits needed for bitmap  
     int bitmap_size = HEAP_SIZE / page_size;
@@ -44,12 +44,12 @@ void pmm_init(void) {
 uint32_t *kalloc(int n) {
    
     int num_pages = HEAP_SIZE / page_size;
-    uint32_t *start_addr = HEAP_START;
+    uint32_t *start_addr = (uint32_t *)HEAP_START;
     int bitmap_size = HEAP_SIZE / page_size;
     alloc_start = align(HEAP_START + bitmap_size, page_align);
     
     // Search for contiguos blockof free memory of size "size"
-    uint32_t *ptr;
+    uint32_t *ptr = start_addr;
     
     for (int i = 0; i < num_pages; i++) {
         int found = false;
@@ -71,9 +71,9 @@ uint32_t *kalloc(int n) {
             for (int k = 0; k <= num_pages; k++) {
                 *ptr = 1;
             }
-            uint32_t *ret_addr = (alloc_start + page_size * i);
+            uint32_t *ret_addr = (uint32_t *)(alloc_start + page_size * i);
             
-            return  ret_addr;
+            return ret_addr;
         }
     }
     return 0;
@@ -104,9 +104,9 @@ void free(uint32_t *ptr, int n) {
     if (ptr != NULL) {
         
         // Calculate where the corresponding bit is bitmap is
-        uint32_t *addr = HEAP_START + (int)(ptr - alloc_start) / page_size;
+        uint32_t *addr = (uint32_t *)(HEAP_START + (int)(ptr - alloc_start) / page_size);
 
-        if (addr >= HEAP_START && addr < (HEAP_SIZE + HEAP_SIZE)) {
+        if (addr >= (uint32_t *)HEAP_START && addr < (uint32_t *)(HEAP_SIZE + HEAP_SIZE)) {
             for (int i = 0; i <= n; i++) {
                 *addr = 0; 
                 addr++;
