@@ -10,7 +10,7 @@ extern uint32_t RODATA_START;
 extern uint32_t DATA_START;
 extern uint32_t BSS_START; 
 extern uint32_t KERNEL_STACK_START;
-
+extern uint32_t HEAP_SIZE;
 
 #define PTE_V 1
 #define PTE_RX 0x6
