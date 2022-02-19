@@ -50,6 +50,9 @@ SECTIONS
     PROVIDE(memory_end = ORIGIN(ram) + LENGTH(ram));
     PROVIDE(heap_start = stack_end);
     PROVIDE(heap_size = memory_end - heap_start);
-    
+    PROVIDE(text_size = text_end - text_start);
+    PROVIDE(rodata_size = rodata_end - rodata_start);
+    PROVIDE(data_size = data_end - data_start);
+    PROVIDE(bss_size = bss_end - bss_start);
     }
 
