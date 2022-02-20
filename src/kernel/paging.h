@@ -1,7 +1,7 @@
 #ifndef PAGING_H
 #define PAGING_H
 
-#include "arch/riscv/mem.S"
+#include "mem.S"
 #include <stdint.h>
 
 

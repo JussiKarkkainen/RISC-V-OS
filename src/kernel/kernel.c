@@ -1,5 +1,5 @@
-#include "arch/riscv/tty.c"
-#include "arch/riscv/uart.h"
+#include "console.c"
+#include "uart.h"
 #include "../libc/include/stdio.h"
 #include "../libc/stdio/kprintf.c"
 #include "paging.h"

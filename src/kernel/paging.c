@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include "paging.h"
-//#include "arch/riscv/mem.S"
+
 /*
 extern uint32_t HEAP_START, TEXT_START, RODATA_START, DATA_START,
                 BSS_START, KERNEL_STACK_START;
