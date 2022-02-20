@@ -1,5 +1,5 @@
 #include <stdarg.h>
-#include "../../kernel/arch/riscv/uart.h"
+#include "../../kernel/uart.h"
 #include "putchar.c"
 #include "../include/stdio.h"
 
