@@ -2,7 +2,7 @@
 
 .section .text.init
 
-.global _start
+.globl _start
 _start:
 
   csrr t0, mhartid        # read hart id into temporary register
