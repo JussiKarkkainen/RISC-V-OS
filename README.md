@@ -14,7 +14,7 @@ versions will run on real hardware.
 - [Issues](https://github.com/JussiKarkkainen/RISC-V-OS#issues)
 
 ## Usage
-This assumes that you have already installed [QEMU](https://www.qemu.org/download/) and the [RISC-V Gnu Toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain).
+This assumes that you have already installed [QEMU](https://www.qemu.org/download/) and the [RISC-V GNU Toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain).
 
 - Clone the repo and boot:
 ```
@@ -41,7 +41,9 @@ cd RISC-V-OS
 
 ## TO-DO
 - Interrupt handling
-- Memory allocation and programming the MMU
+- Locking
+- System calls
+- Scheduling
 - Filesystem
 - User-space
 
