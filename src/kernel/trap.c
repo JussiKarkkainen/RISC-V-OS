@@ -3,8 +3,12 @@
 #include "trap.h"
 
 
-uint32_t get_sepc(void) {
+static inline uint32_t get_sepc(void) {
+    uint32_t sepc;
+    asm volatile("csrr %0, sepc" : : "=r" (sepc));
+    return sepc;
 }
+
 
 uint32_t get_sstatus(void) {
 
@@ -15,7 +19,12 @@ uint32_t get_scause(void) {
 }
 
 
-int timer_interrupt
+int handle_interrupt() {
+}
+
+int timer_interrupt() {
+}
+
 void ktrap(void) {
 
     uint32_t sepc = get_sepc();
