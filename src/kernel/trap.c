@@ -23,14 +23,16 @@ static inline uint32_t get_scause(void) {
 
 int handle_interrupt() {
     // Check if external/device interrupt
-
-
-
-
-
+    uint32_t scause = get_scause();
+    if ((scause & INTERRUPT_BIT) == 1 && (scause & EXT_INTERRUPT == 9)) {
+        
+        // Interrupt given by PLIC
+    }
+  
     // Check if software/timer interrutp
+    else if (scaue ==  SOFT_INTERRUPT) {
     
-
+    }
 }
 
 int timer_interrupt() {
