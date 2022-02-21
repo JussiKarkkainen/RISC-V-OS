@@ -1,7 +1,5 @@
-// Machine mode trap handler
-
 #include "trap.h"
-
+#include "../libc/stdio/panic.c"
 
 static inline uint32_t get_sepc(void) {
     uint32_t sepc;
@@ -22,11 +20,25 @@ static inline uint32_t get_scause(void) {
 }
 
 
+
 int handle_interrupt() {
+    // Check if external/device interrupt
+
+
+
+
+
+    // Check if software/timer interrutp
+    
+
 }
 
 int timer_interrupt() {
 }
+
+void yield_process(void) {
+}
+
 
 void ktrap(void) {
 
@@ -36,19 +48,23 @@ void ktrap(void) {
 
     // Make sure interrupt comes from supervisor mode
     if ((sstatus & SSTATUS_SPP) == 0) {
-        kprintf("trap not in supervisor mode");
+        panic("trap not in supervisor mode");
     }
     // Make sure interrupts are not enabled
-    if (check_interrupts() == 0) {
-        kprintf("interrupts are enabled");
+    if ((sstatus & SSTATUS_SIE) == 1) {
+        panic("interrupts are enabled");
     }
+
+    // trap can be either device interrupt or exceptions
+    // handle_interrupt deals with device interrupt. If trap is
+    // an external interrupt, we call panic() and stop executing
     if (handle_interrupt() == 0) {
-        kprintf("kernel interrupt");
+        panic("kernel interrupt");
     }
         
 
     if (timer_interrupt() == 1) {
-        // deal with timer interrupt
+        yield_process();
     }
 }
 
