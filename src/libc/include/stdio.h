@@ -3,6 +3,6 @@
 
 void kprintf(char *format, ...);
 int putchar(char c);
-int puts(const char *string);
+void panic(char *string);
 
 #endif
