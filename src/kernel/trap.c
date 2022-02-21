@@ -1,8 +1,24 @@
 // Machine mode trap handler
 
+#include "trap.h"
+
+
+uint32_t get_sepc(void) {
+}
+
+uint32_t get_sstatus(void) {
+
+}
+
+uint32_t get_scause(void) {
+
+}
+
+
+int timer_interrupt
 void ktrap(void) {
 
-    uint32_t sepc = get_sepc;
+    uint32_t sepc = get_sepc();
     uint32_t sstatus = get_sstatus();
     uint32_t scause = get_scause();
 
@@ -19,7 +35,7 @@ void ktrap(void) {
     }
         
 
-    if (timer_interrupt == 1) {
+    if (timer_interrupt() == 1) {
         // deal with timer interrupt
     }
 }
