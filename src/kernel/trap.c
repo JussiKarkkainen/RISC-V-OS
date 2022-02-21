@@ -9,13 +9,16 @@ static inline uint32_t get_sepc(void) {
     return sepc;
 }
 
-
-uint32_t get_sstatus(void) {
-
+static inline uint32_t get_sstatus(void) {
+    uint32_t sstatus;
+    asm volatile("csrr %0, sstatus" : : "=r" (sstatus));
+    return sstatus;
 }
 
-uint32_t get_scause(void) {
-
+static inline uint32_t get_scause(void) {
+    uint32_t scause;
+    asm volatile("csrr %0, scause" : : "=r" (scause));
+    return scause;
 }
 
 
