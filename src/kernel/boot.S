@@ -27,8 +27,8 @@ stack_setup:
   csrw mstatus, t0
   li t3, (1 << 3) | (1 << 7) | (1 << 11)
   csrw mie, t3
-  call enter              # jump to supervisor mode
-  j main
+  call mstart              # jump to supervisor mode
+  call enter
 
 
 bss_clear:
@@ -42,6 +42,3 @@ park:
   wfi
   j park
 
-
-main: 
-  # Start console and processes

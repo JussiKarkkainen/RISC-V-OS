@@ -33,9 +33,9 @@ int handle_interrupt() {
     // Check if external/device interrupt
     uint32_t scause = get_scause();
     if ((scause & INTERRUPT_BIT) == 1 && (scause & EXT_INTERRUPT == 9)) {
-        
         // Interrupt given by PLIC
         // Can be uart or virtio disk interrupt     
+         
     }
   
     // Check if software/timer interrutp

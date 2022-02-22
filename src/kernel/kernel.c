@@ -4,6 +4,9 @@
 #include "../libc/stdio/kprintf.c"
 #include "paging.h"
 
+// This should be executed in supervisor mode, boot.S should first call 
+// start() for setup before tranfering control to enter().
+
 void enter(void) {
     kprintf("%s\n", "Booting OS");
 
