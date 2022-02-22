@@ -17,6 +17,14 @@ static inline void write_satp(uint32_t x) {
     asm volatile("csrw satp, %0" : : "r" (x));
 }
 
+static inline void write_medeleg(uint32_t x) {
+    asm volatile("csrw medeleg, %0" : : "r" (x));
+}
+
+static inline void write_mideleg(uint32_t x) {
+    asm volatile("csrw mideleg, %0" : : "r" (x));
+}
+
 void mstart(void) {
     // Clear the mstatus MPP bits and set them to supervisor mode
     uint32_t mstatus = get_mstatus();
@@ -28,3 +36,8 @@ void mstart(void) {
 
     // Disable paging
     write_satp(0);
+
+    // All traps are handled in supervisor mode. This can be done by setting
+    // writing to the medeleg and mideleg registers
+    write_medeleg(0xffff);
+    write_mideleg(0xffff);
