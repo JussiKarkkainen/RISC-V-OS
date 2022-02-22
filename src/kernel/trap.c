@@ -19,7 +19,9 @@ static inline uint32_t get_scause(void) {
     return scause;
 }
 
-
+static inline void write_stvec(uint32_t ktrapvec) {
+    asm volatile("csrw stvec, %0" : : "r" (ktrapvec));
+}
 
 int handle_interrupt() {
     // Check if external/device interrupt
@@ -27,11 +29,12 @@ int handle_interrupt() {
     if ((scause & INTERRUPT_BIT) == 1 && (scause & EXT_INTERRUPT == 9)) {
         
         // Interrupt given by PLIC
+        // Can be uart or virtio disk interrupt     
     }
   
     // Check if software/timer interrutp
-    else if (scaue ==  SOFT_INTERRUPT) {
-    
+    else if (scause == SOFT_INTERRUPT) {
+        
     }
 }
 
@@ -69,4 +72,13 @@ void ktrap(void) {
         yield_process();
     }
 }
+
+void ktrapvec();
+
+
+void init_ktrapvec(void) {
+    write_stvec((uint32_t)ktrapvec);
+}
+
+
 

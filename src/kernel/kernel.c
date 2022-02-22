@@ -10,7 +10,9 @@ void enter(void) {
     pmm_init();         // Initialize physical memory manager
     kpage_init();       // Initilaize kernel pagetable
     init_paging();      // Initialize paging
-    
+
+    init_ktrapvec();    // Write ktrapvec addr into stvec to init trap handling
+
     console_init();     // Start console
 
 }
