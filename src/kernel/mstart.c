@@ -1,6 +1,10 @@
 // Setup cpu for supervisor mode
 // Include enter
 
+#define SIE_SEIE (1 << 9)
+#define SIE_STIE (1 << 5)
+#define SIE_SSIE (1 << 1)
+
 void enter();
 
 static inline uint32_t get_mstatus(void) {
@@ -25,6 +29,16 @@ static inline void write_mideleg(uint32_t x) {
     asm volatile("csrw mideleg, %0" : : "r" (x));
 }
 
+static inline void write_sie(uint32_t x) {
+    asm volatile("csrw mie, %0" : : "r" (x));
+}
+
+static inline uint32_t get_sie(void) {
+    uint32_t sie;
+    asm volatile("csrr %0, sie" : : "=r" (sie));
+    return sie;
+}
+
 void mstart(void) {
     // Clear the mstatus MPP bits and set them to supervisor mode
     uint32_t mstatus = get_mstatus();
@@ -38,6 +52,19 @@ void mstart(void) {
     write_satp(0);
 
     // All traps are handled in supervisor mode. This can be done by setting
-    // writing to the medeleg and mideleg registers
+    // writing to the medeleg and mideleg registers and the mie registers
     write_medeleg(0xffff);
     write_mideleg(0xffff);
+    uint32_t sie = get_sie();
+    write_sie((((sie | SIE_SSIE) | SIE_STIE) | SIE_SEIE));
+    
+
+}
+
+
+
+
+
+
+
+
