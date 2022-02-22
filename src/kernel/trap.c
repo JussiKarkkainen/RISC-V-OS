@@ -19,6 +19,12 @@ static inline uint32_t get_scause(void) {
     return scause;
 }
 
+static inline uint32_t get_stval(void) {
+    uint32_t stval;
+    asm volatile("csrr %0, stval" :: "=r" (stval));
+    return stval;
+}
+
 static inline void write_stvec(uint32_t ktrapvec) {
     asm volatile("csrw stvec, %0" : : "r" (ktrapvec));
 }
@@ -50,6 +56,7 @@ void ktrap(void) {
     uint32_t sepc = get_sepc();
     uint32_t sstatus = get_sstatus();
     uint32_t scause = get_scause();
+    uint32_t stval = get_stval():
 
     // Make sure interrupt comes from supervisor mode
     if ((sstatus & SSTATUS_SPP) == 0) {
@@ -64,6 +71,8 @@ void ktrap(void) {
     // handle_interrupt deals with device interrupt. If trap is
     // an external interrupt, we call panic() and stop executing
     if (handle_interrupt() == 0) {
+        // Print out register info and panic
+        kprintf("scause: %x\n, sstatus: %x\n, stval: %x\n", scause, sstatus, stval);
         panic("kernel interrupt");
     }
         
