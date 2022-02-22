@@ -1,5 +1,6 @@
 // Setup cpu for supervisor mode
-// Include enter
+
+#include "kernel.c"
 
 #define SIE_SEIE (1 << 9)
 #define SIE_STIE (1 << 5)
@@ -39,6 +40,14 @@ static inline uint32_t get_sie(void) {
     return sie;
 }
 
+static inline void write_pmpaddr0(uint32_t x) {
+    asm volatile("csrw pmpaddr0, %0" : : "r" (x));
+}
+
+static inline void write_sie(uint32_t x) {
+    asm volatile("csrw pmpcfg0, %0" : : "r" (x));
+}
+
 void mstart(void) {
     // Clear the mstatus MPP bits and set them to supervisor mode
     uint32_t mstatus = get_mstatus();
@@ -58,13 +67,15 @@ void mstart(void) {
     uint32_t sie = get_sie();
     write_sie((((sie | SIE_SSIE) | SIE_STIE) | SIE_SEIE));
     
+    // Configure physical memory protection
+    write_pmpaddr0(0xffffffff);
+    write_pmpcfg0(0xf);
+
+    // enable clock interrupts
+    time_init();
+
+    // Jump to enter()
+    asm volatile("mret");
 
 }
-
-
-
-
-
-
-
 
