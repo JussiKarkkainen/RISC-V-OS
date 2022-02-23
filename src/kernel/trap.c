@@ -1,33 +1,6 @@
 #include "trap.h"
 #include "../libc/stdio/panic.c"
 
-static inline uint32_t get_sepc(void) {
-    uint32_t sepc;
-    asm volatile("csrr %0, sepc" : : "=r" (sepc));
-    return sepc;
-}
-
-static inline uint32_t get_sstatus(void) {
-    uint32_t sstatus;
-    asm volatile("csrr %0, sstatus" : : "=r" (sstatus));
-    return sstatus;
-}
-
-static inline uint32_t get_scause(void) {
-    uint32_t scause;
-    asm volatile("csrr %0, scause" : : "=r" (scause));
-    return scause;
-}
-
-static inline uint32_t get_stval(void) {
-    uint32_t stval;
-    asm volatile("csrr %0, stval" :: "=r" (stval));
-    return stval;
-}
-
-static inline void write_stvec(uint32_t ktrapvec) {
-    asm volatile("csrw stvec, %0" : : "r" (ktrapvec));
-}
 
 int handle_interrupt() {
     // Check if external/device interrupt
@@ -88,6 +61,4 @@ void ktrapvec();
 void init_ktrapvec(void) {
     write_stvec((uint32_t)ktrapvec);
 }
-
-
 
