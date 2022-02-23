@@ -48,6 +48,11 @@ static inline void write_sie(uint32_t x) {
     asm volatile("csrw pmpcfg0, %0" : : "r" (x));
 }
 
+static inline uint32_t get_mhartid(void) {
+    uint32_t mhartid;
+    asm volatile("csrr %0, mhartid" : : "=r" (mhartid));
+    return mhartid;
+
 void mstart(void) {
     // Clear the mstatus MPP bits and set them to supervisor mode
     uint32_t mstatus = get_mstatus();
