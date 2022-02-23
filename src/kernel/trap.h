@@ -78,8 +78,23 @@ static inline uint32_t get_stval(void) {
     return stval;
 }
 
-static inline void write_stvec(uint32_t ktrapvec) {
-    asm volatile("csrw stvec, %0" : : "r" (ktrapvec));
+static inline void write_stvec(uint32_t x) {
+    asm volatile("csrw stvec, %0" : : "r" (x));
+}
+
+static inline void write_mscratch(uint32_t x) {
+    asm volatile("csrw mscratch, %0" : : "r" (x));
+}
+
+static inline void write_mtvec(uint32_t x) {
+    asm volatile("csrw mtvec, %0" : : "r" (x));
+}
+
+
+static inline uint32_t get_mie(void) {
+    uint32_t mie;
+    asm volatile("csrr %0, scause" : : "=r" (mie));
+    return mie;
 }
 
 #endif
