@@ -5,6 +5,9 @@ static volatile uart_regs* uart = (uart_regs *)0x10000000;
 
 uart_return uart_configure(uart_init* init) {
     
+    // disable interrupts for configure
+    uart->IER &= 0x00;
+
     // Set word length
     switch (init->word_length) {
         case 5: uart->LCR |= LCR_5BIT;
@@ -17,7 +20,7 @@ uart_return uart_configure(uart_init* init) {
             break;
     }
 
-// set FIFO
+    // set FIFO
     if (init->FIFO == 1) {
         uart->FCR |= FIFO_ENABLE;
     }
@@ -25,13 +28,7 @@ uart_return uart_configure(uart_init* init) {
         return UART_FAIL;
     }
 
-    // Enable interrupts
-    if (init->interrupt_enable == 1) {
-        uart->IER |= IER_ENABLE;
-    }
-    else {
-        return UART_FAIL;
-    }
+    uart->IER |= IER_ENABLE; 
 
     return UART_OK;
 }
