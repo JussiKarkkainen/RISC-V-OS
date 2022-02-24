@@ -2,7 +2,7 @@
 #include "../libc/stdio/panic.c"
 
 
-int handle_interrupt() {
+int handle_device_intr() {
     // Check if external/device interrupt
     uint32_t scause = get_scause();
     if ((scause & INTERRUPT_BIT) == 1 && (scause & EXT_INTERRUPT == 9)) {
@@ -22,6 +22,26 @@ int timer_interrupt() {
 
 void yield_process(void) {
 }
+
+void utrap(void) {
+    
+    // Check if trap comes from user mode
+
+    // send interrupts and exceptions to ktrap
+
+    // save user pc
+
+    // check if syscall and handle with funct
+
+    // check if device interrupt and handle with handle_device_intr()
+
+    // Otherwise kill process
+
+    // Check if timer interrutp 
+   
+    // Call utrapret 
+}
+
 
 
 void ktrap(void) {
@@ -43,7 +63,7 @@ void ktrap(void) {
     // trap can be either device interrupt or exceptions
     // handle_interrupt deals with device interrupt. If trap is
     // an external interrupt, we call panic() and stop executing
-    if (handle_interrupt() == 0) {
+    if (handle_device_intr() == 0) {
         // Print out register info and panic
         kprintf("scause: %x\n, sstatus: %x\n, stval: %x\n", scause, sstatus, stval);
         panic("kernel interrupt");
