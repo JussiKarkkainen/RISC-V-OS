@@ -40,3 +40,25 @@ utrapvec;
     sd t4, 264(a0)
     sd t5, 272(a0)
     sd t6, 280(a0)
+
+    # save a0 to trapframe->a0
+    csrr t0, sscratch
+    sd t0, 112(a0)
+
+    # Load kernel_sp from trapframe->kernel_sp
+    ld sp, 8(a0)
+
+    # load hart_id 
+    ld tp, 32(a0)
+
+    # load address of utrap()
+    ld t0, 16(a0)
+
+    # restore kernel pagetable
+    ld t1, 0(a0)
+    csrw satp, t1
+    sfence.vma zero, zero
+
+    # jump to utrap()
+    jr t0
+
