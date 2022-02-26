@@ -2,16 +2,8 @@
 
 int console_init(void) {
     
-    uart_init config = {
-        .word_length = 8,
-        .FIFO = 1,
-        .interrupt_enable = 1
-        //.baud_rate = 9600          
-    };
+    uart_configure();
 
-    uart_configure(&config);
-    
-    
     write_uart("Type a command to continue\n");
     write_uart("$ ");
     

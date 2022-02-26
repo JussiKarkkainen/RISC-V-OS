@@ -3,12 +3,15 @@
 
 #include <stdint.h>
 
-#define LCR_5BIT 0x0
+#define LCR_DLAB (1 << 7)
 #define LCR_8BIT 0x3
-#define FIFO_ENABLE 0x1
-#define IER_ENABLE 0xf
+#define FIFO_ENABLE (1 << 0)
+#define FIFO_RESET (3 << 1)
+#define IER_ENABLE 0x3
 #define ERROR_BITMASK 0x8e 
 #define DATA_MASK 0xff
+#define PARITY_ENABLE (1 << 3)
+#define LCR_THRE (1 << 5)
 
 typedef volatile struct __attribute__((packed)) {   // Tell compiler to not padd struct
     uint8_t BF;            // Read/Write registers
@@ -36,7 +39,7 @@ typedef struct {
 } uart_init;
 
 
-uart_return uart_configure(uart_init* config);
+uart_return uart_configure(void);
 void uart_putchar(char c);
 void write_uart(char* data);
 uart_return read_uart(char* c);
