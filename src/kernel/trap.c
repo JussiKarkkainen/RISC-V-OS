@@ -24,13 +24,18 @@ void yield_process(void) {
 }
 
 void utrap(void) {
-    
+    uint32_t sstatus = get_sstatus(); 
+    uint32_t scause = get_scause();
+
     // Check if trap comes from user mode
+    if ((sstatus & SSTATUS_SPP) == 0) {
+        panic("trap not from user mdoe");
+    }
 
     // send interrupts and exceptions to ktrap
-
+    write_stvec((uint32_t)ktrapvec);
     // save user pc
-
+    
     // check if syscall and handle with funct
 
     // check if device interrupt and handle with handle_device_intr()
