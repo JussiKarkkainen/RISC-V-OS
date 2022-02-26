@@ -31,8 +31,16 @@ int handle_device_intr() {
     // Check if software/timer interrutp
     else if (scause == SOFTWARE_INTR) {
         
+        if (cpu_id() == 0) {
+            timer_interrupt();
+        }
 
+        // Clear the pending software interrupt        
+        write_sip(read_sip() & CLEAR_SIP_SSIP);
+        return 1;
     }
+    else {
+        return 2;
 }
 
 int timer_interrupt() {
@@ -64,7 +72,6 @@ void utrap(void) {
    
     // Call utrapret 
 }
-
 
 
 void ktrap(void) {

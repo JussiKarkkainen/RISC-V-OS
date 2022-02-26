@@ -6,6 +6,7 @@
 #define INTERRUPT_BIT (1 << 32)
 #define EXT_INTERRUPT 0xff
 #define SOFTWARE_INTR 0x80000001
+#define CLEAR_SIP_SSIP ~2
 
 struct trapframe {
     uint32_t kernel_pagetable;
