@@ -1,13 +1,13 @@
 #include "trap.h"
 #include "../libc/stdio/panic.c"
-
+#include "process.c"
 
 int handle_device_intr() {
     // Check if external/device interrupt
     uint32_t scause = get_scause();
     if ((scause & INTERRUPT_BIT) == 1 && (scause & EXT_INTERRUPT == 9)) {  
         // Interrupt given by PLIC
-        intr_id = plic_read();
+        int intr_id = plic_read();
 
         // Check if interrupt is from uart, disk or neither
         if (intr_id == UART_INTR) {
@@ -31,7 +31,7 @@ int handle_device_intr() {
     // Check if software/timer interrutp
     else if (scause == SOFTWARE_INTR) {
         
-        if (cpu_id() == 0) {
+        if (which_cpu() == 0) {
             timer_interrupt();
         }
 
@@ -44,6 +44,18 @@ int handle_device_intr() {
 }
 
 int timer_interrupt() {
+}
+
+int plic_read(void) {
+}
+
+void uart_intr(void) {
+}
+
+void virtio_disk_intr(void) {
+}
+
+void plic_finished(int intr_id) {
 }
 
 void yield_process(void) {
@@ -65,12 +77,15 @@ void utrap(void) {
     // check if syscall and handle with funct
 
     // check if device interrupt and handle with handle_device_intr()
-
+    if (handle_device_intr() == 2) {
+        kprintf("Unexpexted sstatus in utrap()"); 
     // Otherwise kill process
 
-    // Check if timer interrutp 
+    // Check if timer interrupt 
    
-    // Call utrapret 
+    // Call utrapret
+    utrapret();
+
 }
 
 
@@ -93,7 +108,7 @@ void ktrap(void) {
     // trap can be either device interrupt or exceptions
     // handle_interrupt deals with device interrupt. If trap is
     // an external interrupt, we call panic() and stop executing
-    if (handle_device_intr() == 0) {
+    if (handle_device_intr() == 2) {
         // Print out register info and panic
         kprintf("scause: %x\n, sstatus: %x\n, stval: %x\n", scause, sstatus, stval);
         panic("kernel interrupt");
