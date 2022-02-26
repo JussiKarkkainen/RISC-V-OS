@@ -5,7 +5,7 @@
 #define SSTATUS_SIE (1 << 1)
 #define INTERRUPT_BIT (1 << 32)
 #define EXT_INTERRUPT 0xff
-#define SOFT_INTERRUPT 0x80000001
+#define SOFTWARE_INTR 0x80000001
 
 struct trapframe {
     uint32_t kernel_pagetable;
@@ -132,6 +132,16 @@ static inline uint32_t get_mie(void) {
     uint32_t mie;
     asm volatile("csrr %0, scause" : : "=r" (mie));
     return mie;
+}
+
+static inline uint32_t get_sip(void) {
+    uint32_t sip;
+    asm volatile("csrr %0, sip" : : "=re" (sip));
+    return sip;
+}
+
+static inline void write_sip(uint32_t x) {
+    asm volatile("csrw sip, %0" : : "r" (x));
 }
 
 #endif
