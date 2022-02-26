@@ -1,4 +1,4 @@
-#include "uart.c"
+#include "uart.h"
 
 int console_init(void) {
     

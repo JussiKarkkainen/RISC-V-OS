@@ -54,5 +54,6 @@ SECTIONS
     PROVIDE(rodata_size = rodata_end - rodata_start);
     PROVIDE(data_size = data_end - data_start);
     PROVIDE(bss_size = bss_end - bss_start);
+    PROVIDE(kernel_stack_size = 0x8000);
     }
 
