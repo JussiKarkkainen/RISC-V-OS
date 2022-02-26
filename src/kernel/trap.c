@@ -5,15 +5,33 @@
 int handle_device_intr() {
     // Check if external/device interrupt
     uint32_t scause = get_scause();
-    if ((scause & INTERRUPT_BIT) == 1 && (scause & EXT_INTERRUPT == 9)) {
+    if ((scause & INTERRUPT_BIT) == 1 && (scause & EXT_INTERRUPT == 9)) {  
         // Interrupt given by PLIC
-        // Can be uart or virtio disk interrupt     
-         
+        intr_id = plic_read();
+
+        // Check if interrupt is from uart, disk or neither
+        if (intr_id == UART_INTR) {
+            uart_intr();
+        }
+        else if (intr_id == VIRTIO_DISK) {
+            virtio_disk_intr();
+        }
+        else {
+            kprintf("Device interrupt not recongnized");
+        }
+
+        // Tell PLIC its allowed to send interrutps again
+        if (intr_id) {
+            plic_finished(intr_id);
+        }
+
+        return 0;
     }
   
     // Check if software/timer interrutp
-    else if (scause == SOFT_INTERRUPT) {
+    else if (scause == SOFTWARE_INTR) {
         
+
     }
 }
 
