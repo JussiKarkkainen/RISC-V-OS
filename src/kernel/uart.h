@@ -38,11 +38,13 @@ typedef struct {
     // uint8_t baud_rate;          // Not necessary for QEMU
 } uart_init;
 
-
+// Uart control functions
 uart_return uart_configure(void);
 void uart_putchar(char c);
 void write_uart(char* data);
 uart_return read_uart(char* c);
 
+// Console init function
+int console_init(void);
 
 #endif

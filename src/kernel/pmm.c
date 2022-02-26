@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include "../libc/include/string.h"
-#include "mem.S"
 #include <stdbool.h>
 #include "paging.h"
 

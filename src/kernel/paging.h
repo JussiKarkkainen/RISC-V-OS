@@ -1,7 +1,6 @@
 #ifndef PAGING_H
 #define PAGING_H
 
-#include "mem.S"
 #include <stdint.h>
 
 
