@@ -12,7 +12,7 @@ void enter(void) {
     kpage_init();       // Initilaize kernel pagetable
     init_paging();      // Initialize paging
 //    init_ktrapvec();    // Write ktrapvec addr into stvec to init trap handling
-//    plic_init();        // Setup interrupt controller
-//    plic_init_hart();   // request device interrupts
+    plic_init();        // Setup interrupt controller
+    plic_init_hart();   // request device interrupts
     console_init();     // Start console
 }
