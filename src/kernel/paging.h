@@ -5,7 +5,7 @@
 
 
 extern uint32_t HEAP_START, TEXT_START, RODATA_START, DATA_START,
-                BSS_START, KERNEL_STACK_START, HEAP_SIZE, TEXT_SIZE,
+                BSS_START, BSS_SIZE, KERNEL_STACK_START, HEAP_SIZE, TEXT_SIZE,
                 RODATA_SIZE, DATA_SIZE, KERNEL_STACK_SIZE;
 
 #define PTE_V (1 << 0)
@@ -30,7 +30,7 @@ void free(uint32_t *ptr, int n);
 
 
 // Functions from paging.c
-uint32_t *walk(uint32_t pagetable, uint32_t vir_addr, int alloc);
+uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc);
 int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int permission);
 void kpage_init(void);
 uint32_t *kpagemake(void);

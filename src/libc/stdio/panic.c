@@ -1,6 +1,6 @@
-#include "printf.c"
+#include "../include/stdio.h"
 
-void puts(char *string) {
+void panic(char *string) {
     kprintf("panic: ");
     kprintf(string);
     kprintf("\n");
