@@ -5,7 +5,7 @@
 int handle_device_intr() {
     // Check if external/device interrupt
     uint32_t scause = get_scause();
-    if ((scause & INTERRUPT_BIT) == 1 && (scause & EXT_INTERRUPT == 9)) {  
+    if (((scause & INTERRUPT_BIT) == 1) && ((scause & EXT_INTERRUPT) == 9)) {  
         // Interrupt given by PLIC
         int intr_id = plic_read();
 
@@ -36,7 +36,7 @@ int handle_device_intr() {
         }
 
         // Clear the pending software interrupt        
-        write_sip(read_sip() & CLEAR_SIP_SSIP);
+        write_sip(get_sip() & CLEAR_SIP_SSIP);
         return 1;
     }
     else {
@@ -49,15 +49,14 @@ int timer_interrupt() {
 }
 
 
-void uart_intr(void) {
-}
-
 void virtio_disk_intr(void) {
 }
 
 
 void yield_process(void) {
 }
+
+void ktrapvec();
 
 void utrap(void) {
     uint32_t sstatus = get_sstatus(); 
@@ -86,12 +85,15 @@ void utrap(void) {
     utrapret();
 }
 
+void utrapret(void) {
+}
+
 void ktrap(void) {
 
     uint32_t sepc = get_sepc();
     uint32_t sstatus = get_sstatus();
     uint32_t scause = get_scause();
-    uint32_t stval = get_stval():
+    uint32_t stval = get_stval();
 
     // Make sure interrupt comes from supervisor mode
     if ((sstatus & SSTATUS_SPP) == 0) {

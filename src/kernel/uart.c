@@ -59,6 +59,7 @@ uart_return read_uart(char *c) {
      
     
     return UART_OK;
-    
 }
 
+void uart_intr(void) {
+}

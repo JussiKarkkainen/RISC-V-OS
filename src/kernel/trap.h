@@ -1,12 +1,16 @@
 #ifndef TRAP_H
 #define TRAP_H
 
+#include <stdint.h>
+
 #define SSTATUS_SPP (1 << 8)
 #define SSTATUS_SIE (1 << 1)
-#define INTERRUPT_BIT (1 << 32)
+#define INTERRUPT_BIT (1 << 31)
 #define EXT_INTERRUPT 0xff
 #define SOFTWARE_INTR 0x80000001
 #define CLEAR_SIP_SSIP ~2
+#define UART_INTR 10
+#define VIRTIO_DISK 1
 
 struct trapframe {
     uint32_t kernel_pagetable;
@@ -49,7 +53,7 @@ struct trapframe {
 
 static inline uint32_t get_mstatus(void) {
     uint32_t mstatus;
-    asm volatile("csrr %0, mstatus" : : "=r" (mstatus));
+    asm volatile("csrr %0, mstatus" : "=r" (mstatus));
     return mstatus;
 }
 
@@ -75,7 +79,7 @@ static inline void write_sie(uint32_t x) {
 
 static inline uint32_t get_sie(void) {
     uint32_t sie;
-    asm volatile("csrr %0, sie" : : "=r" (sie));
+    asm volatile("csrr %0, sie" : "=r" (sie));
     return sie;
 }
 
@@ -89,31 +93,31 @@ static inline void write_pmpcfg0(uint32_t x) {
 
 static inline uint32_t get_mhartid(void) {
     uint32_t mhartid;
-    asm volatile("csrr %0, mhartid" : : "=r" (mhartid));
+    asm volatile("csrr %0, mhartid" : "=r" (mhartid));
     return mhartid;
-
+}
 
 static inline uint32_t get_sepc(void) {
     uint32_t sepc;
-    asm volatile("csrr %0, sepc" : : "=r" (sepc));
+    asm volatile("csrr %0, sepc" : "=r" (sepc));
     return sepc;
 }
 
 static inline uint32_t get_sstatus(void) {
     uint32_t sstatus;
-    asm volatile("csrr %0, sstatus" : : "=r" (sstatus));
+    asm volatile("csrr %0, sstatus" : "=r" (sstatus));
     return sstatus;
 }
 
 static inline uint32_t get_scause(void) {
     uint32_t scause;
-    asm volatile("csrr %0, scause" : : "=r" (scause));
+    asm volatile("csrr %0, scause" : "=r" (scause));
     return scause;
 }
 
 static inline uint32_t get_stval(void) {
     uint32_t stval;
-    asm volatile("csrr %0, stval" :: "=r" (stval));
+    asm volatile("csrr %0, stval" : "=r" (stval));
     return stval;
 }
 
@@ -131,13 +135,13 @@ static inline void write_mtvec(uint32_t x) {
 
 static inline uint32_t get_mie(void) {
     uint32_t mie;
-    asm volatile("csrr %0, scause" : : "=r" (mie));
+    asm volatile("csrr %0, scause" : "=r" (mie));
     return mie;
 }
 
 static inline uint32_t get_sip(void) {
     uint32_t sip;
-    asm volatile("csrr %0, sip" : : "=re" (sip));
+    asm volatile("csrr %0, sip" : "=r" (sip));
     return sip;
 }
 
