@@ -1,6 +1,6 @@
 #include "trap.h"
-#include "../libc/stdio/panic.c"
-#include "process.c"
+#include "../libc/include/stdio.h"
+#include "process.h"
 
 int handle_device_intr() {
     // Check if external/device interrupt
@@ -41,13 +41,13 @@ int handle_device_intr() {
     }
     else {
         return 2;
+    }
+
 }
 
 int timer_interrupt() {
 }
 
-int plic_read(void) {
-}
 
 void uart_intr(void) {
 }
@@ -55,8 +55,6 @@ void uart_intr(void) {
 void virtio_disk_intr(void) {
 }
 
-void plic_finished(int intr_id) {
-}
 
 void yield_process(void) {
 }
@@ -78,16 +76,15 @@ void utrap(void) {
 
     // check if device interrupt and handle with handle_device_intr()
     if (handle_device_intr() == 2) {
-        kprintf("Unexpexted sstatus in utrap()"); 
+        kprintf("Unexpexted sstatus in utrap()");
+    } 
     // Otherwise kill process
 
     // Check if timer interrupt 
    
     // Call utrapret
     utrapret();
-
 }
-
 
 void ktrap(void) {
 
@@ -105,7 +102,7 @@ void ktrap(void) {
         panic("interrupts are enabled");
     }
 
-    // trap can be either device interrupt or exceptions
+    // trap can be either device interrupt or exceptions.
     // handle_interrupt deals with device interrupt. If trap is
     // an external interrupt, we call panic() and stop executing
     if (handle_device_intr() == 2) {
