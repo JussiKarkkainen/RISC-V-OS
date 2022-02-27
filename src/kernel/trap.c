@@ -1,6 +1,7 @@
 #include "trap.h"
 #include "../libc/include/stdio.h"
 #include "process.h"
+#include "regs.h"
 
 int handle_device_intr() {
     // Check if external/device interrupt
@@ -17,7 +18,7 @@ int handle_device_intr() {
             virtio_disk_intr();
         }
         else {
-            kprintf("Device interrupt not recongnized");
+            kprintf("Device interrupt not recognized");
         }
 
         // Tell PLIC its allowed to send interrutps again
