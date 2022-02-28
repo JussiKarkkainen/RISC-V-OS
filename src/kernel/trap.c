@@ -29,7 +29,7 @@ int handle_device_intr() {
         return 0;
     }
   
-    // Check if software/timer interrutp
+    // Check if software/timer interrupt
     else if (scause == SOFTWARE_INTR) {
         
         if (which_cpu() == 0) {
@@ -72,8 +72,16 @@ void utrap(void) {
     write_stvec((uint32_t)ktrapvec);
     // save user pc
     
-    // check if syscall and handle with funct
+    // check if syscall
+    if (scause == 8) {
+        // Return to next instruction 
+        trapframe->saved_pc += 4;
+        
+        // enable interrupts
+        enable_intr();
 
+        handle_syscall();
+    }
     // check if device interrupt and handle with handle_device_intr()
     if (handle_device_intr() == 2) {
         kprintf("Unexpexted sstatus in utrap()");

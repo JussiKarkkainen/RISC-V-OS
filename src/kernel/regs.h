@@ -2,6 +2,7 @@
 #define REGS_H
 
 #include <stdint.h>
+#include "trap.h"
 
 static inline uint32_t get_mstatus(void) {
     uint32_t mstatus;
@@ -61,6 +62,10 @@ static inline uint32_t get_sstatus(void) {
     return sstatus;
 }
 
+static inline void write_sstatus(uint32_t x) {
+    asm volatile("csrw sstatus, %0" : : "r" (x));
+}
+
 static inline uint32_t get_scause(void) {
     uint32_t scause;
     asm volatile("csrr %0, scause" : "=r" (scause));
@@ -99,6 +104,10 @@ static inline uint32_t get_sip(void) {
 
 static inline void write_sip(uint32_t x) {
     asm volatile("csrw sip, %0" : : "r" (x));
+}
+
+static inline void enable_intr(void) {
+    write_sstatus(get_sstatusi() | SSTATUS_SIE);
 }
 
 #endif
