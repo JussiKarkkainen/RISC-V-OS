@@ -31,7 +31,8 @@ int handle_device_intr() {
   
     // Check if software/timer interrupt
     else if (scause == SOFTWARE_INTR) {
-        
+        // Device timer interrupts get turned into software interrupts
+
         if (which_cpu() == 0) {
             timer_interrupt();
         }
@@ -48,11 +49,6 @@ int handle_device_intr() {
 
 int timer_interrupt() {
 }
-
-
-void virtio_disk_intr(void) {
-}
-
 
 void yield_process(void) {
 }
