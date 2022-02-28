@@ -11,6 +11,7 @@
 #define CLEAR_SIP_SSIP ~2
 #define UART_INTR 10
 #define VIRTIO_DISK 1
+#define SSTATUS_SIE_CLEAR 0xFFFFFFFD
 
 struct trapframe {
     uint32_t kernel_pagetable;

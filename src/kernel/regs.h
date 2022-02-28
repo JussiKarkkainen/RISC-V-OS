@@ -110,4 +110,8 @@ static inline void enable_intr(void) {
     write_sstatus(get_sstatusi() | SSTATUS_SIE);
 }
 
+static inline void disable_intr(void) {
+    write_sstatus(get_sstatus() & SSTATUS_SIE_CLEAR);
+}
+
 #endif
