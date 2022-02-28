@@ -3,6 +3,18 @@
 
 #include <stdint.h>
 
+struct cpu {
+    struct process *proc;
+    struct context context;
+    int depth_lock_intr_disable;
+    int intr_prev_state;
+};
+
+struct process {
+    
+};
+
+
 struct trapframe {
     uint32_t kernel_pagetable;
     uint32_t kernel_sp;
@@ -41,6 +53,10 @@ struct trapframe {
     uint32_t t5;
     uint32_t t6;
 };
+
+struct context {
+};
+
 
 static inline uint32_t read_tp(void); 
 int which_cpu(void); 
