@@ -62,6 +62,7 @@ void ktrapvec();
 void utrap(void) {
     uint32_t sstatus = get_sstatus(); 
     uint32_t scause = get_scause();
+    int intr_result;
 
     // Check if trap comes from user mode
     if ((sstatus & SSTATUS_SPP) == 0) {
@@ -71,25 +72,25 @@ void utrap(void) {
     // send interrupts and exceptions to ktrap
     write_stvec((uint32_t)ktrapvec);
     // save user pc
-    
+    process->trapframe->saved_pc = read_sepc(); 
     // check if syscall
     if (scause == 8) {
         // Return to next instruction 
-        trapframe->saved_pc += 4;
+        process->trapframe->saved_pc += 4;
         
-        // enable interrupts
         enable_intr();
 
         handle_syscall();
     }
     // check if device interrupt and handle with handle_device_intr()
-    if (handle_device_intr() == 2) {
+    if ((intr_result = handle_device_intr()) == 2) {
         kprintf("Unexpexted sstatus in utrap()");
     } 
     // Otherwise kill process
-
+    process->trapframe->killed = 1;
     // Check if timer interrupt 
-   
+    if (intr_result = 1) {
+        yield_process(); 
     // Call utrapret
     utrapret();
 }
@@ -103,6 +104,7 @@ void ktrap(void) {
     uint32_t sstatus = get_sstatus();
     uint32_t scause = get_scause();
     uint32_t stval = get_stval();
+    int intr_result;
 
     // Make sure interrupt comes from supervisor mode
     if ((sstatus & SSTATUS_SPP) == 0) {
@@ -116,14 +118,13 @@ void ktrap(void) {
     // trap can be either device interrupt or exceptions.
     // handle_interrupt deals with device interrupt. If trap is
     // an external interrupt, we call panic() and stop executing
-    if (handle_device_intr() == 2) {
+    if ((intr_result = handle_device_intr()) == 2) {
         // Print out register info and panic
         kprintf("scause: %x\n, sstatus: %x\n, stval: %x\n", scause, sstatus, stval);
         panic("kernel interrupt");
     }
         
-
-    if (timer_interrupt() == 1) {
+    if (intr_result == 1) {
         yield_process();
     }
 }
