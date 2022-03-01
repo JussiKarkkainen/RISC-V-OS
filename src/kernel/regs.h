@@ -114,4 +114,9 @@ static inline void disable_intr(void) {
     write_sstatus(get_sstatus() & SSTATUS_SIE_CLEAR);
 }
 
+static inline int get_intr(void) {
+    uint32_t sstatus = get_sstatus();
+    return (sstatus & SSTATUS_SIE);
+}
+
 #endif
