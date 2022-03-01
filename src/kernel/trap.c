@@ -17,8 +17,8 @@ int handle_device_intr() {
         else if (intr_id == VIRTIO_DISK) {
             virtio_disk_intr();
         }
-        else {
-            kprintf("Device interrupt not recognized");
+        else if (intr_id) {
+            kprintf("Device interrupt not recognizedc: %d\n", intr_id);
         }
 
         // Tell PLIC its allowed to send interrutps again
@@ -67,12 +67,17 @@ void utrap(void) {
 
     // send interrupts and exceptions to ktrap
     write_stvec((uint32_t)ktrapvec);
+
+    // get process struct
+    struct process *proc = get_process_struct():
+
     // save user pc
-    process->trapframe->saved_pc = read_sepc(); 
+    proc->trapframe->saved_pc = read_sepc(); 
+    
     // check if syscall
     if (scause == 8) {
         // Return to next instruction 
-        process->trapframe->saved_pc += 4;
+        proc->trapframe->saved_pc += 4;
         
         enable_intr();
 
@@ -80,13 +85,15 @@ void utrap(void) {
     }
     // check if device interrupt and handle with handle_device_intr()
     if ((intr_result = handle_device_intr()) == 2) {
-        kprintf("Unexpexted sstatus in utrap()");
+        kprintf("Unexpexted scause in utrap(), scause: %x\n, sepc: %x\n, stval: %x\n", 
+                get_scause(), get_sepc(), get_stval());
     } 
     // Otherwise kill process
-    process->trapframe->killed = 1;
+    proc->trapframe->killed = 1;
     // Check if timer interrupt 
     if (intr_result = 1) {
         yield_process(); 
+    
     // Call utrapret
     utrapret();
 }
@@ -122,6 +129,10 @@ void ktrap(void) {
         
     if (intr_result == 1) {
         yield_process();
+
+    // Restore trap registers if changed by yield_process()
+    write_sepc(sepc);
+    write_sstatus(sstatus);
     }
 }
 
