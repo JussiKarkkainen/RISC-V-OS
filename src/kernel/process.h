@@ -3,12 +3,17 @@
 
 #include <stdint.h>
 
+#define MAXCPUS 8
+
 struct cpu {
     struct process *proc;
     struct context context;
     int depth_lock_intr_disable;
     int intr_prev_state;
 };
+
+// This os supports maximum 8 cpu cores, make cpu struct for all
+struct cpu cpus[MAXCPUS];
 
 struct process {
     
