@@ -62,3 +62,12 @@ utrapvec;
     # jump to utrap()
     jr t0
 
+
+# utrapreturn is called from utrapret() in trap.c
+# Its job is to switch from kernel to user mode
+
+utrapreturn:
+
+
+
+
