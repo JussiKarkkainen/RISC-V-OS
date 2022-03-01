@@ -3,7 +3,17 @@
 // Functions for matched interrupt enabling ad disabling
 
 void lock_intr_enable(void) {
-
+    struct cpu *c = get_cpu_struct();
+    if (get_intr()) {
+        panic("lock_intr_enable");
+    }
+    if (c->depth_lock_intr_disable < 1) {
+        panic("lock_intr_enablei, intr depth");
+    }
+    c->depth_lock_intr_disable -= 1;
+    if ((c->depth_lock_intr_disable == 0) && (c->depth_lock_intr_disable)) {
+        enable_intr();
+    }
 }
 
 void lock_intr_disable(void) {
