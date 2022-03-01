@@ -99,6 +99,27 @@ void utrap(void) {
 }
 
 void utrapret(void) {
+
+    struct process *proc = get_process_struct();
+    disable_intr();
+    
+    // Send traps to utrapvec
+    write_stvec(UTRAPVEC);
+    
+    // Utrapvec will need these register values
+    proc->trapframe->kernel_satp = get_satp();         
+    proc->trapframe->kernel_sp = proc->kernel_stack + 4096;
+    proc->trapframe->kernel_trap = (uint32_t)usertrap;
+    proc->trapframe->hartid = get_tp();
+    
+    // Set previous privilige mode to user
+    uint32_t sstatus = get_sstatus();
+    // Clear SIE and set SPIE
+    write_sstatus(((sstatus & SSTATUS_SIE_CLEAR) | SSTATUS_SPIE));
+
+    // Set exception program counter to saved user pc
+    write_sepc(proc->trapframe->saved_pc);
+ 
 }
 
 void ktrap(void) {

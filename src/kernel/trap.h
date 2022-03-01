@@ -5,6 +5,7 @@
 
 #define SSTATUS_SPP (1 << 8)
 #define SSTATUS_SIE (1 << 1)
+#define SSTATUS_SPIE (1 << 5)
 #define INTERRUPT_BIT (1 << 31)
 #define EXT_INTERRUPT 0xff
 #define SOFTWARE_INTR 0x80000001
