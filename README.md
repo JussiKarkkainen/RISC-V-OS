@@ -1,6 +1,6 @@
 # RISC-V-OS
 
-A simple operating system based on [MIT's Xv6](https://pdos.csail.mit.edu/6.S081/2020/xv6/book-riscv-rev1.pdf) with 
+A simple operating system loosely based on [MIT's Xv6](https://pdos.csail.mit.edu/6.S081/2020/xv6/book-riscv-rev1.pdf) with 
 a few additional features such as a TCP/IP stack. Designed to run on 32-bit RISC-V. 
 The OS is developed using [QEMUs virt](https://www.qemu.org/docs/master/system/riscv/virt.html) board, but future
 versions will run on real hardware.
@@ -27,7 +27,7 @@ cd RISC-V-OS
 # Specification
 ## IO
 - Main input-output goes through the NS16550A UART of the virt board.
-  Even though QEMU seems to work fine without initialization ```kernel/arch/riscv/uart.c``` first 
+  Even though QEMU seems to work fine without initialization ```kernel/uart.c``` first 
   configures the UART and gives write and read functions that are used to make
   a simple console.
 
