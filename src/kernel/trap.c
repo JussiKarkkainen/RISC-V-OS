@@ -3,6 +3,8 @@
 #include "process.h"
 #include "regs.h"
 
+struct spinlock ticklock;
+
 int handle_device_intr() {
     // Check if external/device interrupt
     uint32_t scause = get_scause();
@@ -31,8 +33,8 @@ int handle_device_intr() {
   
     // Check if software/timer interrupt
     else if (scause == SOFTWARE_INTR) {
+        
         // Device timer interrupts get turned into software interrupts
-
         if (which_cpu() == 0) {
             timer_interrupt();
         }
