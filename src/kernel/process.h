@@ -15,8 +15,19 @@ struct cpu {
 // This os supports maximum 8 cpu cores, make cpu struct for all
 struct cpu cpus[MAXCPUS];
 
+enum proc_state {
+    UNUSED,
+    USED, 
+    SLEEPING,
+    RUNNABLE, 
+    RUNNING,
+    ZOMBIE
+};
+
 struct process {
     
+    enum proc_state state;
+
 };
 
 
