@@ -4,6 +4,7 @@
 // Struct to describe whether struct is locked
 struct spinlock {
     unsigned int locked;
+    struct cpu *cpu;
 };
 
 
