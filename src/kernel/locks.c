@@ -1,12 +1,11 @@
 #include "regs.h"
-
-
+#include "locks.h"
 
 void acquire_lock(struct spinlock *lock) {
     lock_intr_disable();
 
     // Check if current cpu is holding the lock
-    int current_holdr = (lock->locked && lk->cpu = get_cpu_struct());
+    int current_holdr = (lock->locked && (lock->cpu = get_cpu_struct()));
     if (current_holdr) {
         panic("acquire_lock");
     }
@@ -29,7 +28,22 @@ void acquire_lock(struct spinlock *lock) {
     lk->cpu = get_cpu_struct();
 }
 
+void release_lock(struct lock *lock) {
+    // If current cpu doesn't have the lock, panic
+    int current_holdr = (lock->locked && (lock-cpu = get_cpu_struct()));
+    if (!current_holdr) {
+        panic("release_lock");
+    }
+    
+    // Tell compiler and preprocessor to ensure, that the critical section's 
+    // memory references happen strictly after the lock is acquired.
+    __sync_synchronize();
 
+    // Same as lock->locked = 0, except its atomic 
+    __sync_lock_release(&lock->locked);
+
+    lock_intr_disable();
+}
 
 // Functions for matched interrupt enabling ad disabling
 void lock_intr_enable(void) {
