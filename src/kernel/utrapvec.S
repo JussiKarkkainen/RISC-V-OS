@@ -67,7 +67,50 @@ utrapvec;
 # Its job is to switch from kernel to user mode
 
 utrapreturn:
+    
+    # Switch to a user pagetable
+    csrw satp, a1
+    sfence.vma zero, zero
 
+    # Put a0 to sscratch so we can swap it with trapframe
+    lw t0, 112(a0)
+    csrw sscratch, t0
 
+    # restore registers
+    lw ra, 40(a0)
+    lw sp, 48(a0)
+    lw gp, 56(a0)
+    lw tp, 64(a0)
+    lw t0, 72(a0)
+    lw t1, 80(a0)
+    lw t2, 88(a0)
+    lw s0, 96(a0)
+    lw s1, 104(a0)
+    lw a1, 120(a0)
+    lw a2, 128(a0)
+    lw a3, 136(a0)
+    lw a4, 144(a0)
+    lw a5, 152(a0)
+    lw a6, 160(a0)
+    lw a7, 168(a0)
+    lw s2, 176(a0)
+    lw s3, 184(a0)
+    lw s4, 192(a0)
+    lw s5, 200(a0)
+    lw s6, 208(a0)
+    lw s7, 216(a0)
+    lw s8, 224(a0)
+    lw s9, 232(a0)
+    lw s10, 240(a0)
+    lw s11, 248(a0)
+    lw t3, 256(a0)
+    lw t4, 264(a0)
+    lw t5, 272(a0)
+    lw t6, 280(a0)
 
+    # Restore a0
+    csrrw a0, sscratch, a0
+
+    # Return to user mode
+    sret
 
