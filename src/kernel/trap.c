@@ -47,7 +47,12 @@ int handle_device_intr() {
 
 }
 
-int timer_interrupt() {
+int timer_interrupt(void) {
+    
+    acquire_lock(&ticklock);
+    ticks++;
+    wakeup(&ticks);
+    release_lock(&ticklock);
 }
 
 void yield_process(void) {
