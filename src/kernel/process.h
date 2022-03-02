@@ -26,8 +26,21 @@ enum proc_state {
 
 struct process {
     
+    struct spinlock lock;
+    
     enum proc_state state;
+    int killed;
+    int exit_state;
+    int process_id;
 
+    struct proc *parent;
+    
+    uint32_t kernel_stack;          // Adress of kernel stack
+    uint32_t mem_size;
+    uint32_t *pagetable;            // User page table
+    struct trapframe *trapframe;
+    struct context context;
+    
 };
 
 
