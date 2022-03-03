@@ -40,7 +40,7 @@ struct process {
     uint32_t *pagetable;            // User page table
     struct trapframe *trapframe;
     struct context context;
-    
+    char name[16];    
 };
 
 
