@@ -1,6 +1,14 @@
 #include <stdint.h>
 #include "process.h"
 
+void yield_process(void) {
+    struct process *proc = fet_process_struct();
+    acquire_lock(&proc->lock);
+    proc->state = RUNNABLE;
+    scheduler();
+    release(&proc->lock);
+}
+
 static inline uint32_t read_tp(void) {
     uint32_t tp;
     asm volatile("mv %0, tp" : "=r" (tp));

@@ -57,9 +57,6 @@ int timer_interrupt(void) {
     release_lock(&ticklock);
 }
 
-void yield_process(void) {
-}
-
 void ktrapvec();
 
 void utrap(void) {
