@@ -2,6 +2,15 @@
 #include "process.h"
 
 
+// This is the scheduler for CPUS. Its called from enter()
+// and runs in an infinite loop. 
+// 1. Choose process to run
+// 2. call transfer() to start running that process
+// 3. Transfer eventually returns control
+void cpu_scheduler(void) {
+}
+
+
 void scheduler(void) {
     int intr_prev_state;
     struct process *proc = get_process_struct();
