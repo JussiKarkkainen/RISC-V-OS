@@ -45,6 +45,12 @@ void release_lock(struct lock *lock) {
     lock_intr_disable();
 }
 
+int is_holding(struct spinlock *lock) {
+    int r;
+    r = (lock->locked && lock->cpu == get_cpu_struct());
+    return r;
+}
+
 void acquire_sleeplock(struct sleeplock *lock) {
     
     acquire_lock(&lock-lock);
