@@ -2,8 +2,8 @@
 # Takes two context structs(old and new) as inputs,
 # saves current regs in old and loads from new
 
-.globl switch
-switch:
+.globl transfer
+transfer:
     sw ra, 0(a0)
     sw sp, 8(a0)
     sw s0, 16(a0)

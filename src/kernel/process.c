@@ -1,6 +1,29 @@
 #include <stdint.h>
 #include "process.h"
 
+
+void scheduler(void) {
+    int intr_prev_state;
+    struct process *proc = get_process_struct();
+
+    if (is_holding) {
+        panic("scheduler, is_holding");
+    }
+    if (get_cpu_struct()->depth_lock_intr_disable != 1) {
+        panic("scheduler, depth_lock_intr_disable");
+    }
+    if (p->state == RUNNING) {
+        panic("scheduler, running process")
+    }
+    if (get_intr()) {
+        panic("scheduler, interrupts");
+    }
+
+    intr_prev_state = get_cpu_struct->intr_prev_state;
+    transfer(&proc->context, &get_cpu_struct()->context);
+    get_cpu_struct()->depth_lock_intr_disable = depth_lock_intr_disable;
+}
+
 void yield_process(void) {
     struct process *proc = fet_process_struct();
     acquire_lock(&proc->lock);
