@@ -57,8 +57,6 @@ int timer_interrupt(void) {
     release_lock(&ticklock);
 }
 
-void ktrapvec();
-
 void utrap(void) {
     uint32_t sstatus = get_sstatus(); 
     uint32_t scause = get_scause();
@@ -163,6 +161,9 @@ void ktrap(void) {
 
 void ktrapvec();
 
+void init_trapvec(void) {
+    initlock(&ticklock, "timer lock");
+}
 
 void init_ktrapvec(void) {
     write_stvec((uint32_t)ktrapvec);

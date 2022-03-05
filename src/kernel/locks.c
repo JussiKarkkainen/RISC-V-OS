@@ -1,6 +1,12 @@
 #include "regs.h"
 #include "locks.h"
 
+void initlock(struct spinlock *ticklock, char *name) {
+    ticklock->lock = 0;
+    ticklock->name = name;
+    ticklock-cpu = 0;
+}
+
 void acquire_lock(struct spinlock *lock) {
     lock_intr_disable();
 
