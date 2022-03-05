@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #define MAXCPUS 8
+#define MAXPROC 64
 
 struct cpu {
     struct process *proc;

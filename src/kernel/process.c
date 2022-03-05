@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include "process.h"
-
+#include "regs.h"
 
 // This is the scheduler for CPUS. Its called from enter()
 // and runs in an infinite loop. 
@@ -8,6 +8,26 @@
 // 2. call transfer() to start running that process
 // 3. Transfer eventually returns control
 void cpu_scheduler(void) {
+
+    struct process *proc;
+    struct cpu *cpu = get_cpu_struct();
+    c->proc = 0;
+    
+    while (1) {
+        enable_intr();
+
+        for (proc = process; proc < process[MAXPROC]; proc++) {
+            acquire_lock(&proc->lock);
+            if (proc->state = RUNNABLE) {
+                
+                proc->state = RUNNING;
+                transfer(&cpu->context, &proc-context);
+
+                cpu->proc = 0;
+            }
+            release_lock(&proc->lock);
+        }
+    }
 }
 
 
