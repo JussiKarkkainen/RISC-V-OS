@@ -2,6 +2,15 @@
 #include "process.h"
 #include "regs.h"
 
+
+void sleep(void) {
+}
+
+
+void wakeup(void) {
+}
+
+
 // This is the scheduler for CPUS. Its called from enter()
 // and runs in an infinite loop. 
 // 1. Choose process to run
@@ -61,6 +70,7 @@ void yield_process(void) {
     release(&proc->lock);
 }
 
+// tp register contains the current hartid
 static inline uint32_t read_tp(void) {
     uint32_t tp;
     asm volatile("mv %0, tp" : "=r" (tp));

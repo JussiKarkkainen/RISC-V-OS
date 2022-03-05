@@ -30,6 +30,7 @@ struct process {
     struct spinlock lock;
     
     enum proc_state state;
+    void *sleep_channel;
     int killed;
     int exit_state;
     int process_id;
