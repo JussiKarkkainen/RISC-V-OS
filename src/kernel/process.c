@@ -3,7 +3,21 @@
 #include "regs.h"
 
 
-void sleep(void) {
+void sleep(void *sleep_channel, struct spinlock *lock) {
+    struct process *proc = get_process_struct();
+    
+    acquire_lock(&proc->lock);
+    release_lock(lock);
+    
+    // Put process to sleep
+    proc->sleep_channel = sleep_channel
+    proc->state = SLEEPING;
+
+    scheduler();
+
+    proc->sleep_channel = 0;
+    release_lock(&proc->lock);
+    acquire_lock(lock);
 }
 
 // Wake up processes sleeping on sleep channel
