@@ -6,10 +6,20 @@
 void sleep(void) {
 }
 
+// Wake up processes sleeping on sleep channel
+void wakeup(void *sleep_channel) {
+    struct process *proc;
 
-void wakeup(void) {
+    for (proc = process; proc < &process[MAXPROC]; proc++) {
+        if (proc != get_process_struct()) {
+            acquire_lock(proc->lock);
+            if (proc->state == SLEEPING && proc->sleep_channel == sleep_channel) {
+                proc->state = RUNNABLE;
+            }
+            release_lock(&proc->lock);
+        }
+    }
 }
-
 
 // This is the scheduler for CPUS. Its called from enter()
 // and runs in an infinite loop. 
