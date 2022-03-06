@@ -140,13 +140,13 @@ int copyto(uint32_t *pagetable, char *dst, uint32_t srcaddr, int len) {
         if (pa == 0) {
             return -1;
         }
-        n = PGESIZE - (srcaddr - va),
+        n = PGESIZE - (srcaddr - va);
         if (n > len) {
             n = len;
         }
         memmove(dst, (void *)(pa + (srcaddr - va)), n);
 
-        len -= 1;
+        len -= n;
         dst += n;
         srcva = va + PGESIZE;
     }
@@ -156,7 +156,25 @@ int copyto(uint32_t *pagetable, char *dst, uint32_t srcaddr, int len) {
 // Copy len amount of bytes to dstaddr from src in a given pagetable
 // returns 0 on success and -1 for failure
 int copyout(uint32_t *pagetable, char *src, uint32_t dstaddr, int len) {
+    uint32_t n, va, pa;
 
+    while(len > 0) {
+        va = (dstaddr & ~(PGESIZE - 1));
+        pa = fetch_pa_addr(pagetbale, va);
+        if (pa == 0) {
+            return 0;
+        }
+        n = PGESIZE - (dstaddr - va);
+        if (n > len) {
+            n = len;
+        }
+        memmove((void *)(pa + (dstaddr - va)), src, n);
+
+        len -= n;
+        src += n;
+        dstaddr = va + PGESIZE;
+    }
+    return 0;
 }
 
 
