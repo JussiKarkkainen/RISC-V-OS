@@ -1,4 +1,5 @@
 #include "uart.h"
+#include "locks.h"
 
 static volatile uart_regs* uart = (uart_regs *)0x10000000;
 
@@ -27,6 +28,24 @@ uart_return uart_configure(void) {
     uart->IER |= IER_ENABLE; 
 
     return UART_OK;
+}
+
+volatile int panicked = 0;
+
+void uart_putc(int c) {
+    
+    lock_intr_disable();
+
+    if (panicked) {
+        while(1) {
+            ;
+        }
+    }
+    while ((uart->LSR & (1 << 5)) == 0) {
+        ;
+    }
+    uart->BF = c;
+    lock_intr_enable();
 }
 
 
