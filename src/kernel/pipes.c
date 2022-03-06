@@ -23,8 +23,38 @@ int pipewrite(struct pipe *p, int n, uint32_t addr) {
             i++;
             }
         }
-    }
+        wakeup(&p->num_read);
+        release_lock(p->lock);
+
+        return i;
+    }   
 }
 
+int piperead(struct pipe *p, int n, uint32_t addr) {
+    
+    int i;
+    struct process *proc = get_process_struct();
+    char ch;
 
+    acquire_loc(&p->lock);
+    while (p->num_read == p->num_write && p->write_open) {
+       if (proc->killed) {
+           release_lock(&p->lock);
+           return -1;
+        }
+        sleep(&p->num_read, &p->lock);
+    }
+    for (i = 0; i < n; i++) {
+        if (p->num_read == p->num_write) {
+            break;
+        }
+        ch = p->data[p->num_read++ % PIPESIZE];
+        if (copyout(proc->pagetable, addr + i, &ch, 1) == -1) {
+            break;
+        }
+    }
+    wakeup(p->num_write);
+    release_lock(&p->lock);
+    return i;
+}
 
