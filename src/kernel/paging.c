@@ -1,11 +1,7 @@
 #include <stdint.h>
 #include "paging.h"
 #include "../libc/include/stdio.h"
-
-/*
-extern uint32_t HEAP_START, TEXT_START, RODATA_START, DATA_START,
-                BSS_START, KERNEL_STACK_START;
-*/
+#include "../libc/include/string.h"
 
 uint32_t *kpagetable;
 
@@ -109,19 +105,18 @@ int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, i
     return 0;
 }
 
-// 
-uint32_t fetch_pa_addr(uint32_t *pagetable, uin32_t va) {
-    uint32_t *pte,
+uint32_t fetch_pa_addr(uint32_t *pagetable, uint32_t va) {
+    uint32_t *pte;
     uint32_t pa;
 
     pte = walk(pagetable, va, 0);
-    if (*pte = 0) {
+    if (*pte == 0) {
         return 0;
     }
-    if (*pte & PTE_V == 0) {
+    if ((*pte & PTE_V) == 0) {
         return 0;
     }
-    if (*pte & PTE_U == 0) {
+    if ((*pte & PTE_U) == 0) {
         return 0;
     }
     pa = ((*pte >> 10) << 12);
@@ -131,12 +126,12 @@ uint32_t fetch_pa_addr(uint32_t *pagetable, uin32_t va) {
 
 // Copies len amount of bytes to dst from virtual address srcaddr
 // in a given pagetable. Returns 0 on success and -1 for failure
-int copyto(uint32_t *pagetable, char *dst, uint32_t srcaddr, int len) {
+int copyto(uint32_t *pagetable, char *dst, uint32_t srcaddr, uint32_t len) {
     uint32_t n, va, pa;
 
     while (len > 0) {
         va = (srcaddr & ~(PGESIZE - 1));
-        pa = fetch_ap_addr(pagetable, va);
+        pa = fetch_pa_addr(pagetable, va);
         if (pa == 0) {
             return -1;
         }
@@ -148,19 +143,19 @@ int copyto(uint32_t *pagetable, char *dst, uint32_t srcaddr, int len) {
 
         len -= n;
         dst += n;
-        srcva = va + PGESIZE;
+        srcaddr = va + PGESIZE;
     }
     return 0;
 }
 
 // Copy len amount of bytes to dstaddr from src in a given pagetable
 // returns 0 on success and -1 for failure
-int copyout(uint32_t *pagetable, char *src, uint32_t dstaddr, int len) {
+int copyout(uint32_t *pagetable, char *src, uint32_t dstaddr, uint32_t len) {
     uint32_t n, va, pa;
 
     while(len > 0) {
         va = (dstaddr & ~(PGESIZE - 1));
-        pa = fetch_pa_addr(pagetbale, va);
+        pa = fetch_pa_addr(pagetable, va);
         if (pa == 0) {
             return 0;
         }
