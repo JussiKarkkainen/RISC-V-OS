@@ -12,6 +12,7 @@ extern uint32_t HEAP_START, TEXT_START, RODATA_START, DATA_START,
 #define PTE_R (1 << 1)
 #define PTE_X (1 << 3)
 #define PTE_W (1 << 2)
+#define PTE_U (1 << 4)
 #define PGEOFFSET 12
 #define VPNMASK 0x3ff
 #define PGESIZE (1 << 12)
