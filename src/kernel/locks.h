@@ -15,4 +15,7 @@ struct sleeplock {
     int process_id;
 };
 
+void lock_intr_enable(void);
+void lock_intr_disable(void);
+
 #endif
