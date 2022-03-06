@@ -109,6 +109,26 @@ int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, i
     return 0;
 }
 
+// 
+uint32_t fetch_pa_addr(uint32_t *pagetable, uin32_t va) {
+    uint32_t *pte,
+    uint32_t pa;
+
+    pte = walk(pagetable, va, 0);
+    if (*pte = 0) {
+        return 0;
+    }
+    if (*pte & PTE_V == 0) {
+        return 0;
+    }
+    if (*pte & PTE_U == 0) {
+        return 0;
+    }
+    pa = ((*pte >> 10) << 12);
+    return pa;
+}
+
+
 // Copies len amount of bytes to dst from virtual address srcaddr
 // in a given pagetable. Returns 0 on success and -1 for failure
 int copyto(uint32_t *pagetable, char *dst, uint32_t srcaddr, int len) {
@@ -116,7 +136,7 @@ int copyto(uint32_t *pagetable, char *dst, uint32_t srcaddr, int len) {
 
     while (len > 0) {
         va = (srcaddr & ~(PGESIZE - 1));
-        pa = walkaddr(pagetable, va);
+        pa = fetch_ap_addr(pagetable, va);
         if (pa == 0) {
             return -1;
         }
