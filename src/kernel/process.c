@@ -2,7 +2,6 @@
 #include "process.h"
 #include "regs.h"
 
-
 void sleep(void *sleep_channel, struct spinlock *lock) {
     struct process *proc = get_process_struct();
     
@@ -94,12 +93,6 @@ void yield_process(void) {
     release(&proc->lock);
 }
 
-// tp register contains the current hartid
-static inline uint32_t read_tp(void) {
-    uint32_t tp;
-    asm volatile("mv %0, tp" : "=r" (tp));
-    return tp;
-}
 
 int which_cpu(void) {
     int cpu_id = read_tp();

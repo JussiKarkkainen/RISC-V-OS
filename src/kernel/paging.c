@@ -2,6 +2,7 @@
 #include "paging.h"
 #include "../libc/include/stdio.h"
 #include "../libc/include/string.h"
+#include "process.h"
 
 uint32_t *kpagetable;
 
@@ -14,6 +15,7 @@ static inline void satp_write(uint32_t *kpage) {
     asm volatile("csrw satp, %0" : : "r" (1 | ((uint32_t)kpage >> 12)));
 
 }
+
 // create the kernel pagetable
 uint32_t *kpagemake(void) {
 
@@ -47,12 +49,12 @@ void map_kstack(uint32_t *pagetable) {
     struct process *proc;
 
     for (proc = process; proc < &process[MAXPROC]; proc++) {
-        uint32_t *phy_addr = zalloc();
-        if (phy_addr == 0) {
+        uint32_t *phy_addr = zalloc(1);
+        if (phy_addr == 0) {
             panic("zalloc, map_kstack");
         }
-        uint32_t va = (USERVEC - ((proc - process) + 1) * 2 * PGESIZE);
-        kmap(pagetable, va, pa, PGESIZE, PTE_W | PTE_R);
+        uint32_t va = (USERVEC - ((int)(proc - process) + 1) * 2 * PGESIZE);
+        kmap(pagetable, va, (uint32_t)phy_addr, PGESIZE, PTE_W | PTE_R);
     }
 }
 

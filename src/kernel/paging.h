@@ -36,5 +36,6 @@ int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, i
 void kpage_init(void);
 uint32_t *kpagemake(void);
 void init_paging(void);
+void map_kstack(uint32_t *pagetable);
 
 #endif

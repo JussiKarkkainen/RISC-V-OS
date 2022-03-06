@@ -13,5 +13,6 @@ struct sleeplock {
     struct spinlock lock;
     char *name;
     int process_id;
+};
 
 #endif
