@@ -46,12 +46,12 @@ uint32_t *kpagemake(void) {
 void map_kstack(uint32_t *pagetable) {
     struct process *proc;
 
-    for (proz = process; proc < &process[MAXPROC]; proc++) {
+    for (proc = process; proc < &process[MAXPROC]; proc++) {
         uint32_t *phy_addr = zalloc();
         if (phy_addr == 0) {
             panic("zalloc, map_kstack");
         }
-        uint32_t va = (uservec - ((proc - process) + 1) * 2 * PGESIZE);
+        uint32_t va = (USERVEC - ((proc - process) + 1) * 2 * PGESIZE);
         kmap(pagetable, va, pa, PGESIZE, PTE_W | PTE_R);
     }
 }

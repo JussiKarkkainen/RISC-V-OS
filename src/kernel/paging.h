@@ -16,8 +16,8 @@ extern uint32_t HEAP_START, TEXT_START, RODATA_START, DATA_START,
 #define PGEOFFSET 12
 #define VPNMASK 0x3ff
 #define PGESIZE (1 << 12)
-
-
+#define MAXVA (1 << (10 + 10 + 12 - 1))
+#define USERVEC (MAXVA - PGESIZE)
 #define UART0 0x10000000
 #define VIRTIO0 0x10001000
 #define PLIC 0xc000000
