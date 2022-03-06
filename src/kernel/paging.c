@@ -34,13 +34,27 @@ uint32_t *kpagemake(void) {
 
     kmap(kpage, DATA_START, DATA_START, DATA_SIZE, PTE_R | PTE_W);
 
-    kmap(kpage, BSS_START, BSS_START, BSS_SIZE, PTE_R | PTE_W);
+    kmap(kpage, BSS_START, BSS_START, BSS_SIZE, PTE_R | PTE_W);         // BSS_SIZE is apparently zero, needs fixing
 
     kmap(kpage, KERNEL_STACK_START, KERNEL_STACK_START, KERNEL_STACK_SIZE, PTE_R | PTE_W);
+
+    map_kstack(kpage);
 
     return kpage;
 }
 
+void map_kstack(uint32_t *pagetable) {
+    struct process *proc;
+
+    for (proz = process; proc < &process[MAXPROC]; proc++) {
+        uint32_t *phy_addr = zalloc();
+        if (phy_addr == 0) {
+            panic("zalloc, map_kstack");
+        }
+        uint32_t va = (uservec - ((proc - process) + 1) * 2 * PGESIZE);
+        kmap(pagetable, va, pa, PGESIZE, PTE_W | PTE_R);
+    }
+}
 
 // Initializes the kernel page table
 void kpage_init(void) {
@@ -81,7 +95,7 @@ int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, i
     uint32_t vir;
 
     if (size == 0) {
-        panic("size == 0!");
+        panic("kmap: size == 0!");
     }
     last = vir_addr + size - 1;
     vir = vir_addr;
