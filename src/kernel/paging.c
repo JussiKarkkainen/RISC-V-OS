@@ -49,11 +49,11 @@ void map_kstack(uint32_t *pagetable) {
     struct process *proc;
 
     for (proc = process; proc < &process[MAXPROC]; proc++) {
-        uint32_t *phy_addr = zalloc(1);
+        uint32_t *phy_addr = kalloc(1);
         if (phy_addr == 0) {
-            panic("zalloc, map_kstack");
+            kprintf("phy_addr %p", phy_addr);
         }
-        uint32_t va = (USERVEC - ((int)(proc - process) + 1) * 2 * PGESIZE);
+        uint32_t va = (USERVEC - ((proc - process) + 1) * 2 * PGESIZE);
         kmap(pagetable, va, (uint32_t)phy_addr, PGESIZE, PTE_W | PTE_R);
     }
 }

@@ -20,7 +20,7 @@ void sleep(void *sleep_channel, struct spinlock *lock) {
 }
 
 // Wake up processes sleeping on sleep channel
-void wakeup(void *sleep_channel) {
+void wakeup(void *sleep_channel) {
     struct process *proc;
 
     for (proc = process; proc < &process[MAXPROC]; proc++) {

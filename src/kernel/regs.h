@@ -106,8 +106,8 @@ static inline void write_sip(uint32_t x) {
     asm volatile("csrw sip, %0" : : "r" (x));
 }
 
-static inline void enable_intr(void) {
-    write_sstatus(get_sstatusi() | SSTATUS_SIE);
+static inline void enable_intr(void) {
+    write_sstatus(get_sstatus() | SSTATUS_SIE);
 }
 
 static inline void disable_intr(void) {
