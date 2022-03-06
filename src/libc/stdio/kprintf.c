@@ -2,6 +2,7 @@
 #include "../../kernel/uart.h"
 #include "putchar.c"
 #include "../include/stdio.h"
+#include <stddef.h>
 
 void hexprint(int num) {
     
@@ -30,6 +31,16 @@ void hexprint(int num) {
     } 
 }
 
+static char digits[] = "0123456789abcdef";
+
+void ptr_print(uint32_t x) {
+    int i;
+    uart_putchar('0');
+    uart_putchar('x');
+    for (i = 0; i < (sizeof(uint32_t) * 2); i++, x <<= 4) {
+        uart_putchar(digits[x >> (sizeof(uint32_t) * 8 - 4)]);
+    }
+}
 
 void kprintf(char *format, ...) {
 
@@ -39,6 +50,7 @@ void kprintf(char *format, ...) {
     char *traverse = format;
     int i;
     char *str;
+    uint32_t p;
 
     while (*traverse != '\0') {
         if (*traverse != '%') {
@@ -67,6 +79,10 @@ void kprintf(char *format, ...) {
 
                 case 'x' : i = va_arg(arg, int);
                     hexprint(i);
+                    break;
+                
+                case 'p' : p = va_arg(arg, uint32_t);
+                    ptr_print(p);
                     break;
 
             }
