@@ -90,7 +90,7 @@ void lock_intr_disable(void) {
     disable_intr();
 
     if (get_cpu_struct()->depth_lock_intr_disable == 0) {
-        get_cpu_struct->intr_prev_state = intr_state;
+        get_cpu_struct()->intr_prev_state = intr_state;
     }
     get_cpu_struct()->depth_lock_intr_disable += 1;
 }

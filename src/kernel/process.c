@@ -35,7 +35,7 @@ void cpu_scheduler(void) {
     while (1) {
         enable_intr();
 
-        for (proc = process; proc < process[MAXPROC]; proc++) {
+        for (proc = process; proc < &process[MAXPROC]; proc++) {
             acquire_lock(&proc->lock);
             if (proc->state == RUNNABLE) {
                 
