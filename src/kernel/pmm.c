@@ -24,18 +24,20 @@ int page_align = 12;
 
 // Initializes the bitmap by clearing required area
 void pmm_init(void) {
-
+    kprintf("HEAP_SIZE %p\n", HEAP_SIZE);
     // Bitmap starts at HEAP_START
     uint32_t *start_addr = (uint32_t *)HEAP_START;
+    kprintf("start_addr %p\n", start_addr);
     
     // Calculate number of bits needed for bitmap  
     int bitmap_size = HEAP_SIZE / page_size;
-    
+    kprintf("bitmap_size %x\n", bitmap_size);
     // Clear bits in bitmap
     memset(start_addr, 0, bitmap_size);
 
     // Find where allocations begin aligned to a 4K boundary
     alloc_start = align(HEAP_START + bitmap_size, page_align);
+    kprintf("alloc_start %p\n", alloc_start);
 }
 
 
@@ -56,7 +58,7 @@ uint32_t *kalloc(int n) {
 
         if (*(ptr + i) == 0) {
             found = true;
-            for (int j = 0; j <= (i + n); j++) {
+            for (int j = i; j <= (i + n); j++) {
 
                 if (*(ptr + j) == 1) {
                     found = false;
@@ -115,15 +117,43 @@ void free(uint32_t *ptr, int n) {
 
 void test_alloc(void) {
     // Used to verify that allocations work as expected
-    
+    uint32_t *a = kalloc(10);
+    kprintf("first ten pages %p\n", a); 
     int num_pages = HEAP_SIZE / page_size;
-    int start = HEAP_START;
-    int end = start + num_pages;
-    int allocation_start = alloc_start;
-    int alloc_end = allocation_start + num_pages * page_size;
+    uint32_t start = HEAP_START;
+    uint32_t *p = (uint32_t *)start;
+    uint32_t d = *p;
+    kprintf("should be 1: %p\n", d);
+    kprintf("this should also be 1: %p", *(p + 9));
+    uint32_t end = start + num_pages;
+    uint32_t allocation_start = alloc_start;
+    uint32_t alloc_end = allocation_start + num_pages * page_size;
 
-    kprintf("Page allocation tables:%p\nBitmap: %p\nPhyAlloc: %p\n\
+    kprintf("Page allocation tables\nBITMAP: %p -> %p\nPAGES: %p -> %p\n\
 ------------------------------------\n", start, end, allocation_start, alloc_end);
+    
+    int i = 0;
+    while (start < end) {
+        if (start == 1) {
+            int beg = start;
+            uint32_t memaddr = alloc_start + (beg - HEAP_START) + PGESIZE;
+            kprintf("%p -> ", memaddr);
+            
+            while(1) { 
+                i += 1;
+                if ((start + 1) == 0) {
+                    uint32_t end = start;
+                    memaddr = alloc_start + (end - HEAP_START) * PGESIZE + PGESIZE - 1;
+                    kprintf("%p : %d pages", memaddr, (end - beg + 1));
+                    break;
+                }
+                start = start + 1;
+            }
+        }
+        start = start + 1;
+    }
+
+    kprintf("------------------------------------\n");
 
 
 }
