@@ -71,7 +71,6 @@ void kprintf(char *format, ...) {
 
                 case 'd' : i = va_arg(arg, int);
                     if (i<0) {
-                        i = -i;
                         putchar('-');
                     }
                     putchar(i);
