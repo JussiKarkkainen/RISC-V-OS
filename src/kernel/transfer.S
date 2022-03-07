@@ -22,7 +22,7 @@ transfer:
     lw ra, 0(a1)
     lw sp, 8(a1)
     lw s0, 16(a1)
-    lw s1, 24a1)
+    lw s1, 24(a1)
     lw s2, 32(a1)
     lw s3, 40(a1)
     lw s4, 48(a1)

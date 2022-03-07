@@ -104,7 +104,9 @@ struct trapframe {
     uint32_t t5;
     uint32_t t6;
 };
-
+struct cpu *get_cpu_struct(void);
+struct process *get_process_struct(void);
 int which_cpu(void); 
+void sleep(void *sleep_channel, struct spinlock *lock);
 
 #endif

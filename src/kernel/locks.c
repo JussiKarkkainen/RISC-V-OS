@@ -1,18 +1,19 @@
 #include "regs.h"
 #include "locks.h"
+#include "../libc/include/stdio.h"
+#include "process.h"
 
 void initlock(struct spinlock *ticklock, char *name) {
-    ticklock->lock = 0;
+    ticklock->locked = 0;
     ticklock->name = name;
-    ticklock-cpu = 0;
+    ticklock->cpu = 0;
 }
 
 void acquire_lock(struct spinlock *lock) {
     lock_intr_disable();
 
     // Check if current cpu is holding the lock
-    int current_holdr = (lock->locked && (lock->cpu = get_cpu_struct()));
-    if (current_holdr) {
+    if (is_holding(lock)) {
         panic("acquire_lock");
     }
     
@@ -29,14 +30,13 @@ void acquire_lock(struct spinlock *lock) {
     // Tell compiler and preprocessor to ensure, that the critical section's 
     // memory references happen strictly after the lock is acquired.
     __sync_synchronize();
-    
-    // 
-    lk->cpu = get_cpu_struct();
+      
+    lock->cpu = get_cpu_struct();
 }
 
-void release_lock(struct lock *lock) {
+void release_lock(struct spinlock *lock) {
     // If current cpu doesn't have the lock, panic
-    int current_holdr = (lock->locked && (lock-cpu = get_cpu_struct()));
+    int current_holdr = (lock->locked && (lock->cpu = get_cpu_struct()));
     if (!current_holdr) {
         panic("release_lock");
     }
@@ -59,8 +59,8 @@ int is_holding(struct spinlock *lock) {
 
 void acquire_sleeplock(struct sleeplock *lock) {
     
-    acquire_lock(&lock-lock);
-    while (lock-locked) {
+    acquire_lock(&lock->lock);
+    while (lock->locked) {
         sleep(lock, &lock->lock);
     }
     
@@ -90,7 +90,7 @@ void lock_intr_disable(void) {
     disable_intr();
 
     if (get_cpu_struct()->depth_lock_intr_disable == 0) {
-        get_cpu_struct->intr_prev_state = old;
+        get_cpu_struct->intr_prev_state = intr_state;
     }
     get_cpu_struct()->depth_lock_intr_disable += 1;
 }
