@@ -62,14 +62,15 @@ uint32_t *kalloc(int n) {
 
                 if (*(ptr + j) == 1) {
                     found = false;
+                    break;
                 }
             }
         }
 
         // If found is true, we have a contiguos area to allocate
         if (found) {
-            for (int k = 0; k <= num_pages; k++) {
-                *ptr = 1;
+            for (int k = i; k <= (i + n - 1); k++) {
+                *(ptr + k) = 1;
             }
             uint32_t *ret_addr = (uint32_t *)(alloc_start + page_size * i);
             return ret_addr;
@@ -118,57 +119,47 @@ void free(uint32_t *ptr, int n) {
 void test_alloc(void) {
     // Used to verify that allocations work as expected
     uint32_t *a = kalloc(10);
+    uint32_t *o = zalloc(5);
     kprintf("first ten pages %p\n", a); 
+    kprintf("next five pagse %p\n", o);
     int num_pages = HEAP_SIZE / page_size;
     uint32_t start = HEAP_START;
     uint32_t *p = (uint32_t *)start;
     uint32_t d = *p;
     kprintf("should be 1: %p\n", d);
-    kprintf("this should also be 1: %p", *(p + 9));
+    kprintf("address of p + 1: %p\n", (p + 1));
+    kprintf("this should also be 1: %p\n\n\n", *(p + 15));
     uint32_t end = start + num_pages;
     uint32_t allocation_start = alloc_start;
     uint32_t alloc_end = allocation_start + num_pages * page_size;
 
     kprintf("Page allocation tables\nBITMAP: %p -> %p\nPAGES: %p -> %p\n\
-------------------------------------\n", start, end, allocation_start, alloc_end);
+------------------------------------\n\n", start, end, allocation_start, alloc_end);
     
     int i = 0;
-    while (start < end) {
-        if (start == 1) {
+    while (p < end) {
+        if (*(p) == 1) {
             int beg = start;
             uint32_t memaddr = alloc_start + (beg - HEAP_START) + PGESIZE;
             kprintf("%p -> ", memaddr);
             
             while(1) { 
                 i += 1;
-                if ((start + 1) == 0) {
+                if ((*(p + 1)) == 0) {
                     uint32_t end = start;
                     memaddr = alloc_start + (end - HEAP_START) * PGESIZE + PGESIZE - 1;
-                    kprintf("%p : %d pages", memaddr, (end - beg + 1));
+                    kprintf("%p : %x pages\n", memaddr, (end - beg + 1));
                     break;
                 }
-                start = start + 1;
+                p = p + 1;
             }
         }
-        start = start + 1;
+        p = p + 1;
     }
 
-    kprintf("------------------------------------\n");
+    kprintf("------------------------------------\n\n");
 
-
+    kprintf("Allocated %x pages and %x bytes\n", i, (i * PGESIZE));
+    kprintf("Free %x pages and %x bytes\n\n\n", (num_pages - 1), ((num_pages - i) * PGESIZE));
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
