@@ -2,6 +2,7 @@
 #include "../libc/include/string.h"
 #include <stdbool.h>
 #include "paging.h"
+#include "../libc/include/stdio.h"
 
 /* 
 Implementation of a physical memory allocator. It uses a bitmap
@@ -55,12 +56,10 @@ uint32_t *kalloc(int n) {
 
         if (*(ptr + i) == 0) {
             found = true;
-
             for (int j = 0; j <= (i + n); j++) {
 
                 if (*(ptr + j) == 1) {
                     found = false;
-                    break;
                 }
             }
         }
@@ -71,7 +70,6 @@ uint32_t *kalloc(int n) {
                 *ptr = 1;
             }
             uint32_t *ret_addr = (uint32_t *)(alloc_start + page_size * i);
-            
             return ret_addr;
         }
     }
@@ -90,10 +88,9 @@ uint32_t *zalloc(int n) {
         for (int i = 0; i <= size; i++) {
             *ptr = 0;
             ptr++;
-        
-        return addr;
-
         }
+
+        return addr;
     }
     return 0;
 }

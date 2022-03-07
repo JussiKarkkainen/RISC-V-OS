@@ -3,6 +3,7 @@
 
 static volatile uart_regs* uart = (uart_regs *)0x10000000;
 
+struct spinlock uart_tx_lock;
 
 uart_return uart_configure(void) {
     // disable interrupts for configure
@@ -14,6 +15,7 @@ uart_return uart_configure(void) {
     uart->BF |= 0x3;
     uart->IER |= 0x0;
     uart->LCR &= 0x3f;
+    initlock(&uart_tx_lock, "uart");
 
     // Set word length
     uart->LCR |= LCR_8BIT;
@@ -41,7 +43,7 @@ void uart_putc(int c) {
             ;
         }
     }
-    while ((uart->LSR & (1 << 5)) == 0) {
+    while ((uart->LSR & LCR_THRE) == 0) {
         ;
     }
     uart->BF = c;
