@@ -20,27 +20,27 @@ static inline void satp_write(uint32_t *kpage) {
 uint32_t *kpagemake(void) {
 
     uint32_t *kpage = zalloc(1);
-
+    kprintf("kpage is: %p\n", kpage);
     // Create a virtual memory map
     kmap(kpage, UART0, UART0, PGESIZE, PTE_R | PTE_W);
 
-    kmap(kpage, VIRTIO0, VIRTIO0, PGESIZE, PTE_R | PTE_W);
+//    kmap(kpage, VIRTIO0, VIRTIO0, PGESIZE, PTE_R | PTE_W);
 
-    kmap(kpage, PLIC, PLIC, PLICSIZE, PTE_R | PTE_W);
+//    kmap(kpage, PLIC, PLIC, PLICSIZE, PTE_R | PTE_W);
 
-    kmap(kpage, HEAP_START, HEAP_START, HEAP_SIZE, PTE_R | PTE_W);
+//    kmap(kpage, HEAP_START, HEAP_START, HEAP_SIZE, PTE_R | PTE_W);
 
-    kmap(kpage, TEXT_START, TEXT_START, TEXT_SIZE, PTE_R | PTE_X);
+//    kmap(kpage, TEXT_START, TEXT_START, TEXT_SIZE, PTE_R | PTE_X);
 
-    kmap(kpage, RODATA_START, RODATA_START, RODATA_SIZE, PTE_R | PTE_X);
+//    kmap(kpage, RODATA_START, RODATA_START, RODATA_SIZE, PTE_R | PTE_X);
 
-    kmap(kpage, DATA_START, DATA_START, DATA_SIZE, PTE_R | PTE_W);
+//    kmap(kpage, DATA_START, DATA_START, DATA_SIZE, PTE_R | PTE_W);
 
-    kmap(kpage, BSS_START, BSS_START, BSS_SIZE, PTE_R | PTE_W);         // BSS_SIZE is apparently zero, needs fixing
+//    kmap(kpage, BSS_START, BSS_START, BSS_SIZE, PTE_R | PTE_W);         // BSS_SIZE is apparently zero, needs fixing
 
-    kmap(kpage, KERNEL_STACK_START, KERNEL_STACK_START, KERNEL_STACK_SIZE, PTE_R | PTE_W);
+//    kmap(kpage, KERNEL_STACK_START, KERNEL_STACK_START, KERNEL_STACK_SIZE, PTE_R | PTE_W);
 
-    map_kstack(kpage);
+//    map_kstack(kpage);
 
     return kpage;
 }
@@ -51,7 +51,7 @@ void map_kstack(uint32_t *pagetable) {
     for (proc = process; proc < &process[MAXPROC]; proc++) {
         uint32_t *phy_addr = kalloc(1);
         if (phy_addr == 0) {
-            kprintf("phy_addr %p", phy_addr);
+            kprintf("map_kstack, phy_addr %p\n", phy_addr);
         }
         uint32_t va = (USERVEC - ((proc - process) + 1) * 2 * PGESIZE);
         kmap(pagetable, va, (uint32_t)phy_addr, PGESIZE, PTE_W | PTE_R);
@@ -72,7 +72,7 @@ void init_paging(void) {
 uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc) {
     for (int i = 2; i > 0; i--) {
         uint32_t *pte = &pagetable[(vir_addr >> (PGEOFFSET + 10 * i) & VPNMASK)];
-        
+
         // Turn pte into phy_addr
         if (*pte & PTE_V) {
             // Shift PPNs to correct places from pte
@@ -80,9 +80,11 @@ uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc) {
         }
         // Turn phy_addr into pte
         else {
-            if (!alloc || ((pagetable = zalloc(1)) == 0)) {
+            if (!alloc || ((pagetable = kalloc(1)) == 0)) {
+                kprintf("heelo");
                 return 0;
             }
+            kprintf("not zerro");
             *pte = (((uint32_t)pagetable >> 12) << 10) | PTE_V;
         }
     }
@@ -103,15 +105,16 @@ int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, i
     vir = vir_addr;
 
     while(1) {
-        pte = walk(kpage, vir_addr, 1);
+        pte = walk(kpage, vir_addr, 1);        
+        
         if (pte == 0) {
             return -1;
         }
         if (*pte & PTE_V) {
             panic("kmap()");
         }
-        *pte = ((phy_addr >> 12) << 10) | permissions | PTE_V;
 
+        *pte = ((phy_addr >> 12) << 10) | permissions | PTE_V;
         if (vir == last) {
             break;
         }

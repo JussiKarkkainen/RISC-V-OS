@@ -37,5 +37,6 @@ void kpage_init(void);
 uint32_t *kpagemake(void);
 void init_paging(void);
 void map_kstack(uint32_t *pagetable);
+void test_alloc(void);
 
 #endif

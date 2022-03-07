@@ -112,19 +112,33 @@ void free(uint32_t *ptr, int n) {
     }
 }
 
-/*
+
 void test_alloc(void) {
     // Used to verify that allocations work as expected
     
-    int num_pages = &HEAP_SIZE / page_size;
-    int start = &HEAP_START;
+    int num_pages = HEAP_SIZE / page_size;
+    int start = HEAP_START;
     int end = start + num_pages;
     int allocation_start = alloc_start;
     int alloc_end = allocation_start + num_pages * page_size;
 
-    kprintf("Page allocation tables:\n Bitmap: 0x%x\n PhyAlloc: 0x%x\n
-            ------------------------------------\n", start, end, allocation_start, alloc_end);
+    kprintf("Page allocation tables:%p\nBitmap: %p\nPhyAlloc: %p\n\
+------------------------------------\n", start, end, allocation_start, alloc_end);
 
 
 }
-*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

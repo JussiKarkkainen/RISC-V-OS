@@ -34,7 +34,7 @@ void hexprint(int num) {
 static char digits[] = "0123456789abcdef";
 
 void ptr_print(uint32_t x) {
-    int i;
+    unsigned int i;
     uart_putchar('0');
     uart_putchar('x');
     for (i = 0; i < (sizeof(uint32_t) * 2); i++, x <<= 4) {
