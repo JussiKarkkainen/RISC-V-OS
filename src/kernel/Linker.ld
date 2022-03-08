@@ -20,7 +20,12 @@ SECTIONS
             PROVIDE(etext = .);
         }
 
-        
+        .rodata : {
+            . = ALIGN(16);
+            *(.srodata .srodata.*)
+            . = ALIGN(16);
+            *(.rodata .rodata.*)
+        }        
 
 
 
