@@ -97,14 +97,15 @@ void sleep(void *sleep_channel, struct spinlock *lock) {
     acquire_lock(lock);
 }
 
-int kill(uint32_t address) {
+int kill(int process_id) {
     
-    struct *process proc;
+    struct process *proc;
     for (proc = process; proc < &process[MAXPROC]; proc++) {
         acquire_lock(&proc->lock);
         
-        if (proc->killed = 1) {
-            if (proc->state = SLEEPING) {
+        if (proc->process_id == process_id) {
+            proc->killed = 1;
+            if (proc->state == SLEEPING) {
                 proc->state = RUNNABLE;
             }
             

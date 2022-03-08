@@ -1,5 +1,5 @@
 /*
-Alternative linker script
+Alternative linker script, doesn't actually work though
 */
 
 OUTPUT_ARCH("riscv")

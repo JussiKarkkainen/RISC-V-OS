@@ -10,7 +10,7 @@ int console_init(void) {
     while (1) {
         char c;
         if (read_uart(&c) == UART_OK) {
-            uart_putchar(c);
+            uart_putc(c);
             if (c == '\r') {
                 write_uart("\n");
                 write_uart("$ ");
