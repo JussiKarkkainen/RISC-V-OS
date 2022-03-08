@@ -74,7 +74,6 @@ static inline void write_mstatus(uint32_t x) {
     asm volatile("csrw mstatus, %0" : : "r" (x));
 }
 
-
 static inline uint32_t get_scause(void) {
     uint32_t scause;
     asm volatile("csrr %0, scause" : "=r" (scause));

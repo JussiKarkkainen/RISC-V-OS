@@ -1,23 +1,50 @@
 // Setup cpu for supervisor mode
 
-#include "kernel.c"
+#include "process.h"
 #include "trap.h"
+#include "regs.h"
 
 #define MSTATUS_MIE (1 << 3)
 #define SIE_SEIE (1 << 9)
 #define SIE_STIE (1 << 5)
 #define SIE_SSIE (1 << 1)
 #define MIE_MTIE (1 << 7)
-#define MAX_CPU 8
-
 
 void enter();
+
+extern void tvec();
+
+uint32_t scratch[MAXCPUS][5];
+
+void timer_init(void) {
+    // Get the id of current hart
+    int hart_id = get_mhartid();
+
+    // Ask clint for timer interrupt, clint is memory-mapped to 0x2000000.
+    int interval = 1000000;
+    *(uint32_t*)(0x2000000 + 0x4000 + (8 * hart_id)) = *(uint32_t*)((0x2000000 + 0xBFF8) + interval);
+
+    // prepare scratch register
+    uint32_t *scratch_ptr = &scratch[hart_id][0];
+    scratch_ptr[3] = (0x2000000 + 0x4000 + (8 * hart_id));
+    scratch_ptr[4] = interval;
+    write_mscratch((uint32_t)scratch_ptr);
+
+    // Set machine mode trap handler
+    write_mtvec((uint32_t)tvec);
+
+    // Enable machine mode interrupts
+    write_mstatus(get_mstatus() | MSTATUS_MIE);
+
+    // Enable machine mode timer interrupts
+    write_mie(get_mie() | MIE_MTIE);
+}
 
 void mstart(void) {
     // Clear the mstatus MPP bits and set them to supervisor mode
     uint32_t mstatus = get_mstatus();
     mstatus &= ~(3 << 11);
-    msstatus |= (1 << 11);
+    mstatus |= (1 << 11);
 
     // Set mepc to point to enter(), so when we call mret, execution jumps there
     write_mepc((uint32_t)enter);
@@ -37,36 +64,9 @@ void mstart(void) {
     write_pmpcfg0(0xf);
 
     // enable clock interrupts
-    time_init();
+    timer_init();
 
     // Jump to enter()
     asm volatile("mret");
 
 }
-
-uint32_t scratch[MAX_CPU][5];
-
-void timer_init(void) {
-    // Get the id of current hart
-    int hart_id = get_mhartid();
-
-    // Ask clint for timer interrupt, clint is memory-mapped to 0x2000000.
-    int interval = 1000000;
-    *(uint32_t*)(0x2000000 + 0x4000 + (8 * hart_id)) = *(uint32_t*)((0x2000000 + 0xBFF8) + interval);
-
-    // prepare scratch register
-    uint32_t *scratch_ptr = scratch[hart_id][0];
-    scratch_ptr[3] = (0x2000000 + 0x4000 + (8 * hart_id));
-    scratch_ptr[4] = interval;
-    write_mscratch((uint32_t)scratch_ptr);
-
-    // Set machine mode trap handler
-    write_mtvec((uint32_t)tvec);
-
-    // Enable machine mode interrupts
-    write_mstatus(get_mstatus | MSTATUS_MIE);
-
-    // Enable machine mode timer interrupts
-    write_mie(get_mie() | MIE_MTIE);
-}
-

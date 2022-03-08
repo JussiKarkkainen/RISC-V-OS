@@ -27,7 +27,7 @@ stack_setup:
   csrw mstatus, t0
   li t3, (1 << 3) | (1 << 7) | (1 << 11)
   csrw mie, t3
-#  call mstart              # jump to supervisor mode
+  call mstart              # jump to supervisor mode
   call enter
 
 
