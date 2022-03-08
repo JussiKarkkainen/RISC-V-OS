@@ -9,9 +9,6 @@ Implementation of a physical memory allocator. It uses a bitmap
 to keep track of size 4096 pages
 */
 
-extern uint32_t HEAP_START, TEXT_START, RODATA_START, DATA_START, 
-                BSS_START, KERNEL_STACK_START, HEAP_SIZE;
-
 // Aligns memory to 4K page
 int align(int value, int align) {
     int c = (1 << align) - 1;
