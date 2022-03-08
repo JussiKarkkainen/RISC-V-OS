@@ -26,8 +26,12 @@ static inline void write_mideleg(uint32_t x) {
     asm volatile("csrw mideleg, %0" : : "r" (x));
 }
 
-static inline void write_sie(uint32_t x) {
+static inline void write_mie(uint32_t x) {
     asm volatile("csrw mie, %0" : : "r" (x));
+}
+
+static inline void write_sie(uint32_t x) {
+    asm volatile("csrw sie, %0" : : "r" (x));
 }
 
 static inline uint32_t get_sie(void) {
@@ -65,6 +69,11 @@ static inline uint32_t get_sstatus(void) {
 static inline void write_sstatus(uint32_t x) {
     asm volatile("csrw sstatus, %0" : : "r" (x));
 }
+
+static inline void write_mstatus(uint32_t x) {
+    asm volatile("csrw mstatus, %0" : : "r" (x));
+}
+
 
 static inline uint32_t get_scause(void) {
     uint32_t scause;
