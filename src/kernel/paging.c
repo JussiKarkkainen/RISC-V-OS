@@ -70,6 +70,10 @@ void init_paging(void) {
 }
 
 uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc) {
+    
+    if (vir_addr >= MAXVA) {
+        panic("vir_addr out of range");
+
     for (int i = 2; i > 0; i--) {
         uint32_t *pte = &pagetable[(vir_addr >> (PGEOFFSET + 10 * i) & VPNMASK)];
 
@@ -106,12 +110,11 @@ int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, i
 
     while(1) {
         pte = walk(kpage, vir_addr, 1);        
-        
         if (pte == 0) {
             return -1;
         }
         if (*pte & PTE_V) {
-            panic("kmap()");
+            panic("kmap() permission v bit");
         }
 
         *pte = ((phy_addr >> 12) << 10) | permissions | PTE_V;
