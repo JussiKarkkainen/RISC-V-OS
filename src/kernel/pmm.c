@@ -134,7 +134,7 @@ void test_alloc(void) {
 ------------------------------------\n\n", start, end, allocation_start, alloc_end);
     
     int i = 0;
-    while (p < end) {
+    while ((uint32_t)p < end) {
         if (*(p) == 1) {
             int beg = start;
             uint32_t memaddr = alloc_start + (beg - HEAP_START) + PGESIZE;

@@ -18,26 +18,29 @@ static inline void satp_write(uint32_t *kpage) {
 
 // create the kernel pagetable
 uint32_t *kpagemake(void) {
-
+    kprintf("maxva %p and HEAP_START %p uservec %p\n", MAXVA, HEAP_START, USERVEC);
+    kprintf("Memory_end %p\n", MEMORY_END);
     uint32_t *kpage = zalloc(1);
     // Create a virtual memory map
     kmap(kpage, UART0, UART0, PGESIZE, PTE_R | PTE_W);
 
-//    kmap(kpage, VIRTIO0, VIRTIO0, PGESIZE, PTE_R | PTE_W);
+    kmap(kpage, VIRTIO0, VIRTIO0, PGESIZE, PTE_R | PTE_W);
 
-//    kmap(kpage, PLIC, PLIC, PLICSIZE, PTE_R | PTE_W);
+    kmap(kpage, PLIC, PLIC, PLICSIZE, PTE_R | PTE_W);
 
-//    kmap(kpage, HEAP_START, HEAP_START, HEAP_SIZE, PTE_R | PTE_W);
+    kmap(kpage, USERVEC, MAXVA-PGESIZE, PGESIZE, PTE_R | PTE_X);
 
-//    kmap(kpage, TEXT_START, TEXT_START, TEXT_SIZE, PTE_R | PTE_X);
+    kmap(kpage, HEAP_START, HEAP_START, HEAP_SIZE, PTE_R | PTE_W);
 
-//    kmap(kpage, RODATA_START, RODATA_START, RODATA_SIZE, PTE_R | PTE_X);
+    kmap(kpage, TEXT_START, TEXT_START, TEXT_SIZE, PTE_R | PTE_X);
 
-//    kmap(kpage, DATA_START, DATA_START, DATA_SIZE, PTE_R | PTE_W);
+    kmap(kpage, RODATA_START, RODATA_START, RODATA_SIZE, PTE_R | PTE_X);
 
-//    kmap(kpage, BSS_START, BSS_START, BSS_SIZE, PTE_R | PTE_W);         // BSS_SIZE is apparently zero, needs fixing
+    kmap(kpage, DATA_START, DATA_START, DATA_SIZE, PTE_R | PTE_W);
 
-//    kmap(kpage, KERNEL_STACK_START, KERNEL_STACK_START, KERNEL_STACK_SIZE, PTE_R | PTE_W);
+    kmap(kpage, BSS_START, BSS_START, BSS_SIZE, PTE_R | PTE_W);         // BSS_SIZE is apparently zero, needs fixing
+
+    kmap(kpage, KERNEL_STACK_START, KERNEL_STACK_START, KERNEL_STACK_SIZE, PTE_R | PTE_W);
 
 //    map_kstack(kpage);
 
@@ -103,10 +106,10 @@ int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, i
         panic("kmap: size == 0!");
     }
     last = ((vir_addr + size - 1) & ~(PGESIZE - 1));
-    vir = vir_addr;
+    vir = (vir_addr & ~(PGESIZE - 1));
 
     while(1) {
-        pte = walk(kpage, vir_addr, 1);        
+        pte = walk(kpage, vir, 1);        
         if (pte == 0) {
             return -1;
         }
