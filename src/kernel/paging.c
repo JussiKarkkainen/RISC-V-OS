@@ -20,7 +20,6 @@ static inline void satp_write(uint32_t *kpage) {
 uint32_t *kpagemake(void) {
 
     uint32_t *kpage = zalloc(1);
-    kprintf("kpage is: %p\n", kpage);
     // Create a virtual memory map
     kmap(kpage, UART0, UART0, PGESIZE, PTE_R | PTE_W);
 
@@ -51,7 +50,7 @@ void map_kstack(uint32_t *pagetable) {
     for (proc = process; proc < &process[MAXPROC]; proc++) {
         uint32_t *phy_addr = kalloc(1);
         if (phy_addr == 0) {
-            kprintf("map_kstack, phy_addr %p\n", phy_addr);
+            panic("map_kstack, phy_addr = 0, error with kalloc");
         }
         uint32_t va = (USERVEC - ((proc - process) + 1) * 2 * PGESIZE);
         kmap(pagetable, va, (uint32_t)phy_addr, PGESIZE, PTE_W | PTE_R);
@@ -71,12 +70,12 @@ void init_paging(void) {
 
 uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc) {
     
-    if (vir_addr >= MAXVA) {
+    if (vir_addr >= (uint32_t)MAXVA) {
         panic("vir_addr out of range");
-
+    }
     for (int i = 2; i > 0; i--) {
-        uint32_t *pte = &pagetable[(vir_addr >> (PGEOFFSET + 10 * i) & VPNMASK)];
-
+        uint32_t *pte = &pagetable[((vir_addr >> (PGEOFFSET + (10 * i))) & VPNMASK)];
+        
         // Turn pte into phy_addr
         if (*pte & PTE_V) {
             // Shift PPNs to correct places from pte
@@ -84,15 +83,13 @@ uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc) {
         }
         // Turn phy_addr into pte
         else {
-            if (!alloc || ((pagetable = kalloc(1)) == 0)) {
-                kprintf("heelo");
+            if (!alloc || ((pagetable = zalloc(1)) == 0)) {
                 return 0;
             }
-            kprintf("not zerro");
-            *pte = (((uint32_t)pagetable >> 12) << 10) | PTE_V;
+        *pte = (((uint32_t)pagetable >> 12) << 10) | PTE_V;
         }
     }
-    return &pagetable[((vir_addr >> PGEOFFSET) & VPNMASK)];
+    return &pagetable[(((uint32_t)(vir_addr >> (PGEOFFSET + (10 * 0)) & VPNMASK)))];
 }   
 
  
@@ -105,7 +102,7 @@ int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, i
     if (size == 0) {
         panic("kmap: size == 0!");
     }
-    last = vir_addr + size - 1;
+    last = ((vir_addr + size - 1) & ~(PGESIZE - 1));
     vir = vir_addr;
 
     while(1) {
@@ -114,7 +111,7 @@ int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, i
             return -1;
         }
         if (*pte & PTE_V) {
-            panic("kmap() permission v bit");
+            panic("kmap, PTE_V and pte");
         }
 
         *pte = ((phy_addr >> 12) << 10) | permissions | PTE_V;
