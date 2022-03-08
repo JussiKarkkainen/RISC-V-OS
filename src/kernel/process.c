@@ -97,6 +97,27 @@ void sleep(void *sleep_channel, struct spinlock *lock) {
     acquire_lock(lock);
 }
 
+int kill(uint32_t address) {
+    
+    struct *process proc;
+    for (proc = process; proc < &process[MAXPROC]; proc++) {
+        acquire_lock(&proc->lock);
+        
+        if (proc->killed = 1) {
+            if (proc->state = SLEEPING) {
+                proc->state = RUNNABLE;
+            }
+            
+            release_lock(&proc->lock);
+            return 0;
+        }
+        release_lock(&proc->lock);
+    }
+    return -1;
+}
+
+
+
 int which_cpu(void) {
     int cpu_id = read_tp();
     return cpu_id;
