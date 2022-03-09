@@ -34,7 +34,7 @@ cd RISC-V-OS
 ### Physical memory allocations
 - The physical memory allocator can be found in ```kernel/pmm.c```. It uses a [bitmap](https://wiki.osdev.org/Page_Frame_Allocation) 
   to keep track of allocated and free pages. 
-
+- The Memory map can be found in MEMORYMAP.txt
 ### Virtual memory
 - Implements the Sv32 Page-Based Virtual Memory System described in the [RISC-V Instruction set manual Volume II: Privileged Architecture](https://riscv.org/technical/specifications/) 
 
