@@ -127,6 +127,10 @@ static inline int get_intr(void) {
     return (sstatus & SSTATUS_SIE);
 }
 
+static inline void write_tp(uint32_t x) {
+    asm volatile("mv tp, %0", : : "r" (x));
+}
+
 static inline uint32_t read_tp(void) {
     uint32_t tp;
     asm volatile("mv %0, tp" : "=r" (tp));
