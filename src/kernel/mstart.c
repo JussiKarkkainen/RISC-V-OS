@@ -3,6 +3,8 @@
 #include "process.h"
 #include "trap.h"
 #include "regs.h"
+#include "../libc/include/stdio.h"
+#include "paging.h"
 
 #define MSTATUS_MIE (1 << 3)
 #define SIE_SEIE (1 << 9)
@@ -18,17 +20,19 @@ uint32_t scratch[MAXCPUS][5];
 
 void timer_init(void) {
     // Get the id of current hart
-    int hart_id = get_mhartid();
+    uint32_t hart_id = get_mhartid();
 
     // Ask clint for timer interrupt, clint is memory-mapped to 0x2000000.
     int interval = 1000000;
-    *(uint32_t*)(0x2000000 + 0x4000 + (8 * hart_id)) = *(uint32_t*)((0x2000000 + 0xBFF8) + interval);
+    *(uint32_t*)(CLINT + CLINT_OFFSET + (8 * hart_id)) = *(uint32_t*)((CLINT + 0xBFF8) + interval);
+
 
     // prepare scratch register
     uint32_t *scratch_ptr = &scratch[hart_id][0];
     scratch_ptr[3] = (0x2000000 + 0x4000 + (8 * hart_id));
     scratch_ptr[4] = interval;
     write_mscratch((uint32_t)scratch_ptr);
+
 
     // Set machine mode trap handler
     write_mtvec((uint32_t)tvec);
@@ -59,12 +63,17 @@ void mstart(void) {
     uint32_t sie = get_sie();
     write_sie((((sie | SIE_SSIE) | SIE_STIE) | SIE_SEIE));
     
+
     // Configure physical memory protection
     write_pmpaddr0(0xffffffff);
     write_pmpcfg0(0xf);
 
     // enable clock interrupts
     timer_init();
+    
+    // Write hart_id to tp register
+    uint32_t id = get_mhartid();
+    write_tp(id);
 
     // Jump to enter()
     asm volatile("mret");

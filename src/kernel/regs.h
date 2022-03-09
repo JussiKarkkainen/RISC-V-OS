@@ -128,7 +128,7 @@ static inline int get_intr(void) {
 }
 
 static inline void write_tp(uint32_t x) {
-    asm volatile("mv tp, %0", : : "r" (x));
+    asm volatile("mv tp, %0" : : "r" (x));
 }
 
 static inline uint32_t read_tp(void) {

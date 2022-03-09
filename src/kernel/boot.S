@@ -5,12 +5,6 @@
 .globl _start
 _start:
 
-  csrr t0, mhartid        # read hart id into temporary register
-  bnez t0, park           # Check if hart id is zero, if not send to park
-  
-
-  csrw satp, zero         # Write zero to SATP register, used later to control MMU
-
 .option push
 .option norelax
   la gp, global_pointer
@@ -27,8 +21,7 @@ stack_setup:
   csrw mstatus, t0
   li t3, (1 << 3) | (1 << 7) | (1 << 11)
   csrw mie, t3
-  call mstart              # jump to supervisor mode
-  call enter
+  call mstart              # Setup for supervisor mode
 
 
 bss_clear:
