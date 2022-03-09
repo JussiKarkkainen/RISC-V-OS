@@ -4,34 +4,34 @@
 #include "../include/stdio.h"
 #include <stddef.h>
 
-void hexprint(int num) {
-    
-    int rem; 
-    int i = 0;
-    char buffer[50];
-
-    while(num != 0) {
-        rem = num % 16;  
-
-        if (rem < 10) {
-            buffer[i++] = 48 + rem;
-        }
-        else {
-            buffer[i++] = 55 + rem;
-        }
-
-        num /= 16;  
-    }
-    
-    char *str = "0x";
-    write_uart(str);
-
-    for(int j = i - 1; j >= 0 ; j--) {
-        putchar(buffer[j]);
-    } 
-}
-
 static char digits[] = "0123456789abcdef";
+
+void intprint(int num, int base, int sign) {
+  
+    char buf[16];
+    int i;
+    unsigned int x;
+
+    if(sign && (sign = num < 0)) {
+        x = -num;
+    }
+    else {
+        x = num;
+    }
+
+    i = 0;
+    do {
+        buf[i++] = digits[x % base];
+    } while((x /= base) != 0);
+
+    if(sign) {
+        buf[i++] = '-';
+    }
+
+    while (--i >= 0) {
+        uart_putc(buf[i]);
+    }
+}
 
 void ptr_print(uint32_t x) {
     unsigned int i;
@@ -70,14 +70,11 @@ void kprintf(char *format, ...) {
                     break;
 
                 case 'd' : i = va_arg(arg, int);
-                    if (i<0) {
-                        putchar('-');
-                    }
-                    putchar(i);
+                    intprint(i, 10, 1);
                     break;
 
                 case 'x' : i = va_arg(arg, int);
-                    hexprint(i);
+                    intprint(i, 16, 1);
                     break;
                 
                 case 'p' : p = va_arg(arg, uint32_t);
