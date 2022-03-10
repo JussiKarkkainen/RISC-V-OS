@@ -16,14 +16,13 @@ void enter();
 
 extern void tvec();
 
-__attribute__ ((aligned (16))) char stacks[4096 * MAXCPUS];
+__attribute__((aligned (16))) char stacks[4096 * MAXCPUS];
 
 uint32_t scratch[MAXCPUS][5];
 
 void timer_init(void) {
     // Get the id of current hart
     uint32_t hart_id = get_mhartid();
-    kprintf("hart id: %d", hart_id);
     // Ask clint for timer interrupt, clint is memory-mapped to 0x2000000.
     int interval = 1000000;
     *(uint32_t*)(CLINT + CLINT_OFFSET + (8 * hart_id)) = *(uint32_t*)((CLINT + 0xBFF8) + interval);
@@ -64,7 +63,7 @@ void mstart(void) {
     write_medeleg(0xffff);
     write_mideleg(0xffff);
     uint32_t sie = get_sie();
-    write_sie((((sie | SIE_SSIE) | SIE_STIE) | SIE_SEIE));
+    write_sie(sie | SIE_SEIE | SIE_STIE | SIE_SSIE);
     
 
     // Configure physical memory protection
@@ -77,7 +76,6 @@ void mstart(void) {
     // Write hart_id to tp register
     uint32_t id = get_mhartid();
     write_tp(id);
-
     // Jump to enter()
     asm volatile("mret");
 
