@@ -71,10 +71,10 @@ void utrap(void) {
     write_stvec((uint32_t)ktrapvec);
 
     // get process struct
-    struct process *proc = get_process_struct():
+    struct process *proc = get_process_struct();
 
     // save user pc
-    proc->trapframe->saved_pc = read_sepc(); 
+    proc->trapframe->saved_pc = get_sepc(); 
     
     // check if syscall
     if (scause == 8) {
@@ -89,13 +89,17 @@ void utrap(void) {
     if ((intr_result = handle_device_intr()) == 2) {
         kprintf("Unexpexted scause in utrap(), scause: %x\n, sepc: %x\n, stval: %x\n", 
                 get_scause(), get_sepc(), get_stval());
+        
+        proc->killed = 1;
     } 
     // Otherwise kill process
-    proc->trapframe->killed = 1;
+    if (proc->killed) {
+        exit(-1);
+    }
     // Check if timer interrupt 
     if (intr_result = 1) {
         yield_process(); 
-    
+    } 
     // Call utrapret
     utrapret();
 }

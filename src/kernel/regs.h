@@ -14,6 +14,10 @@ static inline void write_mepc(uint32_t x) {
     asm volatile("csrw mepc, %0" : : "r" (x));
 }
 
+static inline void (write_sepc(uint32_t x) {
+    asm volatile("csrw sepc, %0" : : "r" (x));
+}
+
 static inline void write_satp(uint32_t x) {
     asm volatile("csrw satp, %0" : : "r" (x));
 }
