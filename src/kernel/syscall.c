@@ -29,7 +29,7 @@ uint32_t (*syscall[])(void) {
 
 
 // Handle syscalls, is called from utrap() in trap.c
-void syscall(void) {
+void handle_syscall(void) {
     
     int syscall_num;
     struct process *proc = get_process_struct();

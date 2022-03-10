@@ -23,4 +23,6 @@
 #define SYS_MKDIR 20
 #define SYS_CLOSE 21
 
+void handle_syscall(void);
+
 #endif
