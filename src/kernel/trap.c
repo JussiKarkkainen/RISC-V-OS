@@ -5,7 +5,7 @@
 
 struct spinlock ticklock;
 
-int handle_device_intr() {
+int handle_device_intr(void) {
     // Check if external/device interrupt
     uint32_t scause = get_scause();
     if (((scause & INTERRUPT_BIT) == 1) && ((scause & EXT_INTERRUPT) == 9)) {  

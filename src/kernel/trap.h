@@ -14,4 +14,12 @@
 #define VIRTIO_DISK 1
 #define SSTATUS_SIE_CLEAR 0xFFFFFFFD
 
+int handle_device_intr(void);
+int timer_interrupt(void);
+void utrap(void);
+void utrapret(void);
+void ktrap(void);
+void init_ktrapvec(void);
+void init_trapvec(void);
+
 #endif
