@@ -117,7 +117,8 @@ int kill(int process_id) {
     return -1;
 }
 
-
+void exit(int status) {
+}
 
 int which_cpu(void) {
     int cpu_id = get_tp();

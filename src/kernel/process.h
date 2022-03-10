@@ -67,7 +67,7 @@ struct cpu cpus[MAXCPUS];
 struct process process[MAXPROC];
 
 struct trapframe {
-    uint32_t kernel_pagetable;
+    uint32_t kernel_satp;
     uint32_t kernel_sp;
     uint32_t kernel_trap;
     uint32_t saved_pc;
@@ -108,5 +108,8 @@ struct cpu *get_cpu_struct(void);
 struct process *get_process_struct(void);
 int which_cpu(void); 
 void sleep(void *sleep_channel, struct spinlock *lock);
+void wakeup(void *sleep_channel);
+void exit(int status);
+void yield_process(void);
 
 #endif
