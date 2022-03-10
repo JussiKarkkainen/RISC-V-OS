@@ -1,10 +1,10 @@
 #include "process.h"
+#include "plic.h"
 
 // https://github.com/qemu/qemu/blob/master/include/hw/riscv/virt.h
 // UART intr_id = 10.
 // VIRTIO intr_id = 1-8
 // PCIE intr_id = 32-35
-
 
 void plic_init(void) {
     *(uint32_t *)(PLIC + UART_IRQ * 4) = 1;

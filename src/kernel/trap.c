@@ -2,8 +2,14 @@
 #include "../libc/include/stdio.h"
 #include "process.h"
 #include "regs.h"
+#include "uart.h"
+#include "disk.h"
+#include "syscall.h"
+#include "plic.h"
 
 struct spinlock ticklock;
+
+extern void ktrapvec();
 
 int handle_device_intr(void) {
     // Check if external/device interrupt
@@ -97,7 +103,7 @@ void utrap(void) {
         exit(-1);
     }
     // Check if timer interrupt 
-    if (intr_result = 1) {
+    if (intr_result == 1) {
         yield_process(); 
     } 
     // Call utrapret
@@ -115,7 +121,7 @@ void utrapret(void) {
     // Utrapvec will need these register values
     proc->trapframe->kernel_satp = get_satp();         
     proc->trapframe->kernel_sp = proc->kernel_stack + 4096;
-    proc->trapframe->kernel_trap = (uint32_t)usertrap;
+    proc->trapframe->kernel_trap = (uint32_t)utrap;
     proc->trapframe->hartid = get_tp();
     
     // Set previous privilige mode to user
@@ -162,8 +168,6 @@ void ktrap(void) {
     write_sstatus(sstatus);
     }
 }
-
-void ktrapvec();
 
 void init_trapvec(void) {
     initlock(&ticklock, "timer lock");
