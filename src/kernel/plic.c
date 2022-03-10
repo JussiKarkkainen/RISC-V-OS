@@ -14,26 +14,26 @@
 
 
 void plic_init(void) {
-    (PLIC + UART_IRQ * 4) = 1;
-    (PLIC + VIRTIO_IRQ * 4) = 1;
+    *(uint32_t *)(PLIC + UART_IRQ * 4) = 1;
+    *(uint32_t *)(PLIC + VIRTIO_IRQ * 4) = 1;
 }
 
 void plic_init_hart(void) {
     int hart_id = which_cpu();
     // Set enable bit for this hart
-    (PLIC + PLIC_ENABLE_OFFSET + hart_id * 0x100) = (1 << UART_IRQ) | (1 << VIRTIO_IRQ);
+    *(uint32_t *)(PLIC + PLIC_ENABLE_OFFSET + hart_id * 0x100) = (1 << UART_IRQ) | (1 << VIRTIO_IRQ);
     // Set priority threshold 
-    (PLIC + PLIC_THRESHOLD + hart_id * 0x100) = 0;
+    *(uint32_t *)(PLIC + PLIC_THRESHOLD + hart_id * 0x100) = 0;
 }
 
 int plic_read(void) {
     int hart_id = which_cpu();
     // get interrupt ids from plic
-    intr_id = (PLIC + PLIC_CLAIM_OFFSET + hart_id * 0x2000);
+    intr_id = *(uint32_t *)(PLIC + PLIC_CLAIM_OFFSET + hart_id * 0x2000);
     return intr_id;
 }
 
 void plic_finished(int intr_id) {
     int hart_id = which_cpu();
-    (PLIC + PLIC_CLAIM_OFFSET + hart_id * 0x2000) = intr_id;
+    *(uint32_t *)(PLIC + PLIC_CLAIM_OFFSET + hart_id * 0x2000) = intr_id;
 }
