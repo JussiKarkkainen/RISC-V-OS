@@ -1,12 +1,5 @@
 #include "process.h"
 
-#define PLIC 0xc000000
-#define PLIC_CLAIM_OFFSET 0x201004
-#define PLIC_ENABLE_OFFSET 0x2000
-#define PLIC_THRESHOLD 0x2080
-#define UART_IRQ 10
-#define VIRTIO_IRQ 1
-
 // https://github.com/qemu/qemu/blob/master/include/hw/riscv/virt.h
 // UART intr_id = 10.
 // VIRTIO intr_id = 1-8
@@ -29,7 +22,7 @@ void plic_init_hart(void) {
 int plic_read(void) {
     int hart_id = which_cpu();
     // get interrupt ids from plic
-    intr_id = *(uint32_t *)(PLIC + PLIC_CLAIM_OFFSET + hart_id * 0x2000);
+    int intr_id = *(uint32_t *)(PLIC + PLIC_CLAIM_OFFSET + hart_id * 0x2000);
     return intr_id;
 }
 
