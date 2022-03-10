@@ -16,12 +16,14 @@ void enter();
 
 extern void tvec();
 
+__attribute__ ((aligned (16))) char stacks[4096 * MAXCPUS];
+
 uint32_t scratch[MAXCPUS][5];
 
 void timer_init(void) {
     // Get the id of current hart
     uint32_t hart_id = get_mhartid();
-
+    kprintf("hart id: %d", hart_id);
     // Ask clint for timer interrupt, clint is memory-mapped to 0x2000000.
     int interval = 1000000;
     *(uint32_t*)(CLINT + CLINT_OFFSET + (8 * hart_id)) = *(uint32_t*)((CLINT + 0xBFF8) + interval);
@@ -49,6 +51,7 @@ void mstart(void) {
     uint32_t mstatus = get_mstatus();
     mstatus &= ~(3 << 11);
     mstatus |= (1 << 11);
+    write_mstatus(mstatus);
 
     // Set mepc to point to enter(), so when we call mret, execution jumps there
     write_mepc((uint32_t)enter);

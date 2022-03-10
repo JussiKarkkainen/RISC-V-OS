@@ -120,7 +120,7 @@ int kill(int process_id) {
 
 
 int which_cpu(void) {
-    int cpu_id = read_tp();
+    int cpu_id = get_tp();
     return cpu_id;
 }
 
