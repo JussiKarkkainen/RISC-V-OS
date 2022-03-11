@@ -20,20 +20,35 @@ struct disk {
 // 8. Perform device-specific setup
 // 9. Set the DRIVER_OK status bit to the status register.
 void disk_init(void) {
-    
+    uint32_t status_bits;
+
     // 1. Reset the device
     *(base_addr + DISK_STATUS) = 0;
 
     // 2. Set ACKNOWLEDGE status bit to status reg
-    *(base_addr + DISK_STATUS) |= ACKNOWLEDGE_STATUS;
+    status_bits |= ACKNOWLEDGE_STATUS;
+    *(base_addr + DISK_STATUS) = status_bits;
 
     // 3. Set DRIVER status bit to status reg
-    *(base_addr + DISK_STATUS) |= DISK_DRIVER;
+    status_bits |= DISK_DRIVER
+    *(base_addr + DISK_STATUS) |= status_bits;
 
     // 4. Read device features from host_features register
-
+    uint32_t host_features = *(base_addr + DISK_HOST_FEATURES);
+    uint32_t guest_features = *(base_addr + DISK_GUEST_FEATURES);
+    
+    // 5. Negotiate the set of features and write what you'll accept to guest_features register
+        
 
 }
 
 void virtio_disk_intr(void) {
 }
+
+
+
+
+
+
+
+
