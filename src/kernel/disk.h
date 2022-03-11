@@ -22,6 +22,11 @@
 #define DISK_STATUS 0x070
 #define DISK_CONFIG 0x100
 
+// Defenitions for setting bits
+#define ACKNOWLEDGE_STATUS 1
+#define DRIVER_STATUS 2
+
+
 void virtio_disk_intr(void);
 
 #endif
