@@ -1,9 +1,9 @@
 #include <stdint.h>
 #include "syscall.h"
 #include "process.h"
+#include "../libc/include/stdio.h"
 
-
-uint32_t (*syscall[])(void) {
+uint32_t (*syscall[])(void) = {
     [SYS_FORK] sys_fork,
     [SYS_EXIT] sys_exit,
     [SYS_WAIT] sys_wait,
@@ -35,16 +35,17 @@ void handle_syscall(void) {
     struct process *proc = get_process_struct();
     
     // Syscall num is stored in the a7 register
-    num = proc->trapframe->a7;
+    sycall_num = proc->trapframe->a7;
     
     // Syscalls is an array of function pointers
     // Check if given num exists and execute syscall
-    if (num > 0 && num < NUM_ELEM(syscalls) && syscalls[num]) {
-        p->trapframe->a0 = syscalls[num]();
+    if (syscall_num > 0 && syscall_num < NUM_ELEM(syscall) && syscall[syscall_num]) {
+        proc->trapframe->a0 = syscall[syscall_num]();
     }
     // Syscall not recognized, print for debug, return -1 for failure
     else {
-        kprintf("unknown syscall %d, %s, %d", proc->process_id, proc->name, num);
+        kprintf("unknown syscall %d, %s, %d", proc->process_id, proc->name, syscall_num);
         proc->trapframe->a0 = -1;
+    }
 }
 
