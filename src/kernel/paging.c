@@ -42,7 +42,7 @@ uint32_t *kpagemake(void) {
 
     kmap(kpage, KERNEL_STACK_START, KERNEL_STACK_START, KERNEL_STACK_SIZE, PTE_R | PTE_W);
 
-//    map_kstack(kpage);
+    map_kstack(kpage);
 
     return kpage;
 }

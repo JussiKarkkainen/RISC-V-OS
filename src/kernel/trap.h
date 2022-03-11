@@ -15,7 +15,7 @@
 #define SSTATUS_SIE_CLEAR 0xFFFFFFFD
 
 int handle_device_intr(void);
-int timer_interrupt(void);
+void timer_interrupt(void);
 void utrap(void);
 void utrapret(void);
 void ktrap(void);

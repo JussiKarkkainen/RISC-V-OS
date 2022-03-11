@@ -1,7 +1,7 @@
 #ifndef PLIC_H
 #define PLIC_H
 
-#define PLIC 0xc000000
+#define PLIC 0xc0000000
 #define PLIC_CLAIM_OFFSET 0x201004
 #define PLIC_ENABLE_OFFSET 0x2000
 #define PLIC_THRESHOLD 0x2080

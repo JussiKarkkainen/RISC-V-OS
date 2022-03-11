@@ -6,10 +6,13 @@
 #include "disk.h"
 #include "syscall.h"
 #include "plic.h"
+#include "paging.h"
 
 struct spinlock ticklock;
 
 extern void ktrapvec();
+
+unsigned int ticks;
 
 int handle_device_intr(void) {
     // Check if external/device interrupt
@@ -55,7 +58,7 @@ int handle_device_intr(void) {
 
 }
 
-int timer_interrupt(void) {
+void timer_interrupt(void) {
     
     acquire_lock(&ticklock);
     ticks++;
@@ -116,7 +119,7 @@ void utrapret(void) {
     disable_intr();
     
     // Send traps to utrapvec
-    write_stvec(UTRAPVEC);
+    write_stvec(USERVEC);
     
     // Utrapvec will need these register values
     proc->trapframe->kernel_satp = get_satp();         

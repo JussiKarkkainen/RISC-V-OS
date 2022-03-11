@@ -143,7 +143,7 @@ static inline uint32_t get_tp(void) {
 
 static inline uint32_t get_satp(void) {
     uint32_t satp;
-    asm volatile("csrw %0, satp" : "=r" (satp));
+    asm volatile("csrr %0, satp" : "=r" (satp));
     return satp;
 }
 
