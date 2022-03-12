@@ -1,6 +1,6 @@
 #include "disk.c"
 #include "paging.c"
-
+#include "locks.h"
 
 volatile uint32_t *base_addr = (volatile uint32_t *)(VIRTIO0);
 
@@ -10,6 +10,8 @@ struct disk {
     char pages[2 * PGESIZE];
 
     char free[8];
+
+    struct spinlock disk_lock;
 };
 
 
@@ -75,6 +77,20 @@ void disk_init(void) {
 }
 
 void virtio_disk_intr(void) {
+    
+    acquire_lock(&disk.disk_lock);
+
+    // Tell device we've seen the interrupt and it can send another one
+    *(base_addr + DISK_INTR_ACK) = *(base_addr + DISK_INTR_STATUS) & 0x3;
+
+    __sync_synchronize();
+
+    
+
+
+
+    release_lock(&disk.disk_lock);
+
 }
 
 
