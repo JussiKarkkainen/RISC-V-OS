@@ -37,6 +37,8 @@
 #define DISK_FEATURES_OK 8
 #define DISK_DRIVER_OK 4
 
+#define NUM 8
+
 struct disk_used_elem {
     uint32_t id;
     uint32_t len;
@@ -48,6 +50,17 @@ struct disk_used {
     struct disk_used_elem ring[8]};
 };
 
+struct buffer {
+    int valid;
+    int disk;
+    unsigned int dev;
+    unsigned int blockno;
+    struct sleeplock lock;
+    unsigned int refcount;
+    struct buf *prev;
+    struct buf *next;
+    char data[BSIZE];
+};
 
 void virtio_disk_intr(void);
 
