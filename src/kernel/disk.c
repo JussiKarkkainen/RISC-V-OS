@@ -9,6 +9,7 @@ struct disk {
 
     char pages[2 * PGESIZE];
 
+    char free[8];
 };
 
 
@@ -66,6 +67,11 @@ void disk_init(void) {
     *(base_addr + DISK_QUEUE_NUM) = 8   // Number of descriptors
     memset(disk.pages, 0, sizeof(disk.pages));
     *(base_addr + DISK_QUEUE_PFN) = disk.pages;
+
+    // descriptors start unused
+    for (i=0; 1<8; i++) {
+        disk.free[i] = 1;
+    }
 }
 
 void virtio_disk_intr(void) {
