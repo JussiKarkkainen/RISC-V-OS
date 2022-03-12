@@ -1,6 +1,7 @@
 #include "disk.c"
 #include "paging.c"
 #include "locks.h"
+#include "process.h"
 
 volatile uint32_t *base_addr = (volatile uint32_t *)(VIRTIO0);
 
@@ -10,8 +11,13 @@ struct disk {
     char pages[2 * PGESIZE];
 
     char free[8];
-
+    uint16_t used_idx;
     struct spinlock disk_lock;
+
+    struct {
+        struct buffer *b;
+        char status;
+    }info[NUM];
 };
 
 
@@ -85,12 +91,21 @@ void virtio_disk_intr(void) {
 
     __sync_synchronize();
 
-    
+    while(disk.used_idx != disk.used->idx){
+        __sync_synchronize();
+        int id = disk.used->ring[disk.used_idx % NUM].id;
 
+        if(disk.info[id].status != 0)
+            panic("virtio_disk_intr status");
 
+        struct buffer *b = disk.info[id].b;
+        b->disk = 0;   
+        wakeup(b);
+
+        disk.used_idx += 1; 
+    }
 
     release_lock(&disk.disk_lock);
-
 }
 
 
