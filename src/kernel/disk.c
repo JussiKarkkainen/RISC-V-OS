@@ -49,7 +49,15 @@ void disk_init(void) {
     *(base_addr + DISK_HOST_FEATURES) = features;
 
     // Set status bit to indicate we're ready
-    status_bits |= DISK
+    status_bits |= DISK_FEATURES_OK;
+    *(base_address + DISK_STATUS) = status_bits;
+
+    status_bits = DISK_DRIVER_OK;
+    *(base_addr + DISK_STATUS) = status_bits;
+
+    // Set pagesize
+    *(base_addr + DISK_GUEST_PAGE_SIZE) = PGESIZE;
+    
 }
 
 void virtio_disk_intr(void) {

@@ -32,6 +32,8 @@
 #define DISK_F_ANY_LAYOUT 27
 #define DISK_RING_F_INDIRECT_DESC 28
 #define DISK_RING_F_EVENT_IDX 29
+#define DISK_FEATURES_OK 8
+#define DISK_DRIVER_OK 4
 
 void virtio_disk_intr(void);
 
