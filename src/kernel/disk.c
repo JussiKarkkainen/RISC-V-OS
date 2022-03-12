@@ -6,6 +6,9 @@ volatile uint32_t *base_addr = (volatile uint32_t *)(VIRTIO0);
 
 
 struct disk {
+
+    char pages[2 * PGESIZE];
+
 };
 
 
@@ -58,6 +61,11 @@ void disk_init(void) {
     // Set pagesize
     *(base_addr + DISK_GUEST_PAGE_SIZE) = PGESIZE;
     
+    // Initialize queue
+    uint32_t max = *(base_addr + DISK_QUEUE_NUM_MAX);
+    *(base_addr + DISK_QUEUE_NUM) = 8   // Number of descriptors
+    memset(disk.pages, 0, sizeof(disk.pages));
+    *(base_addr + DISK_QUEUE_PFN) = disk.pages;
 }
 
 void virtio_disk_intr(void) {
