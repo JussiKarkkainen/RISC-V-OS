@@ -25,13 +25,13 @@
 // Defenitions for setting bits
 #define ACKNOWLEDGE_STATUS 1
 #define DRIVER_STATUS 2
-#define VIRTIO_BLK_F_RO 5
-#define VIRTIO_BLK_F_SCSI 7
-#define VIRTIO_BLK_F_CONFIG_WCE 11
-#define VIRTIO_BLK_F_MQ 12
-#define VIRTIO_F_ANY_LAYOUT 27
-#define VIRTIO_RING_F_INDIRECT_DESC 28
-#define VIRTIO_RING_F_EVENT_IDX 29
+#define DISK_BLK_F_RO 5
+#define DISK_BLK_F_SCSI 7
+#define DISK_BLK_F_CONFIG_WCE 11
+#define DISK_BLK_F_MQ 12
+#define DISK_F_ANY_LAYOUT 27
+#define DISK_RING_F_INDIRECT_DESC 28
+#define DISK_RING_F_EVENT_IDX 29
 
 void virtio_disk_intr(void);
 

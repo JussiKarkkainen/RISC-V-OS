@@ -2,7 +2,7 @@
 #include "paging.c"
 
 
-uint32_t *base_addr = (volatile uint32_t *)(VIRTIO0);
+volatile uint32_t *base_addr = (volatile uint32_t *)(VIRTIO0);
 
 
 struct disk {
@@ -39,14 +39,17 @@ void disk_init(void) {
     
     // 5. Negotiate the set of features and write what you'll accept to guest_features register
     uint32_t features = *(base_addr + DISK_HOST_FEATURES);
-    features &= ~(1 << VIRTIO_BLK_F_RO);
-    features &= ~(1 << VIRTIO_BLK_F_SCSI);
-    features &= ~(1 << VIRTIO_BLK_F_CONFIG_WCE);
-    features &= ~(1 << VIRTIO_BLK_F_MQ);
-    features &= ~(1 << VIRTIO_F_ANY_LAYOUT);
-    features &= ~(1 << VIRTIO_RING_F_EVENT_IDX);
-    features &= ~(1 << VIRTIO_RING_F_INDIRECT_DESC);
+    features &= ~(1 << DISK_BLK_F_RO);
+    features &= ~(1 << DISK_BLK_F_SCSI);
+    features &= ~(1 << DISK_BLK_F_CONFIG_WCE);
+    features &= ~(1 << DISK_BLK_F_MQ);
+    features &= ~(1 << DISK_F_ANY_LAYOUT);
+    features &= ~(1 << DISK_RING_F_EVENT_IDX);
+    features &= ~(1 << DISK_RING_F_INDIRECT_DESC);
+    *(base_addr + DISK_HOST_FEATURES) = features;
 
+    // Set status bit to indicate we're ready
+    status_bits |= DISK
 }
 
 void virtio_disk_intr(void) {
