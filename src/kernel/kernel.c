@@ -33,5 +33,8 @@ void enter(void) {
         }
         __sync_synchronize();
         kprintf("hart %d booting\n", which_cpu());
+        init_paging();
+        init_ktrapvec();    
+        plic_init_hart();
     }
 }
