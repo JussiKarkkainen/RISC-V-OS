@@ -1,6 +1,8 @@
 #ifndef DISK_H
 #define DISK_H
 
+#include <stdint.h>
+
 // Offsets for disk driver
 #define DISK_MAGIC_VAL 0x000
 #define DISK_VERSION 0x004
@@ -34,6 +36,18 @@
 #define DISK_RING_F_EVENT_IDX 29
 #define DISK_FEATURES_OK 8
 #define DISK_DRIVER_OK 4
+
+struct disk_used_elem {
+    uint32_t id;
+    uint32_t len;
+};
+
+struct disk_used {
+    uint16_t flags;
+    uint16_t idx;
+    struct disk_used_elem ring[8]};
+};
+
 
 void virtio_disk_intr(void);
 
