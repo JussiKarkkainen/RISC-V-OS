@@ -2,6 +2,7 @@
 #include "paging.c"
 #include "locks.h"
 #include "process.h"
+#include "../libc/include/stdio.h"
 
 volatile uint32_t *base_addr = (volatile uint32_t *)(VIRTIO0);
 
@@ -108,10 +109,10 @@ void virtio_disk_intr(void) {
     release_lock(&disk.disk_lock);
 }
 
-int alloc_descriptor() {
+int alloc_descriptor(void) {
     for (int i = 0; i < NUM; i++) {
         if (disk.free[i]) {
-            fisk.free[i] = 0;
+            disk.free[i] = 0;
             return 0;
         }
     }
@@ -119,6 +120,19 @@ int alloc_descriptor() {
 }
 
 
-
+void free_descriptor(int i) {
+    if (i >= NUM) {
+        panic("free descriptor i >= NUM");
+    },
+    if (disk.free[i]) {
+        panic("descriptor is already free");
+    }
+    disk.desc[i].addr = 0;
+    disk.desc[i].len = 0;
+    disk.desc[i].flags = 0;
+    disk.desc[i].next = 0;
+    disk.free[i] = 1;
+    wakeup(&disk.free[0]);
+}
 
 
