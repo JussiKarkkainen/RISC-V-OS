@@ -48,4 +48,4 @@ cd RISC-V-OS
 
 ### Issues
 - Fix infinite loops, that are caused by writing to uart. Can be avoided by calling console_init(), but isn't ideal.
-
+- Check the physical memory allocators bitmap implemetation, might be faulty
