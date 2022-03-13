@@ -108,8 +108,15 @@ void virtio_disk_intr(void) {
     release_lock(&disk.disk_lock);
 }
 
-
-
+int alloc_descriptor() {
+    for (int i = 0; i < NUM; i++) {
+        if (disk.free[i]) {
+            fisk.free[i] = 0;
+            return 0;
+        }
+    }
+    return -1;
+}
 
 
 
