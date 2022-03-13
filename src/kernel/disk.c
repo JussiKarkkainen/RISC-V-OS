@@ -119,6 +119,18 @@ int alloc_descriptor(void) {
     return -1;
 }
 
+int alloc3_descriptors(int *idx) {
+    for (int i = 0; i < 3; i++) {
+        idx[i] = alloc_descriptor();
+        if (idx[i] < 0) {
+            for (int j = 0; j < i; j++) {
+                free_descriptor(idx[j]);
+            }
+            return -1;
+        }
+    }
+    return 0;
+}
 
 void free_descriptor(int i) {
     if (i >= NUM) {
