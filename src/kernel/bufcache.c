@@ -24,6 +24,22 @@ struct {
 
 // Initialize the doubly linked list of buffers
 void buffer_init(void) {
+
+    struct buffer *buf;
+
+    // Initialize lock
+    initlock(&buffer_cache.lock, "buffer_cache lock");
+
+    // Create a linked list of buffers
+    buffer_cache.head.prev = &buffer_cache.head;
+    buffer_cache.head.next = &buffer_cache.head;
+    
+    // loop over buffers in cache
+    for (buf = buffer_cache.buffer; buf < buffer_cache.buffer+NUMBUF; buf++) {
+        b->next = buffer_cache.list_head.next;
+        b->prev = &buffer_cache.list_head;
+        initsleep(&buf->lock, "buffer_lock");
+
 }
 
 
