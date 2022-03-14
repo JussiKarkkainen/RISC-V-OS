@@ -15,15 +15,15 @@ void enter(void) {
         kprintf("%s\n", "Booting OS");
 
         pmm_init();         // Initialize physical memory manager
-    //    test_alloc();
+        test_alloc();
         kpage_init();       // Initilaize kernel pagetable
         init_paging();      // Initialize paging
         init_ktrapvec();    // Write ktrapvec addr into stvec to init trap handling
-    //    init_trapvec();     // Initialize timer trapvec
-    //    plic_init();        // Setup interrupt controller  
-    //    plic_init_hart();   // request device interrupts
+        init_trapvec();     // Initialize timer trapvec
+        plic_init();        // Setup interrupt controller  
+        plic_init_hart();   // request device interrupts
         console_init();     // Start console
-    //    scheduler();        // Start the scheduler
+        buffer_init();      // Initialize the buffer cache for filesystem
         __sync_synchronize();
         started = 1;    
     }
