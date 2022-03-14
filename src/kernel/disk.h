@@ -38,7 +38,7 @@
 #define DISK_DRIVER_OK 4
 
 #define NUM 8
-
+#define BUFFER_SIZE 512
 struct disk_used_elem {
     uint32_t id;
     uint32_t len;
@@ -52,6 +52,8 @@ struct disk_used {
 
 struct buffer {
     int valid;
+    int busy
+    int changed;
     int disk;
     unsigned int dev;
     unsigned int blockno;
@@ -59,7 +61,7 @@ struct buffer {
     unsigned int refcount;
     struct buf *prev;
     struct buf *next;
-    char data[BSIZE];
+    char data[BUFFER_SIZE];
 };
 
 void virtio_disk_intr(void);

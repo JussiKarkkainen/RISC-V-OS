@@ -113,7 +113,7 @@ int alloc_descriptor(void) {
     for (int i = 0; i < NUM; i++) {
         if (disk.free[i]) {
             disk.free[i] = 0;
-            return 0;
+            return i;
         }
     }
     return -1;
@@ -146,5 +146,4 @@ void free_descriptor(int i) {
     disk.free[i] = 1;
     wakeup(&disk.free[0]);
 }
-
 
