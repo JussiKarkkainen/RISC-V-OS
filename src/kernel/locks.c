@@ -3,7 +3,7 @@
 #include "../libc/include/stdio.h"
 #include "process.h"
 
-void initlock(struct spinlock *ticklock, char *name) {
+void initlock(struct spinlock *lock, char *name) {
     ticklock->locked = 0;
     ticklock->name = name;
     ticklock->cpu = 0;
