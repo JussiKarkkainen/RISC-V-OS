@@ -22,13 +22,17 @@ struct {
 } buffer_cache;
 
 
+// Initialize the doubly linked list of buffers
+void buffer_init(void) {
+}
 
-// Raad from disk
+
+// Read from disk
 struct buffer *buffer_read(void) {
 }
 
 // Write to disk
-void buffer_write(void) {
+void buffer_write(struct buffer *buf) {
 }
 
 

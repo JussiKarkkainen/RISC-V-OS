@@ -39,6 +39,8 @@
 
 #define NUM 8
 #define BUFFER_SIZE 512
+#define NUMBUF 30
+
 struct disk_used_elem {
     uint32_t id;
     uint32_t len;
@@ -59,8 +61,8 @@ struct buffer {
     unsigned int blockno;
     struct sleeplock lock;
     unsigned int refcount;
-    struct buf *prev;
-    struct buf *next;
+    struct buffer *prev;
+    struct buffer *next;
     char data[BUFFER_SIZE];
 };
 
