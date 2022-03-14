@@ -4,9 +4,9 @@
 #include "process.h"
 
 void initlock(struct spinlock *lock, char *name) {
-    ticklock->locked = 0;
-    ticklock->name = name;
-    ticklock->cpu = 0;
+    lock->locked = 0;
+    lock->name = name;
+    lock->cpu = 0;
 }
 
 void acquire_lock(struct spinlock *lock) {
