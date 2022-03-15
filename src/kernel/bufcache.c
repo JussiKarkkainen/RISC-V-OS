@@ -75,7 +75,12 @@ struct buffer *buffer_read(int dev, int blockno) {
             }
         }
     }
-    return buf;
+
+    if (!buf->valid) {
+        disk_read_write(buf, 0);
+        buf->valid = 1;
+
+    return buf; 
 }
 
 // Write to disk
