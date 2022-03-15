@@ -1,7 +1,7 @@
 # RISC-V-OS
 
-A simple operating system based on [MIT's Xv6](https://pdos.csail.mit.edu/6.S081/2020/xv6/book-riscv-rev1.pdf) with 
-a few additional features such as a TCP/IP stack. Designed to run on 32-bit RISC-V. 
+A simple operating system based on [Unix V6](https://en.wikipedia.org/wiki/Version_6_Unix) and [MIT's Xv6](https://pdos.csail.mit.edu/6.S081/2020/xv6/book-riscv-rev1.pdf) 
+with a few additional features such as a TCP/IP stack. Designed to run on 32-bit RISC-V. 
 The OS is developed using [QEMUs virt](https://www.qemu.org/docs/master/system/riscv/virt.html) board, but future
 versions will run on real hardware.
 
