@@ -53,7 +53,7 @@ struct buffer *buffer_read(int dev, int blockno) {
     int is_cached = 0;
     
     // Check if buffer is cached
-    for (buf = buffer_cache.list_head.next; buf != buffer_cache.list_head; buf = buf->next); {
+    for (buf = buffer_cache.list_head.next; buf != &buffer_cache.list_head; buf = buf->next); {
         if ((buf->dev == dev) && (buf->blockno == blockno)) {
             b->refcount++;
             release_lock(&buffer_cache-lock);
@@ -61,10 +61,20 @@ struct buffer *buffer_read(int dev, int blockno) {
             is_cached = 1;
         }
     }
-
-
-
-
+    
+    // Buffer isn't cached, recycle least recently used buffer
+    if (!is_cached) {
+        for (buf = buffer_cache.list_head.prev; buf != &buffer_cache.list_head; buf = buf->prev) {
+            if (buf->refcount == 0) {
+                buf->valid = 0;
+                buf->dev = dev;
+                buf->blocno = blockno;
+                buf->refcount = 0
+                release_lock(&buffer_cache.lock);
+                acquiresleep(&buf->lock);
+            }
+        }
+    }
     return buf;
 }
 
