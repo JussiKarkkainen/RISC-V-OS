@@ -46,7 +46,26 @@ void buffer_init(void) {
 
 
 // Read from disk
-struct buffer *buffer_read(void) {
+struct buffer *buffer_read(int dev, int blockno) {
+
+    struct buffer *buf;
+    acquire_lock(&buffer_cache.lock);
+    int is_cached = 0;
+    
+    // Check if buffer is cached
+    for (buf = buffer_cache.list_head.next; buf != buffer_cache.list_head; buf = buf->next); {
+        if ((buf->dev == dev) && (buf->blockno == blockno)) {
+            b->refcount++;
+            release_lock(&buffer_cache-lock);
+            acquiresleep(&buf->lock);
+            is_cached = 1;
+        }
+    }
+
+
+
+
+    return buf;
 }
 
 // Write to disk
