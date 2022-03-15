@@ -66,6 +66,14 @@ struct buffer {
     char data[BUFFER_SIZE];
 };
 
+// Struct describing the format of the first 
+// descriptor in a disk request
+struct disk_block_req {
+    uint32_t type;
+    uint32_t reserved;
+    uint32_t sector;
+}
+
 void virtio_disk_intr(void);
 int alloc_descriptor(void);
 void free_descriptor(int i);
