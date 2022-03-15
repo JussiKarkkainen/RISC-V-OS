@@ -197,6 +197,30 @@ void disk_read_write(struct buffer *buf, int write) {
     disk.desc[idx[2]].flags = DESC_WRITE; // device writes the status
     disk.desc[idx[2]].next = 0; 
 
+    buf->disk = 1;
+    disk.info[idx[0]].b = buf;
+
+    // tell the device the first index in our chain of descriptors.
+    disk.avail->ring[disk.avail->idx % NUM] = idx[0];
+
+    __sync_synchronize();
+
+    // tell the device another avail ring entry is available.
+    disk.avail->idx += 1; // not % NUM ...
+
+    __sync_synchronize();
+
+    *(base_addr + DISK_QUEUE_NOTIFY) = 0; // value is queue number
+
+    // Wait for virtio_disk_intr() to say request has finished.
+    while(buf->disk == 1) {
+        sleep(buf, &disk.disk_lock);
+    }
+
+    disk.info[idx[0]].b = 0;
+    free_chain(idx[0]);
+
+    release(&disk.vdisk_lock);
 }
 
 
