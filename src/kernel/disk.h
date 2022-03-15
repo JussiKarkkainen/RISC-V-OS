@@ -69,5 +69,6 @@ struct buffer {
 void virtio_disk_intr(void);
 int alloc_descriptor(void);
 void free_descriptor(int i);
+void disk_read_write(struct buffer *buf, int write);
 
 #endif

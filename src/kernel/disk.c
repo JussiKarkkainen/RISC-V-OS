@@ -147,3 +147,7 @@ void free_descriptor(int i) {
     wakeup(&disk.free[0]);
 }
 
+void disk_read_write(struct buffer *buf, int write) {
+}
+
+
