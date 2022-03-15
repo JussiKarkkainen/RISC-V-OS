@@ -51,6 +51,7 @@ struct buffer *buffer_read(void) {
 
 // Write to disk
 void buffer_write(struct buffer *buf) {
+    disk_read_write(buf, 1);
 }
 
 
