@@ -41,6 +41,12 @@
 #define BUFFER_SIZE 512
 #define NUMBUF 30
 
+#define DISK_BLOCK_WRITE 1
+#define DISK_BLOCK_READ 0
+
+#define DESC_NEXT 1
+#define DESC_WRITE 2
+
 struct disk_used_elem {
     uint32_t id;
     uint32_t len;

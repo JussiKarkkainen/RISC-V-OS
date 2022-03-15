@@ -19,6 +19,9 @@ struct disk {
         struct buffer *b;
         char status;
     }info[NUM];
+
+    struct disk_block_req ops[NUM];
+
 };
 
 
@@ -73,7 +76,7 @@ void disk_init(void) {
     
     // Initialize queue
     uint32_t max = *(base_addr + DISK_QUEUE_NUM_MAX);
-    *(base_addr + DISK_QUEUE_NUM) = 8   // Number of descriptors
+    *(base_addr + DISK_QUEUE_NUM) = NUM   // Number of descriptors
     memset(disk.pages, 0, sizeof(disk.pages));
     *(base_addr + DISK_QUEUE_PFN) = disk.pages;
 
@@ -160,7 +163,39 @@ void disk_read_write(struct buffer *buf, int write) {
         sleep(&disk.free[0], &disk.disk_lock);
     }
 
+    // Format descriptors
+    struct disk_block_req *buf0 = &disk.ops[idx[0]];
+    
+    if (write) {
+        buf0->type = DISK_BLOCK_WRITE;
+    }
+    else {
+        buf0->type = DISK_BLOCK_READ;
+    
+    buf0->reserved = 0;
+    buf0->sector = sector;
 
+    disk.desc[idx[0]].addr = (uint32_t) buf0;
+    disk.desc[idx[0]].len = sizeof(struct disk_block_req);
+    disk.desc[idx[0]].flags = DESC_NEXT;
+    disk.desc[idx[0]].next = idx[1];
+
+    disk.desc[idx[1]].addr = (uint32_t) buf->data;
+    disk.desc[idx[1]].len = BLOCK_SIZE;
+    if(write) {
+        disk.desc[idx[1]].flags = 0; // device reads b->data
+    }
+    else {
+        disk.desc[idx[1]].flags = DESC_WRITE; // device writes b->data
+    }
+    disk.desc[idx[1]].flags |= DESC_NEXT;
+    disk.desc[idx[1]].next = idx[2];
+
+    disk.info[idx[0]].status = 0xff; // device writes 0 on success
+    disk.desc[idx[2]].addr = (uint32_t) &disk.info[idx[0]].status;
+    disk.desc[idx[2]].len = 1;
+    disk.desc[idx[2]].flags = DESC_WRITE; // device writes the status
+    disk.desc[idx[2]].next = 0; 
 
 }
 
