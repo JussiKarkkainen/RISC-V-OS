@@ -148,6 +148,20 @@ void free_descriptor(int i) {
 }
 
 void disk_read_write(struct buffer *buf, int write) {
+    
+    uint32_t sector = buf->blockno * (BUFFER_SIZE / 512);
+    acquire_lock(&disk.disk_lock);
+
+    int idx[3];
+    while (1) {
+        if (alloc3_descriptors(idx) == 0) {
+            break;
+        }
+        sleep(&disk.free[0], &disk.disk_lock);
+    }
+
+
+
 }
 
 
