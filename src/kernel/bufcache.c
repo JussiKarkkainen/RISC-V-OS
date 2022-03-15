@@ -39,7 +39,9 @@ void buffer_init(void) {
         b->next = buffer_cache.list_head.next;
         b->prev = &buffer_cache.list_head;
         initsleep(&buf->lock, "buffer_lock");
-
+        buffer_cache.list_head.next->prev = buf;
+        buffer_cachw.list_head.next = buf;
+    }
 }
 
 
