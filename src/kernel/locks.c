@@ -77,6 +77,16 @@ void release_sleeplock(struct sleeplock *lock) {
     release_lock(&lock->spinlock);
 }
 
+int is_holding_sleeplock(struct sleeplock *lock) {
+    
+    int i
+    acquire_lock(&lock->spinlock);
+    i = ((lock->locked) && (lock->process_id == get_process_struct()->process_id));
+    release(&lock->spinlock);
+    
+    return i;
+}
+
 // Functions for matched interrupt enabling ad disabling
 void lock_intr_enable(void) {
     struct cpu *c = get_cpu_struct();

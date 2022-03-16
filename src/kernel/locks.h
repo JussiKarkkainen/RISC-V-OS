@@ -23,5 +23,6 @@ void release_sleeplock(struct sleeplock *lock);
 void release_lock(struct spinlock *lock);
 void acquire_lock(struct spinlock *lock);
 void initlock(struct spinlock *ticklock, char *name);
+void is_holding_sleeplock(struct sleeplock *lock);
 
 #endif
