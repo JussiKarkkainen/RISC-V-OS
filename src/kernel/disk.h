@@ -58,20 +58,6 @@ struct disk_used {
     struct disk_used_elem ring[8]};
 };
 
-struct buffer {
-    int valid;
-    int busy
-    int changed;
-    int disk;
-    unsigned int dev;
-    unsigned int blockno;
-    struct sleeplock lock;
-    unsigned int refcount;
-    struct buffer *prev;
-    struct buffer *next;
-    char data[BUFFER_SIZE];
-};
-
 // Struct describing the format of the first 
 // descriptor in a disk request
 struct disk_block_req {
@@ -100,6 +86,7 @@ struct disk_used {
     struct disk_used_elem ring[NUM];
 }
 
+// Functions from disk.c
 void virtio_disk_intr(void);
 int alloc_descriptor(void);
 void free_descriptor(int i);
