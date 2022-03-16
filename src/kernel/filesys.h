@@ -15,4 +15,10 @@ struct buffer {
     char data[BUFFER_SIZE];
 };
 
+// Functions from bufcache.c
+void buffer_init(void);
+struct buffer *buffer_read(int dev, int blockno);
+void buffer_write(struct buffer *buf);
+void buffer_release(struct buffer *buf);
+
 #endif
