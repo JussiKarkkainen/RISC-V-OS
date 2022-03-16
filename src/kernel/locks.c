@@ -59,16 +59,23 @@ int is_holding(struct spinlock *lock) {
 
 void acquire_sleeplock(struct sleeplock *lock) {
     
-    acquire_lock(&lock->lock);
+    acquire_lock(&lock->spinlock);
     while (lock->locked) {
-        sleep(lock, &lock->lock);
+        sleep(lock, &lock->spinlock);
     }
     
     lock->locked = 1;
     lock->process_id = get_process_struct()->process_id;
-    release_lock(&lock->lock);
+    release_lock(&lock->spinlock);
 }
 
+void release_sleeplock(struct sleeplock *lock) {
+    acquire_lock(&lock->spinlock);
+    lock->locked = 0;
+    lock->process_id = 0;
+    wakeup(lock);
+    release_lock(&lock->spinlock);
+}
 
 // Functions for matched interrupt enabling ad disabling
 void lock_intr_enable(void) {
