@@ -4,10 +4,11 @@
 // buffer_read and buffer_write, the former reading a buffer from disk to memory
 // and the latter writing a modified buffer back to the disk.
 
-
 #include "disk.h"
+#include "filesys.h"
 #include "locks.h"
 #include "process.h"
+#include "../libc/include/stdio.h"
 
 struct {
     
@@ -57,7 +58,7 @@ struct buffer *buffer_read(int dev, int blockno) {
         if ((buf->dev == dev) && (buf->blockno == blockno)) {
             b->refcount++;
             release_lock(&buffer_cache-lock);
-            acquiresleep(&buf->lock);
+            acquire_sleeplock(&buf->lock);
             is_cached = 1;
         }
     }
@@ -71,7 +72,7 @@ struct buffer *buffer_read(int dev, int blockno) {
                 buf->blocno = blockno;
                 buf->refcount = 0
                 release_lock(&buffer_cache.lock);
-                acquiresleep(&buf->lock);
+                acquire_sleeplock(&buf->lock);
             }
         }
     }
@@ -88,5 +89,26 @@ void buffer_write(struct buffer *buf) {
     disk_read_write(buf, 1);
 }
 
+// Buffer returned by buffer_read is still holding a lock, release it.jjkkk
+void buffer_release(struct buffer *buf) {
+    
+    if (is_holding == 0) {
+        panic("buffer_release, not holding lock");
+    }
+    
+    release_sleeplock(&buf->lock);
 
+    acquire_lock(&buffer_cache.lock);
+    if (buf->refcount == 0) {
+        buf->next->prev = buf->prev;
+        buf->prev->next = buf->next;
+        buf->next = buffer_cache.head.next;
+        buf->prev = &buffer_cache.head;
+        buffer_cache.head.next->prev = buf;
+        buffer_cache.head.next = buf;
+  
+    release_lock(&buffer_cache.lock);
 
+  }
+
+}    
