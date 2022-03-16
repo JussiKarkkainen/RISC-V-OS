@@ -92,7 +92,7 @@ void buffer_write(struct buffer *buf) {
 // Buffer returned by buffer_read is still holding a lock, release it.jjkkk
 void buffer_release(struct buffer *buf) {
     
-    if (is_holding == 0) {
+    if (is_holding_sleeplock() == 0) {
         panic("buffer_release, not holding lock");
     }
     
