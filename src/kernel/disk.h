@@ -87,6 +87,19 @@ struct disk_avail {
     uint16_t unused;
 }
 
+struct disk_desc {
+    uint32_t addr;
+    uint32_t len;
+    uint16_t flags;
+    uint16_t next;
+}
+
+struct disk_used {
+    uint16_t flags;
+    uint16_t idx;
+    struct disk_used_elem ring[NUM];
+}
+
 void virtio_disk_intr(void);
 int alloc_descriptor(void);
 void free_descriptor(int i);

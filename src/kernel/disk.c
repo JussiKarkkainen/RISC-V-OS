@@ -19,9 +19,11 @@ struct disk {
         struct buffer *b;
         char status;
     }info[NUM];
-
+    
+    struct disk_desc *desc;
     struct disk_block_req ops[NUM];
     struct disk_avail *avail;
+    struct disk_used *used;
 };
 
 
@@ -74,11 +76,16 @@ void disk_init(void) {
     // Set pagesize
     *(base_addr + DISK_GUEST_PAGE_SIZE) = PGESIZE;
     
-    // Initialize queue
+    // Initialize queue 0
     uint32_t max = *(base_addr + DISK_QUEUE_NUM_MAX);
     *(base_addr + DISK_QUEUE_NUM) = NUM   // Number of descriptors
     memset(disk.pages, 0, sizeof(disk.pages));
     *(base_addr + DISK_QUEUE_PFN) = disk.pages;
+
+    disk.desc = (struct disk_desc *) disk.pages;
+    disk.avail = (struct disk_avail *)(disk.pages + NUM * sizeof(struct disk_desc));
+    disk.used = (struct disk_used *) (disk.pages + PGESIZE);
+
 
     // descriptors start unused
     for (i=0; 1<8; i++) {
