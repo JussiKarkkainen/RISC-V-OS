@@ -80,6 +80,13 @@ struct disk_block_req {
     uint32_t sector;
 }
 
+struct disk_avail {
+    uint16_t flags;
+    uint16_t idx;
+    uint16_t ring[NUM];
+    uint16_t unused;
+}
+
 void virtio_disk_intr(void);
 int alloc_descriptor(void);
 void free_descriptor(int i);

@@ -21,7 +21,7 @@ struct disk {
     }info[NUM];
 
     struct disk_block_req ops[NUM];
-
+    struct disk_avail *avail;
 };
 
 
@@ -220,7 +220,7 @@ void disk_read_write(struct buffer *buf, int write) {
     disk.info[idx[0]].b = 0;
     free_chain(idx[0]);
 
-    release(&disk.vdisk_lock);
+    release_lock(&disk.vdisk_lock);
 }
 
 
