@@ -1,8 +1,8 @@
 #ifndef FILESYS_H
 #define FILESYS_H
 
-
 #define LOGSIZE 30
+#define MAXLOGOPS 10
 
 struct buffer {
     int valid;
@@ -34,5 +34,8 @@ void buffer_init(void);
 struct buffer *buffer_read(int dev, int blockno);
 void buffer_write(struct buffer *buf);
 void buffer_release(struct buffer *buf);
+
+// Functions from filesys.c
+void begin_op(void);
 
 #endif
