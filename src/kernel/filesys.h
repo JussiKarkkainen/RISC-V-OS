@@ -1,6 +1,9 @@
 #ifndef FILESYS_H
 #define FILESYS_H
 
+
+#define LOGSIZE 30
+
 struct buffer {
     int valid;
     int busy
