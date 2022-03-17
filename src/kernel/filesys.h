@@ -24,7 +24,7 @@ struct superblock {
     unsigned int num_inodes; 
     unsigned int inode_start;
     unsigned int bitmap_start;
-}
+};
 
 // Functions from bufcache.c
 void buffer_init(void);
