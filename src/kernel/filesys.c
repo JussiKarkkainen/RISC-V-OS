@@ -11,7 +11,15 @@ struct log_header {
     int count;             
     // Array of sector numbers, one for each logged block
     int block[LOGSIZE];
-}
+};
 
-
-
+struct log {
+    struct spinlock lock;
+    int start;
+    int commit;             // Is committing?, if so, wait
+    int dev;                
+    int size;
+    int num_syscalls;
+    struct log_header logh;
+};
+    
