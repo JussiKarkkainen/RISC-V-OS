@@ -119,10 +119,18 @@ void cpy_log_to_home(int recover) {
     }
 }
 
+// Write modified blocks from cache to log
+// Write header to disk
+// Copy log to home location
+// Set no transaction to log header
+// Erase transaction from log by calling write_header() again
 void commit(void) {
 
-    
-
+    if (log.loghead.count > 0) {
+        write_log();
+        write_header();
+        cpy_log_to_home(0);
+        write_header();
 }
 
 
