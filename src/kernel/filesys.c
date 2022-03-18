@@ -1,10 +1,8 @@
 #include "filesys.h"
 
-
 // LOGGING
 // The logging layer provides security in case of a crash by keeping a log of disk writes.
 // 
-
 
 struct log_header {
     // Used to indicate if there are transactions in the log, if yes holds how many blocks it contains
@@ -89,6 +87,17 @@ void write_log(void) {
     }
 }
 
-
+void write_header(void) {
+    
+    struct buffer *buf = buffer_read(log.dev, log.start);
+    struct log_header *lockhead = (struct log_header *)buf->data;
+    lockhead->count = log.logheader.count;
+    
+    for (int i = 0; i < log.loghead.count; i++) {
+        lockhead->block[i] = log.logheader.block[i];
+    }
+    buffer_write(buf);
+    buffer_release(buf);
+}
 
 
