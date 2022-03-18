@@ -89,6 +89,19 @@ void write_log(void) {
     }
 }
 
+// Read log header from disk into memory log header
+void read_header(void) {
+    struct buffer *buf = buffer_read(log.dev, log.start);
+    struct log_header lockhead = (struct log_header *)buf->data;
+    
+    for (int i = 0; i < log.loghead.count; i++) {
+        log.loghead.block[i] = lockhead->block[i];
+    }
+    
+    buffer_release(buf);
+}
+
+
 void write_header(void) {
     
     struct buffer *buf = buffer_read(log.dev, log.start);
