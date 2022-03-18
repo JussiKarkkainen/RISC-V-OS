@@ -38,5 +38,9 @@ void buffer_release(struct buffer *buf);
 // Functions from filesys.c
 void begin_op(void);
 void end_op(void);
+void write_log(void);
+void write_header(void);
+void commit(void);
+void cpy_log_to_home(int recover);
 
 #endif

@@ -100,4 +100,17 @@ void write_header(void) {
     buffer_release(buf);
 }
 
+void cpy_log_to_home(int recover) {
+}
+
+void commit(void) {
+
+    
+
+}
+
+
+
+
+
 
