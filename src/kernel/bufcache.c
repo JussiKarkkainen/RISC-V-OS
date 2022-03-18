@@ -111,4 +111,10 @@ void buffer_release(struct buffer *buf) {
 
   }
 
-}    
+}
+
+void dec_refcount(struct buffer *buf) {
+    acquire_lock(&buffer_cache.lock);
+    buf->refcount--;
+    release_lock(&buffer_cache.lock);
+}
