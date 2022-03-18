@@ -75,8 +75,19 @@ void end_op(void) {
     }
 }
 
-
-
+// loop over blocks in transaction (log header count) and copy blocks
+// from cache to log
+void write_log(void) {
+    
+    for (int i = 0; i < log.loghead.count; i++) {
+        struct buffer *to = buffer_read(log.dev, log.start+i+1);
+        struct buffer *from = buffer_read(log.dev, log.loghead.block[i]);
+        memmove(to->data, from->data, BUFFER_SIZE);
+        buffer_write(to);
+        buffer_release(to);
+        buffer_release(from);
+    }
+}
 
 
 
