@@ -1,4 +1,6 @@
 #include "filesys.h"
+#include "disk.h"
+#include "../libc/include/stdio.h"
 
 // LOGGING
 // The logging layer provides security in case of a crash by keeping a log of disk writes.
@@ -100,7 +102,21 @@ void write_header(void) {
     buffer_release(buf);
 }
 
+// Similar in implemetation to write_log()
 void cpy_log_to_home(int recover) {
+    
+    for (int i = 0; i < log.loghead.count; i++) {
+        struct buffer *logbuf = buffer_read(log.dev, log.start+i+1);
+        struct buffer *dest = buffer_read(log.dev, log.loghead.block[i]);
+        memmove(logbuf, dest, BUFFER_SIZE);
+        buffer_write(dest);
+
+        if (recover == 0) {
+            dec_refcount(dest);
+        }
+        buffer_release(logbuf);
+        buffer_release(dest);
+    }
 }
 
 void commit(void) {
