@@ -25,6 +25,22 @@ struct log {
 
 struct log log;
 
+// Make sure logheader isn't too big
+// Initialize lock
+// Set log start, size, dev
+// Call recover_from_log
+void init_log(int dev, struct superblock *sb) {
+    
+    if (sizeof(struct logheader) >= BUFFER_SIZE) {
+        panic("logheader too big during init_log");
+    }
+    initlock(&log.lock, "log");
+    log.start = sb->log_start;
+    log.size = sb->size;
+    log.dev = dev;
+    recover_from_log();
+}
+
 // Make sure that logging system is not committing and system calls
 // writes don't exceed the unreserved log space. If they do, sleep
 // Otherwise increment log.num_syscalls
@@ -145,9 +161,3 @@ void commit(void) {
         cpy_log_to_home(0);
         write_header();
 }
-
-
-
-
-
-

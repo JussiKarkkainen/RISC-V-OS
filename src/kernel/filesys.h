@@ -37,10 +37,13 @@ void buffer_release(struct buffer *buf);
 void dec_refcount(struct buffer *buf);
 
 // Functions from filesys.c
+//  logging layer
+void init_log(int dev, struct superblock *sb);
 void begin_op(void);
 void end_op(void);
 void write_log(void);
 void write_header(void);
+void read_header(void);
 void commit(void);
 void cpy_log_to_home(int recover);
 
