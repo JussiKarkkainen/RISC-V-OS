@@ -41,6 +41,9 @@ void init_log(int dev, struct superblock *sb) {
     recover_from_log();
 }
 
+void recover_from_log(void) {
+}
+
 // Make sure that logging system is not committing and system calls
 // writes don't exceed the unreserved log space. If they do, sleep
 // Otherwise increment log.num_syscalls

@@ -39,6 +39,7 @@ void dec_refcount(struct buffer *buf);
 // Functions from filesys.c
 //  logging layer
 void init_log(int dev, struct superblock *sb);
+void recover_from_log(void);
 void begin_op(void);
 void end_op(void);
 void write_log(void);
