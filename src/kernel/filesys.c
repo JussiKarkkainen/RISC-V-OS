@@ -45,3 +45,39 @@ void begin_op(void) {
         }
     }
 }
+
+// Call at the end of syscall and decrease log.num_syscall
+// If the last op, commit
+void end_op(void) {
+    
+    int make_connect = 0;
+
+    acquire_loc(&log.lock);
+    log.num_syscalls -= 1;
+
+    if (log.commit) {
+        panic("end_op log is committing");
+    }
+    if (log.num_syscalls == 0) {
+        make_commit = 1;
+        log.commit  = 1;
+    }
+    else {
+        wakeup(&log);
+    }
+
+    if (make_commit) {
+        commit();
+        acquire_lock(&log.lock);
+        log.commit = 0;
+        wakeup(&log);
+        release_lock(&log.lock);
+    }
+}
+
+
+
+
+
+
+

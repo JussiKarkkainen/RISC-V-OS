@@ -37,5 +37,6 @@ void buffer_release(struct buffer *buf);
 
 // Functions from filesys.c
 void begin_op(void);
+void end_op(void);
 
 #endif
