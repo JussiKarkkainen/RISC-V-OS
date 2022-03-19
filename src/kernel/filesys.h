@@ -29,6 +29,12 @@ struct superblock {
     unsigned int bitmap_start;
 };
 
+struct disk_inode {
+    uint16_t type;              // Type of the file, 0 for free
+    uint16_t num_link;          // Number of links to inode in filesystem
+    unsigned int size           // Size of the file
+    unsigned int adresses[13];  // Data block addresses
+
 // Functions from bufcache.c
 void buffer_init(void);
 struct buffer *buffer_read(int dev, int blockno);
