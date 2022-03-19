@@ -184,9 +184,10 @@ void inode_init(void) {
     
     initlock(&inode_table.lock, "inode_table lock");
     for (int i = 0; i < NUMINODE; i++) {
-        initsleeplock(&inode_table.inode.slock, "inode slpeeplocks");
+        initsleeplock(&inode_table.inode.slock, "inode sleeplocks");
     }
 }
 
-
+struct inode *inode_alloc(unsigned int dev, uint16_t type) {
+}
 
