@@ -1,6 +1,9 @@
 #include "filesys.h"
 #include "disk.h"
 #include "../libc/include/stdio.h"
+#include <stddef.h>
+
+struct superblock *sb;
 
 // LOGGING
 // The logging layer provides security in case of a crash by keeping a log of disk writes.
@@ -188,6 +191,27 @@ void inode_init(void) {
     }
 }
 
+// When the OS makes a new file, it calls inode_alloc()
+// Mark it allocated by changing the structs type
 struct inode *inode_alloc(unsigned int dev, uint16_t type) {
+
+    struct buffer *buf;
+    struct disk_inode *dinode;
+    int inode_num;
+
+    for (inode_num = 0; inode_num < sb.num_inodes; inode_num++) {
+        buf = buffer_read(dev, );
+        dinode = (struct disk_inode *)buf->data + inode_num % INODE_PER_BLOCK;
+        
+        if (dinode == 0) {
+            memset(dinode, 0, sizeof(dinode));
+            dinode->type = type;
+            log_write(buf);
+            buffer_release(buf);
+            return inode_get(dev, inode_num);
+        }
+        buffer_release(buf);
+    }
+    panic("no inodes found");
 }
 
