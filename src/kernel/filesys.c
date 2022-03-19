@@ -173,7 +173,9 @@ void commit(void) {
 // as defined in the superblock. Each inode is tarcked with a number indicating its
 // position.
 
+void init_inode(void) {
 
+}
 
 
 

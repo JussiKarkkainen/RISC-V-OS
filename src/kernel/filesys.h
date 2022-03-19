@@ -1,6 +1,8 @@
 #ifndef FILESYS_H
 #define FILESYS_H
 
+#include <stdint.h>
+
 #define LOGSIZE 30
 #define MAXLOGOPS 10
 
@@ -31,6 +33,8 @@ struct superblock {
 
 struct disk_inode {
     uint16_t type;              // Type of the file, 0 for free
+    uint16_t major_dev_num;     // major device number
+    uint16_t minor_dev_num;     // minor device number
     uint16_t num_link;          // Number of links to inode in filesystem
     unsigned int size           // Size of the file
     unsigned int adresses[13];  // Data block addresses
@@ -54,4 +58,6 @@ void read_header(void);
 void commit(void);
 void cpy_log_to_home(int recover);
 
+//  inode layer
+void init_inode(void);
 #endif
