@@ -24,6 +24,7 @@ void enter(void) {
         plic_init_hart();   // request device interrupts
         console_init();     // Start console
         buffer_init();      // Initialize the buffer cache for filesystem
+        inode_init();       // Initialize the inode table
         __sync_synchronize();
         started = 1;    
     }
