@@ -173,8 +173,19 @@ void commit(void) {
 // as defined in the superblock. Each inode is tarcked with a number indicating its
 // position.
 
-void inode_init(void) {
 
+// Struct to describe the inode table
+struct {
+    struct spinlock lock;
+    struct inode inode[NUMINODE];
+}inode_table;
+
+void inode_init(void) {
+    
+    initlock(&inode_table.lock, "inode_table lock");
+    for (int i = 0; i < NUMINODE; i++) {
+        initsleeplock(&inode_table.inode.slock, "inode slpeeplocks");
+    }
 }
 
 
