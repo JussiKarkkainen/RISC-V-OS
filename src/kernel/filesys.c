@@ -164,3 +164,16 @@ void commit(void) {
         cpy_log_to_home(0);
         write_header();
 }
+
+
+// INODES
+// An inode describes a single file. The inode struct holds metadata about the file
+// such as the files type, size, list of blocks holding its content and number of links
+// referring to the file. The inode are laid out on disk starting from inode_start
+// as defined in the superblock. Each inode is tarcked with a number indicating its
+// position.
+
+
+
+
+
