@@ -215,3 +215,83 @@ struct inode *inode_alloc(unsigned int dev, uint16_t type) {
     panic("no inodes found");
 }
 
+// Finds the inode on disk with inode_num, and returns the in memory copy of that inode
+struct inode *inode_get(unsigned int dev, unsigned int inode_num) {
+    
+        struct inode *inode, empty;
+
+        acquire_lock(&inode_table.lock);
+
+        empty = 0;
+        
+        // Check if inode is in inode table
+        for (inode = &inode_table.inode[0]; inode < inode_table.inode[NUMINODE]; inode++) {
+            if (inode->refcount > 0 && inode->dev == dev && inode->inode_num == inode_num) {
+                inode->refcount++;
+                release_lock(&inode_table.lock);
+                return inode;
+            }
+            if (empty == 0 && inode->refcount == 0) {
+                empty = inode;
+            }
+        }
+
+        if (empty == 0) {
+            panic("no inodes inode_get()");
+        }
+        
+        inode = empty;
+        inode->dev = dev;
+        inode->inode_num = inode_num
+        inode->refcount = 1;
+        inode->valid = 0;
+        release_lock(&inode_table.lock);
+        return inode;
+}
+
+void inode_lock(struct inode *inode) {
+    struct buffer *buf;
+    struct disk_inode *dinode;
+
+    if(inode == 0 || inode->refcount < 1)
+        panic("up == 0 || inode->refcount < 1, inode_lock");
+
+    acquire_sleep(&inode->lock);
+
+    if(ip->valid == 0) {
+
+        buf = buffer_read(inode->dev, IBLOCK(ip->inum, sb));
+        dinode = (struct dinode*)buf->data + inode->inode_num % INODE_PER_BLOCK;
+        inode->type = dinode->type;
+        inode->major = dinode->major;
+        inode->minor = dinode->minor;
+        inode->num_link = dinode->num_link;
+        inode->size = dinode->size;
+        
+        memmove(inode->addresses, dinode->addresses, sizeof(inode->addresses));
+        buffer_release(buf);
+        inode->valid = 1;
+        
+        if(inode->type == 0) {
+            panic("no type in inode_lock");
+        }
+    }
+}
+
+void inode_unlock(struct inode *inode) {
+
+    if (inode == 0 || !is_holding_sleeplock(&inode->lock) || inode->refcount < 1) {
+        panic("inode_unlock");
+    }
+
+    release_sleep(&inode->lock);
+}
+
+
+//  DIIRECTORY LAYER
+
+
+
+
+
+// PATH NAMES

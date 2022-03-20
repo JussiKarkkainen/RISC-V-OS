@@ -2,9 +2,12 @@
 #define FILESYS_H
 
 #include <stdint.h>
+#include "disk.h"
 
 #define LOGSIZE 30
 #define MAXLOGOPS 10
+#define NUMINODE 50
+#define INODE_PER_BLOCK (BUFFER_SIZE / sizeof(struct disk_inode))
 
 struct buffer {
     int valid;
@@ -37,7 +40,7 @@ struct disk_inode {
     uint16_t minor_dev_num;     // minor device number
     uint16_t num_link;          // Number of links to inode in filesystem
     unsigned int size           // Size of the file
-    unsigned int adresses[13];  // Data block addresses
+    unsigned int addresses[13];  // Data block addresses
 
 // Functions from bufcache.c
 void buffer_init(void);
@@ -60,4 +63,9 @@ void cpy_log_to_home(int recover);
 
 //  inode layer
 void init_inode(void);
+struct inode *inode_alloc(unsigned int dev, uint16_t type);
+struct inode *inode_get(unsigned int dev, unsigned int inode_num);
+void inode_lock(struct inode *inode);
+void inode_unlock(struct inode *inode);
+
 #endif
