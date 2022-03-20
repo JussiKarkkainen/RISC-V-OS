@@ -9,6 +9,13 @@ void initlock(struct spinlock *lock, char *name) {
     lock->cpu = 0;
 }
 
+void initsleeplock(struct sleeplock *lock, char *name) {
+    initlock(&lock->lock, "sleeplock");
+    lock->name = name;
+    lock->locked = 0;
+    lock->process_id = 0;
+}
+
 void acquire_lock(struct spinlock *lock) {
     lock_intr_disable();
 
