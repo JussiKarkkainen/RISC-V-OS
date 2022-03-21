@@ -3,6 +3,7 @@
 #include "paging.h"
 #include "process.h"
 #include "trap.h"
+#include "filesys.h"
 
 // This should be executed in supervisor mode, boot.S should first call 
 // start() for setup before tranfering control to enter().

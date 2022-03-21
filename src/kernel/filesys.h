@@ -9,6 +9,7 @@
 #define NUMINODE 50
 #define INODE_PER_BLOCK (BUFFER_SIZE / sizeof(struct disk_inode))
 #define BITMP_PER_BLOCK (BUFFER_SIZE * 8)
+#define NDIRECT 12
 
 struct buffer {
     int valid;
