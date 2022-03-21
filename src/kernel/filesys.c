@@ -362,9 +362,54 @@ void inode_put(struct inode *inode) {
 }
 
 void inode_truncate(struct inode *inode) {
+
+    int i, j;
+    struct buffer *buf;
+    unsigned int a;
+
+    for (i = 0; i < NDIRECT; i++) {
+        if (inode->addresses[i]) {
+            buffer_free(inode->dev, inode->addresses[i]);
+            inode->adresses[i] = 0;
+        }
+    }
+
+    if (inode->addresses[NDIRECT]) {
+        buf = buffer_read(inode->dev, inode->addresses[NDIRECT]);
+        a = (unsigned int *)buffer->data;
+        for (j = 0; j < NDIRECT; j++) {
+            if (a[j]) {
+                buffer_free(inode->dev, a[j]);
+            }
+        }
+        buffer_release(buf);
+        buffer_free(inode->dev, inode->addresses[NDIRECT]);
+        inode->addresses[NDIRECT] = 0;
+    }
+    
+    inode->size = 0;
+    inode_update(inode);
 }
 
+// Copy a modified in-memory inode to disk.
+// Caller must hold lock
+// Needs to be called when any part in inode-> struct changes
 void inode_update(struct inode *inode) {
+
+   struct buffer *buf;
+   struct disk_inode *dinode;
+
+   buf = buffer_read(inode->dev, (inode_num / INODE_PER_BLOCK + sb.inode_start));
+   dinode = (struct disk_inode *)buf->data + inode->inode_num % INODE_PER_BLOCK;
+   dinode->type = inode->type;
+   dinode->major_dev_num = inode->major_dev_num;
+   dinode->minor_dev_num = inode->minor_dev_num;
+   dinode->num_link = inode->num_link;
+   dinode->size = inode->size;
+
+   memmove(dinode->addresses, inode->addresses, sizeof(inode->addresses));
+   write_log(buf);
+   buffer_release(buf);
 }
 
 unsigned int buffer_map(struct inode *inode, unsigned int buffer_num) {
