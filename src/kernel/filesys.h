@@ -73,5 +73,8 @@ struct inode *inode_alloc(unsigned int dev, uint16_t type);
 struct inode *inode_get(unsigned int dev, unsigned int inode_num);
 void inode_lock(struct inode *inode);
 void inode_unlock(struct inode *inode);
+void inode_put(struct inode *inode);
+void inode_truncate(struct inode *inode);
+void inode_update(struct inode *inode);
 
 #endif

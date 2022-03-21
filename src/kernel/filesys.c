@@ -337,6 +337,36 @@ void inode_unlock(struct inode *inode) {
 }
 
 
+// INODE CONTENT
+
+void inode_put(struct inode *inode) {
+
+    acquire_lock(&inode_table.lock);
+
+    if (inode->refcount == 1 && inode->valid && inode->num_link == 0) {
+
+        acquire_sleep(&inode->lock);
+
+        release_lock(&inode_table.lock);
+
+        inode_truncate(inode);
+        inode->type = 0;
+        inode_update(inode);
+        inode->valid = 0;
+
+        release_sleep(&inode->lock);
+        acquire_lock(&inode_table.lock);
+    }
+    inode->refcount--;
+    release_lock(&inode_table.lock);
+}
+
+void inode_truncate(struct inode *inode) {
+}
+
+void inode_update(struct inode *inode) {
+}
+
 unsigned int buffer_map(struct inode *inode, unsigned int buffer_num) {
   
     unsigned int addr, *a;
@@ -355,7 +385,7 @@ unsigned int buffer_map(struct inode *inode, unsigned int buffer_num) {
             inode->addresses[NDIRECT] = addr = buffer_alloc(inode->dev);
         }
         buf = buffer_read(inode->dev, addr);
-        a = (unsigned int*)buf->data;
+        a = (unsigned int *)buf->data;
         if ((addr = a[buffer_num]) == 0) {
             a[buffer_num] = addr = buffer_alloc(inode->dev);
             write_log(buf);
@@ -367,7 +397,7 @@ unsigned int buffer_map(struct inode *inode, unsigned int buffer_num) {
   panic("buffer_map: out of range");
 }
 
-//  DIIRECTORY LAYER
+//  DIRECTORY LAYER
 
 
 
