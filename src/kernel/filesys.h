@@ -8,6 +8,7 @@
 #define MAXLOGOPS 10
 #define NUMINODE 50
 #define INODE_PER_BLOCK (BUFFER_SIZE / sizeof(struct disk_inode))
+#define BITMP_PER_BLOCK (BUFFER_SIZE * 8)
 
 struct buffer {
     int valid;
@@ -60,6 +61,10 @@ void write_header(void);
 void read_header(void);
 void commit(void);
 void cpy_log_to_home(int recover);
+
+//  buffer allocation
+unsigned int buffer_alloc(unsigned int dev);
+void buffer_free(int dev, unsigned int b);
 
 //  inode layer
 void init_inode(void);

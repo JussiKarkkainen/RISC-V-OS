@@ -168,6 +168,55 @@ void commit(void) {
         write_header();
 }
 
+unsigned int buffer_alloc(unsigned int dev) {
+    
+    int i, j, k;
+    struct buffer *buf;
+    
+    buf = 0;
+    for(i = 0; i < sb.size; i += BITMAP_PER_BLOCK) {
+        buf = buffer_read(dev, (i / BITMAP_PER_BLOCK + sb.bitmap_start));
+        for(j = 0; j < BPB && i + j < sb.size; j++) {
+            k = 1 << (i % 8);
+            if((buf->data[j/8] & k) == 0) {
+                buf->data[j/8] |= k;  
+                log_write(buf)_
+                buffer_release(buf);
+                buffer_zero(dev, i + j);
+                return i + j;
+            }
+        }
+    buffer_release(buf);
+    
+    }
+    panic("buffer_alloc: no blocks left");
+}
+
+void buffer_zero(int dev, int buffer_num) {
+    struct buffer *buf;
+
+    buf = buffer_read(dev, buffer_num);
+    memset(buffer->data, 0, BUFFER_SIZE;
+    write_log(buf);
+    buffer_release(buf);
+}
+
+void buffer_free(unsigned int dev, unsigned int b) {
+    
+    struct buffer *buf;
+    int i, j;
+
+    buf = buffer_read(dev, (b / BITMAP_PER_BLOCK + sb.bitmap_start));
+    i = b % BITMAP_PER_BLOCK;
+    j = 1 << (i % 8);
+
+    if ((buf->data[i/8] & j) == 0) {
+        panic("block alredy free");
+    }
+    buf->data[i/8] &= ~j:
+    write_log(buf);
+    buffer_release(buf);
+}
 
 // INODES
 // An inode describes a single file. The inode struct holds metadata about the file
@@ -260,7 +309,7 @@ void inode_lock(struct inode *inode) {
 
     if(ip->valid == 0) {
 
-        buf = buffer_read(inode->dev, IBLOCK(ip->inum, sb));
+        buf = buffer_read(inode->dev, inode_num / INODE_PER_BLOCK + sb->inode_start);
         dinode = (struct dinode*)buf->data + inode->inode_num % INODE_PER_BLOCK;
         inode->type = dinode->type;
         inode->major = dinode->major;
@@ -286,6 +335,8 @@ void inode_unlock(struct inode *inode) {
 
     release_sleep(&inode->lock);
 }
+
+
 
 
 //  DIIRECTORY LAYER
