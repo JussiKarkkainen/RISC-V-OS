@@ -337,7 +337,35 @@ void inode_unlock(struct inode *inode) {
 }
 
 
+unsigned int buffer_map(struct inode *inode, unsigned int buffer_num) {
+  
+    unsigned int addr, *a;
+    struct buffer *buf;
 
+    if (buffer_num < NDIRECT) {
+        if ((addr = inode->addresses[buffer_num]) == 0) {
+            inode->addresses[buffer_num] = addr = buffer_alloc(inode->dev);
+        }
+        return addr;
+    }
+    buffer_num -= NDIRECT;
+
+    if (bn < NINDIRECT) {
+        if ((addr = inode->addresses[NDIRECT]) == 0) {
+            inode->addresses[NDIRECT] = addr = buffer_alloc(inode->dev);
+        }
+        buf = buffer_read(inode->dev, addr);
+        a = (unsigned int*)buf->data;
+        if ((addr = a[buffer_num]) == 0) {
+            a[buffer_num] = addr = buffer_alloc(inode->dev);
+            write_log(buf);
+        }
+        buffer_release(buffer_num);
+        return addr;
+  }
+
+  panic("buffer_map: out of range");
+}
 
 //  DIIRECTORY LAYER
 
