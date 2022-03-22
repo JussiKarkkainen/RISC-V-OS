@@ -46,6 +46,13 @@ struct disk_inode {
     unsigned int size           // Size of the file
     unsigned int addresses[13];  // Data block addresses
 
+struct stat {
+    int dev;
+    unsigned in inode_num;
+    short type;
+    short num_link;
+};
+
 // Functions from bufcache.c
 void buffer_init(void);
 struct buffer *buffer_read(int dev, int blockno);
@@ -80,7 +87,6 @@ void inode_truncate(struct inode *inode);
 void inode_update(struct inode *inode);
 int read_inode(struct inode *inode, int user_dst, uint32_t dst, unsigned int off, unsigned int n);
 int write_inode(struct inode *inode, int user_dst, uint32_t dst, unsigned int off, unsigned int n);
-
-
+void copy_stat_inode(struct inode *inode, struct stat *stat);
 
 #endif

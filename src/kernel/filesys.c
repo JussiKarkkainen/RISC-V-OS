@@ -458,7 +458,7 @@ int read_inode(struct inode *inode, int user_dst, uint32_t dst, unsigned int off
 
     for (i = 0; i < n; i += j, off += j, dst += j) {
         buf = buffer_read(inode->dev, buffer_map(inode, off / BUFFER_SIZE));
-        j = min(n - i, BUFFER_SIZE - off % BUFFER_SIZE);
+        j = (n - i) < (BUFFER_SIZE - off % BUFFER_SIZE) ? (n - i) : (BUFFER_SIZE - off % BUFFER_SIZE);
         if (either_copyout(user_dst, dst, buf->data + (off % BUFFER_SIZE), j) == -1) {
             buffer_release(buf);
             i = -1;
@@ -484,7 +484,7 @@ int write_inode(struct inode *inode, int user_src, uint32_t src, unsigned int of
 
     for (i = 0; i < n; i += j, off += j, src += j) {
         buf = buffer_read(inode->dev, buffer_map(inode, off/BUFFER_SIZE));
-        j = min(n - i, BUFFER_SIZE - off % BUFFER_SIZE);
+        j = (n - i) < (BUFFER_SIZE - off % BUFFER_SIZE) ? (n - i) : (BUFFER_SIZE - off % BUFFER_SIZE);
         if (either_copyin(buf->data + (off % BUFFER_SIZE), user_src, src, m) == -1) {
            buffer_release(buf);
            break;
@@ -501,6 +501,13 @@ int write_inode(struct inode *inode, int user_src, uint32_t src, unsigned int of
     return i;
 }
 
+void copy_stat_inode(struct inode *inode, struct stat *stat) {
+    stat->dev = inode->dev;
+    stat->inode_num = inode->inode_num;
+    stat->num_link = inode->num_link;
+    stat->type = inode_type;
+    stat->size = inode->size;
+}
 
 
 //  DIRECTORY LAYER
