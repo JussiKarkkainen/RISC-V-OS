@@ -10,6 +10,8 @@
 #define INODE_PER_BLOCK (BUFFER_SIZE / sizeof(struct disk_inode))
 #define BITMP_PER_BLOCK (BUFFER_SIZE * 8)
 #define NDIRECT 12
+#define NINDIRECT (BUFFER_SIZE / sizeof(unsigned int))
+#define MAXFILE (NDIRECT + NINDIRECT)
 
 struct buffer {
     int valid;
@@ -76,5 +78,9 @@ void inode_unlock(struct inode *inode);
 void inode_put(struct inode *inode);
 void inode_truncate(struct inode *inode);
 void inode_update(struct inode *inode);
+int read_inode(struct inode *inode, int user_dst, uint32_t dst, unsigned int off, unsigned int n);
+int write_inode(struct inode *inode, int user_dst, uint32_t dst, unsigned int off, unsigned int n);
+
+
 
 #endif

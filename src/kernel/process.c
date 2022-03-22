@@ -125,6 +125,29 @@ int which_cpu(void) {
     return cpu_id;
 }
 
+int either_copyin(void *dst, int user_src, uint32_t src, uint32_t len) {
+    
+    struct process *proc = get_process_struct();
+    if(user_src) {
+        return copyto(proc->pagetable, dst, src, len);
+    } 
+    else {
+        memmove(dst, (char*)src, len);
+        return 0;
+    }
+}
+
+int either_copyout(int user_dst, uint32_t dst, void *src, uint32_t len) {
+    
+    struct process *proc = get_process_struct();
+    if (user_dst) {
+        return copyout(proc->pagetable, dst, src, len);
+    }
+    else {
+        memmove((char *)dst, src, len);
+        return 0;
+    }
+}
 
 // Fetch current cpu struct
 struct cpu *get_cpu_struct(void) {

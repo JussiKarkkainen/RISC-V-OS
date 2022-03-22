@@ -111,5 +111,7 @@ void sleep(void *sleep_channel, struct spinlock *lock);
 void wakeup(void *sleep_channel);
 void exit(int status);
 void yield_process(void);
+int either_copyin(void *dst, int user_src, uint32_t src, uint32_t len);
+int either_copyout(int user_dst, uint32_t dst, void *src, uint32_t len);
 
 #endif

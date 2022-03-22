@@ -1,6 +1,7 @@
 #include "filesys.h"
 #include "disk.h"
 #include "../libc/include/stdio.h"
+#include "process.h"
 #include <stddef.h>
 
 struct superblock *sb;
@@ -441,6 +442,66 @@ unsigned int buffer_map(struct inode *inode, unsigned int buffer_num) {
 
   panic("buffer_map: out of range");
 }
+
+// Read data from inode
+int read_inode(struct inode *inode, int user_dst, uint32_t dst, unsigned int off, unsigned int n) {
+    
+    unsigned int i, j;
+    struct buffer *buf;
+
+    if (off > inode->size || off + n < off) {
+        return 0;
+    }
+    if (off + n > inode->size) {
+        n = inode->size - off;
+    }
+
+    for (i = 0; i < n; i += j, off += j, dst += j) {
+        buf = buffer_read(inode->dev, buffer_map(inode, off / BUFFER_SIZE));
+        j = min(n - i, BUFFER_SIZE - off % BUFFER_SIZE);
+        if (either_copyout(user_dst, dst, buf->data + (off % BUFFER_SIZE), j) == -1) {
+            buffer_release(buf);
+            i = -1;
+            break;
+        }
+        buffer_release(buf);
+    }
+    return i;
+}
+
+// Write data to inode, return number of bytes written
+int write_inode(struct inode *inode, int user_src, uint32_t src, unsigned int off, unsigned int n) {
+
+    unsigned int i, j;
+    struct buffer *buf;
+    
+    if (off > inode->size || off + n < off) {
+        return -1;
+    }
+    if (off + n > MAXFILE * BUFFER_SIZE) {
+        return -1;
+    } 
+
+    for (i = 0; i < n; i += j, off += j, src += j) {
+        buf = buffer_read(inode->dev, buffer_map(inode, off/BUFFER_SIZE));
+        j = min(n - i, BUFFER_SIZE - off % BUFFER_SIZE);
+        if (either_copyin(buf->data + (off % BUFFER_SIZE), user_src, src, m) == -1) {
+           buffer_release(buf);
+           break;
+        } 
+        log_write(buf);
+        buffer_release(buf);
+    }
+
+    if (off > inode->size) {
+        inode->size = off;
+    }
+
+    inode_update(inode);
+    return i;
+}
+
+
 
 //  DIRECTORY LAYER
 
