@@ -1,6 +1,7 @@
 #include "filesys.h"
 #include "disk.h"
 #include "../libc/include/stdio.h"
+#include "../libc/include/string.h"
 #include "process.h"
 #include <stddef.h>
 
@@ -512,8 +513,11 @@ void copy_stat_inode(struct inode *inode, struct stat *stat) {
 
 //  DIRECTORY LAYER
 
+struct inode *dir_lookup(struct inode *inode, char *name, unsigned int *poff) {
+}
 
-
+int dir_link(struct inode *inode, char *name, unsigned int inode_num) {
+}
 
 
 // PATH NAMES

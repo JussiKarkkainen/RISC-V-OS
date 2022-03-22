@@ -89,4 +89,8 @@ int read_inode(struct inode *inode, int user_dst, uint32_t dst, unsigned int off
 int write_inode(struct inode *inode, int user_dst, uint32_t dst, unsigned int off, unsigned int n);
 void copy_stat_inode(struct inode *inode, struct stat *stat);
 
+//  directory layer
+struct inode *dir_lookup(struct inode *inode, char *name, unsigned int *poff);
+int dir_link(struct inode *inode, char *name, unsigned int inode_num);
+
 #endif
