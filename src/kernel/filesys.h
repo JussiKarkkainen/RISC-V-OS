@@ -12,6 +12,10 @@
 #define NDIRECT 12
 #define NINDIRECT (BUFFER_SIZE / sizeof(unsigned int))
 #define MAXFILE (NDIRECT + NINDIRECT)
+#define DIRSIZE 14
+#define DIR_TYPE 1
+#define FILE_TYPE 2
+#define DEV_TYPE 3
 
 struct buffer {
     int valid;
@@ -52,6 +56,11 @@ struct stat {
     short type;
     short num_link;
 };
+
+struct direntry {
+    unsigned short inode_num;
+    char name[DIRSIZE];
+}
 
 // Functions from bufcache.c
 void buffer_init(void);

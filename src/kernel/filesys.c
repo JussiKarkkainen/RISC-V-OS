@@ -514,6 +514,30 @@ void copy_stat_inode(struct inode *inode, struct stat *stat) {
 //  DIRECTORY LAYER
 
 struct inode *dir_lookup(struct inode *inode, char *name, unsigned int *poff) {
+
+    unsigned int offset, inode_num;
+    struct direntry de;
+
+    if (inode->type != DIR_TYPE) {
+        panic("dir lookup, not dir");
+    }
+    
+    for (offset = 0; offset < inode->size; offset += sizeof(de)) {
+        if (read_inode(inode, 0, (uint32_t)&de, offset, sizeof(de)) != sizeof(de)) {
+            panic("dir_lookup read_inode");
+        }
+        if (de.inode_num == 0) {
+            continue;
+        }
+        if (strncmp(name, de.name, DIRSIZE) == 0) {
+            if (poff) {
+                *poff = offset;
+            }
+            inode_num = de.inode_num;
+            return inode_get(inode->dev, inode_num);
+        }
+    }
+    return 0;
 }
 
 int dir_link(struct inode *inode, char *name, unsigned int inode_num) {
