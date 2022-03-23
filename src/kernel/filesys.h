@@ -102,4 +102,7 @@ void copy_stat_inode(struct inode *inode, struct stat *stat);
 struct inode *dir_lookup(struct inode *inode, char *name, unsigned int *poff);
 int dir_link(struct inode *inode, char *name, unsigned int inode_num);
 
+// path names
+struct inode *name_fetch(char *path, int nameiparent, char *name);
+
 #endif

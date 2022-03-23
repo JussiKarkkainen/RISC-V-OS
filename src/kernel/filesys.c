@@ -571,3 +571,54 @@ int dir_link(struct inode *inode, char *name, unsigned int inode_num) {
 
 
 // PATH NAMES
+
+// Look up and return the inode for a pathname
+struct inode *name_fetch(char *path, int nameiparent, char *name) {
+
+    struct inode* inode, next;
+    
+    if (*path == '/') {
+        inode = inode_get(ROOTDEV, ROOTING);
+    }
+    else {
+        inode = inode_dup(get_process_struct()->cwd);
+    }
+
+    while ((path = skip_elem(path, name)) != 0) {
+        inode_lock(inode);
+        if (inode->type != DIR_TYPE) {
+            inode_unlock(inode);
+            return 0;
+        }
+        if (nameiparent && *path == '\0') {
+            inode_unlock(inode);
+            return 0;
+        }
+        if (next = dir_lookup(inode, name, 0) == 0) {
+            inode_unlock(inode);
+            return 0;
+        }
+        inode_unlock(inode);
+        inode_put(inode);
+        inode = next;
+    }
+    if (nameiparent) {
+        inode_put(inode);
+        return 0;
+    }
+    return inode;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
