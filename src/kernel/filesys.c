@@ -610,15 +610,13 @@ struct inode *name_fetch(char *path, int nameiparent, char *name) {
 }
 
 
+struct inode *name_inode(char *path) {
+    char name[DIRSIZE];
+    return name_fetch(path, 0, name);
+}
 
-
-
-
-
-
-
-
-
-
+struct inode *nameiparent(char *path, char *name) {
+    return name_fetch(path, 1, name);
+}
 
 

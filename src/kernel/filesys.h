@@ -104,5 +104,7 @@ int dir_link(struct inode *inode, char *name, unsigned int inode_num);
 
 // path names
 struct inode *name_fetch(char *path, int nameiparent, char *name);
+struct inode *name_inode(char *path);
+struct inode *nameiparent(char *path, char *name);
 
 #endif
