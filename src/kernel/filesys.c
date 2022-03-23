@@ -541,6 +541,32 @@ struct inode *dir_lookup(struct inode *inode, char *name, unsigned int *poff) {
 }
 
 int dir_link(struct inode *inode, char *name, unsigned int inode_num) {
+
+    int off;
+    struct direntry de;
+    struct inode *inod;
+
+    if (inod = dir_lookup(inode, name, 0) != 0) {
+        inode_put(inod);
+    }
+
+    for (offset = 0; offset < inode->size; offset += sizeof(de)) {
+        if (read_inode(inode, 0, (uint32_t)&de, offset, sizeof(de)) != sizeof(de)) {
+            panic("dir_link, read_inode");
+        }
+        if (de.inode_num == 0) {
+            break;
+        }
+    }
+
+    strncpy(de.name, name, DIRSIZ);
+
+    de.inode_num = inode_num;
+    if (write_inode(inode, 0, (uint32_t)&de, offset, sizeof(de)) != sizeof(de)) {
+        panic("dir_link, write_inode");
+    }
+
+    return 0;
 }
 
 
