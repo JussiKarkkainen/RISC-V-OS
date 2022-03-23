@@ -16,6 +16,8 @@
 #define DIR_TYPE 1
 #define FILE_TYPE 2
 #define DEV_TYPE 3
+#define ROOTING 1
+#define ROOTDEV 1       // Device number of root disk
 
 struct buffer {
     int valid;
@@ -89,6 +91,7 @@ void buffer_free(int dev, unsigned int b);
 void init_inode(void);
 struct inode *inode_alloc(unsigned int dev, uint16_t type);
 struct inode *inode_get(unsigned int dev, unsigned int inode_num);
+struct inode *inode_dup(struct inode *inode);
 void inode_lock(struct inode *inode);
 void inode_unlock(struct inode *inode);
 void inode_put(struct inode *inode);
@@ -106,5 +109,6 @@ int dir_link(struct inode *inode, char *name, unsigned int inode_num);
 struct inode *name_fetch(char *path, int nameiparent, char *name);
 struct inode *name_inode(char *path);
 struct inode *nameiparent(char *path, char *name);
+char *skip_elem(char *path, char *name);
 
 #endif

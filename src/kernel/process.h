@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "locks.h"
+#include "filesys.h"
 
 #define MAXCPUS 8
 #define MAXPROC 64
@@ -54,10 +55,13 @@ struct process {
 
     struct proc *parent;
     
-    uint32_t kernel_stack;          // Adress of kernel stack
+    uint32_t kernel_stack;              // Adress of kernel stack
     uint32_t mem_size;
-    uint32_t *pagetable;            // User page table
+
+    uint32_t *pagetable;                // User page table
     struct trapframe *trapframe;
+    struct inode *cwd;                  // Current directory
+    struct file *openfile[NUMOFILES];
     struct context context;
     char name[16];    
 };

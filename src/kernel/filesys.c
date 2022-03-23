@@ -444,6 +444,13 @@ unsigned int buffer_map(struct inode *inode, unsigned int buffer_num) {
   panic("buffer_map: out of range");
 }
 
+struct inode *inode_dup(struct inode *inode) {
+    acquire_lock(&inode_table.lock);
+    inode->refcount++;
+    release_lock(&inode_table.lock);
+    return inode;
+}
+
 // Read data from inode
 int read_inode(struct inode *inode, int user_dst, uint32_t dst, unsigned int off, unsigned int n) {
     
@@ -609,6 +616,35 @@ struct inode *name_fetch(char *path, int nameiparent, char *name) {
     return inode;
 }
 
+char *skip_elem(char *path, char *name) {
+    
+    char *s;
+    int len;
+
+    while (*path == '/') {
+        path++;
+    }
+    if (*path == 0) {
+        return 0;
+    }
+    s = path;
+    
+    while (*path != '/' && *path != 0) {
+        path++;
+    }
+    len = path - s;
+    if (len >= DIRSIZ) {
+        memmove(name, s, DIRSIZ);
+    }
+    else {
+        memmove(name, s, len);
+        name[len] = 0;
+    }
+    while(*path == '/') {
+        path++;
+    }
+    return path;
+}
 
 struct inode *name_inode(char *path) {
     char name[DIRSIZE];

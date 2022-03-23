@@ -3,7 +3,18 @@
 
 #include <stdint.h>
 
-struct mem_inode {
+struct file {
+    enum { FD_NONE, FD_PIPE, FD_INODE, FD_DEVICE } type;
+    int ref;
+    char readable;
+    char writable;
+    struct pipe *pipe;
+    struct inode *inode;
+    unsigned int offset;
+    short major_dev_num;
+}
+
+struct inode {
     unsigned int dev;
     unsigned int inode_num;
     unsigned int refcnt;
