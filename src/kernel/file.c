@@ -15,7 +15,21 @@ void file_init(void) {
 }
 
 
+struct file *file_alloc(void) {
+    
+    struct file *file;
 
+    acquire_lock(&file_table.lock);
+    for (file = file_table.file; file < file_table.file + NUMFILE; file++) {
+        if (file->ref == 0) {
+            file->ref = 1;
+            release_lock(&file_table.lock);
+            return file;
+        }
+    }
+    release_lock(&file_table.lock);
+    return 0;
+}
 
 
 
