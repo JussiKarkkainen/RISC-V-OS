@@ -4,6 +4,8 @@
 #include <stdint.h>
 
 #define NUMFILE 100
+#define NUMDEV 10
+#define MAXOPBLOCKS 10
 
 struct file {
     enum { FD_NONE, FD_PIPE, FD_INODE, FD_DEVICE } type;
@@ -32,11 +34,18 @@ struct inode {
     unsigned int addresses[13]; 
 }
 
+struct devsw {
+  int (*read)(int, uint32_t, int);
+  int (*write)(int, uint32_t, int);
+};
+
 // Functions from file.c
 void file_init(void);
 struct file *file_alloc(void);
 struct file *file_inc(struct file *file);
 void file_close(struct file *file);
 int file_stat(struct file *file, uint32_t address);
+int read_file(struct file *file, uint32_t address, int n);
+int write_file(struct file *file, uint32_t address, int n);
 
 #endif

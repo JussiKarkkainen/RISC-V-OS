@@ -1,8 +1,13 @@
 #include "file.h"
 #include <stdint.h>
+#include "locks.h"
+#include "process.h"
+#include "filesys.h"
 
 // File descriptor layer
 // These functions are used in file system system calls
+
+struct devsw devsw[NDEV]
 
 struct {
     struct spinlock lock;
@@ -61,7 +66,7 @@ void file_close(struct file *file) {
     if (f.type == FD_PIPE) {
         pipe_close(f.pipe, f.writable);
     }
-    else if {
+    else if (f.type == FD_INODE || f.type == FD_DEVICE) {
         begin_op();
         inode_put(f.inode);
         end_op();
@@ -85,22 +90,83 @@ int file_stat(struct file *file, uint32_t address) {
     return -1;
 }
 
+int read_file(struct file *file, uint32_t address, int n) {
 
+    int a = 0;
 
+    if (file->readable == 0) {
+        return -1;
+    }
 
+    if (file->type == FD_PIPE) {
+        a = piperead(file->pipe, address, n);
+    }
+    else if (file->type == FD_DEVICE) {
+        if(file->major_dev_num < 0 || file->major_dev_num >= NUMDEV || !devsw[file->major_dev_num].read) {
+            return -1;
+        }
+    
+    a = devsw[file->major_dev_num].read(1, address, n);
+    
+    }
+    else if (file->type == FD_INODE) {
+        inode_lock(file->inode);
+        if ((a = read_inode(file->inode, 1, address, file->offset, n)) > 0) {
+            file->offset += r;
+        }
+        inode_unlock(file->inode);
+    }
+    else {
+        panic("file_read");
+    }
+    
+    return a;
+}
 
+int write_file(struct file *file, uint32_t address, int n) {
 
+    int r, ret, = 0;
 
+    if (file->writable == 0) {
+        return -1;
+    }
 
+    if (file->type == FD_PIPE) {
+        pipewrite(file->pipe, address, n);
+    }
+    else if (file->type == FD_DEVICE) {
+        if (file->major_dev_number < 0 || file->major_dev_num >= NUMDEV; ¦¦ !devsw[file->major_dev_num].write) {
+            return -1;
+        }
+        ret = devsw[file->major_dev_num].write(1, address, n);
+    }
+    else if (file->type == FD_INODE) {
+        int max = ((MAXOPBLOCKS-1-1-2) / 2) * BUFFER_SIZE;
+        int i = 0;
+        
+        while (i < n) {
+            int n1 = n - i;
+            if(n1 > max) {
+                n1 = max;
+            }
+            begin_op();
+            inode_lock(file->inode);
+            if ((r = write_inode(file->inode, 1, address + i, file->offser, n1)) > 0) {
+                file->offset += r;
+            }
+            inode_unlock(file->inode);
+            end_op();
 
+            if (r != n1) {
+                break;
+            }
+            i += r;
+        }
+        ret = (i == n ? n : -1);
+    }
+    else {
+        panic("write file");
+    }
 
-
-
-
-
-
-
-
-
-
-
+    return ret;
+}
