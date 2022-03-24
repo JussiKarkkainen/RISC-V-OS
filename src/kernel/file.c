@@ -32,7 +32,16 @@ struct file *file_alloc(void) {
 }
 
 
-
+struct file *file_inc(struct file *file) {
+    
+    acquire_lock(&file_table.lock);
+    if (file->ref < 1) {
+        panic("file_inc, file->ref < 1");
+    }
+    file->ref++;
+    release_lock(&file_table.lock);
+    return file;
+}
 
 
 

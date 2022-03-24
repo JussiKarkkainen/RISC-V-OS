@@ -35,5 +35,6 @@ struct inode {
 // Functions from file.c
 void file_init(void);
 struct file *file_alloc(void);
+struct file *file_inc(struct file *file);
 
 #endif
