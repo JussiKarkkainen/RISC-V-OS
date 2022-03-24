@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define NUMFILE 100
+
 struct file {
     enum { FD_NONE, FD_PIPE, FD_INODE, FD_DEVICE } type;
     int ref;
@@ -29,5 +31,8 @@ struct inode {
     unsigned int size;
     unsigned int addresses[13]; 
 }
+
+// Functions from file.c
+void file_init(void);
 
 #endif

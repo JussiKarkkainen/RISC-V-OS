@@ -26,6 +26,7 @@ void enter(void) {
         console_init();     // Start console
         buffer_init();      // Initialize the buffer cache for filesystem
         inode_init();       // Initialize the inode table
+        file_init()         // Initialize file table
         __sync_synchronize();
         started = 1;    
     }
