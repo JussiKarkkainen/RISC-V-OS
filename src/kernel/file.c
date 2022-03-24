@@ -9,11 +9,9 @@ struct {
     struct file file[NUMFILE];
 }file_table;
 
-
 void file_init(void) {
     initlock(&file_table.lock, "File table");
 }
-
 
 struct file *file_alloc(void) {
     
@@ -31,7 +29,6 @@ struct file *file_alloc(void) {
     return 0;
 }
 
-
 struct file *file_inc(struct file *file) {
     
     acquire_lock(&file_table.lock);
@@ -43,7 +40,33 @@ struct file *file_inc(struct file *file) {
     return file;
 }
 
+void file_clode(struct file *file) {
 
+    struct file *f;
+
+    acquire_lock(&file_table.lock);
+    if (file->ref < 1) {
+        panic("file_close, file->ref < 1");
+    }
+    if (--file->ref > 0) {
+        release_lock(&file_table.lock);
+        return;
+    }
+
+    f = *file;
+    file->ref = 0;
+    file->type = FD_NONE;
+    release_lock(&file_table.lock);
+
+    if (f.type == FD_PIPE) {
+        pipe_close(f.pipe, f.writable);
+    }
+    else if {
+        begin_op();
+        inode_put(f.inode);
+        end_op();
+    }
+}
 
 
 
