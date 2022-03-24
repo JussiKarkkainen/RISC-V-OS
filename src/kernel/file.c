@@ -40,7 +40,7 @@ struct file *file_inc(struct file *file) {
     return file;
 }
 
-void file_clode(struct file *file) {
+void file_close(struct file *file) {
 
     struct file *f;
 
@@ -68,7 +68,22 @@ void file_clode(struct file *file) {
     }
 }
 
+int file_stat(struct file *file, uint32_t address) {
 
+    struct process *proc = get_process_struct();
+    struct stat *stat;
+
+    if (file->type == FD_INODE || file->type == FD_DEVICE) {
+        inode_lock(file->inode);
+        copy_stat_inode(file->inode, &stat);
+        inode_unlock(file->inode);
+        if (copyout(proc->pagetable, address, (char *)&stat, sizeof(stat)) < 0) {
+            return -1;
+        }
+        return 0;
+    }
+    return -1;
+}
 
 
 

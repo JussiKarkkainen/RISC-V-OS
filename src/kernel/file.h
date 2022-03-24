@@ -37,5 +37,6 @@ void file_init(void);
 struct file *file_alloc(void);
 struct file *file_inc(struct file *file);
 void file_close(struct file *file);
+int file_stat(struct file *file, uint32_t address);
 
 #endif
