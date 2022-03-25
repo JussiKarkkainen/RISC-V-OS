@@ -25,4 +25,10 @@
 
 void handle_syscall(void);
 
+// syscalls
+uint32_t sys_exec(void);
+uint32_t sys_write(void);
+uint32_t sys_read(void);
+uint32_t sys_close(void);
+
 #endif
