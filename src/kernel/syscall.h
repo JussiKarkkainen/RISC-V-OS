@@ -26,6 +26,7 @@
 void handle_syscall(void);
 
 // syscalls
+int argfd(int n, int *pfd, struct file **pf);
 uint32_t sys_exec(void);
 uint32_t sys_write(void);
 uint32_t sys_read(void);
