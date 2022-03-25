@@ -145,6 +145,27 @@ uint32_t fetch_pa_addr(uint32_t *pagetable, uint32_t va) {
     return pa;
 }
 
+uint32_t *upaging_create(void) {
+    uint32_t *pagetable;
+    pagetable = zalloc(1);
+    if (pagetable == 0) {
+        panic("pagetable == 0, upaging_init");
+    }
+    return pagetable;
+}
+
+// Load the user initcode into address 0 of pagetable for the first process.
+void upaging_init(uint32_t pagetable, unsigned char *src, unsigned int size) {
+    uint32_t *mem;
+    
+    if (size >= PGESIZE) {
+        panic("size >= PGESIZE, upaging_init()");
+    }
+    mem = zalloc(1);
+    kmap(pagetable, 0, PGESIZE, (uint32_t)mem, PTE_W | PTE_R | PTE_X | PTE_U);
+
+    memove(mem, src, sz);
+}
 
 // Copies len amount of bytes to dst from virtual address srcaddr
 // in a given pagetable. Returns 0 on success and -1 for failure
