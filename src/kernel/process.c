@@ -6,6 +6,65 @@
 
 extern void transfer();
 
+struct process *p[MAXPROC];
+
+struct spinlock pid_lock;
+
+// First user process called from enter in kernel.c
+void init_user(void) {
+    
+    struct process *proc;
+
+    proc = alloc_process();
+
+struct process *alloc_process() {
+   
+    struct process *proc;
+
+    for (proc = p; proc < &p[MAXPROC]; proc++) {
+        acquire_lock(&proc->lock);
+        if (proc->state == UNUSED) {
+            goto found;
+        }
+        else {
+            release_lock(&proc->lock);
+        }
+    }
+    return 0;
+    
+    found:
+        proc->process_id = alloc_pid();
+        proc->state = USED;
+
+        if ((proc->trapframe = (struct trapframe *)zalloc()) == 0) {
+            freeproc(proc);
+            release_lock(&proc->lock);
+            return 0;
+        }
+
+        proc->pagetable = proc_pagetable(proc);
+        if (proc->pagetable == 0) {
+            freeproc(proc);
+            release_lock(&proc->lock);
+            return 0;
+        }
+        memset(&proc->context, 0, sizeof(proc->contexti));
+        proc->context.ra = (uint32_t)forkret;
+        proc->contect.sp = (uint32_t)proc->kstack + PGESIZE;
+
+        return proc;
+}   
+
+int alloc_pid(void) {
+
+    int pid;
+    acquire_lock(&pid_lock);
+    pid = nextpid;
+    nextpid = nextpid + 1;
+    release_lock(&pid_lock);
+    return pid;
+}
+
 // Wake up processes sleeping on sleep channel
 void wakeup(void *sleep_channel) {
     struct process *proc;
