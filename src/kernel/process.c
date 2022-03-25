@@ -3,8 +3,12 @@
 #include "regs.h"
 #include "locks.h"
 #include "../libc/include/stdio.h"
+#include "paging.h"
 
 extern void transfer();
+extern void forkret(void);
+
+struct process *initproc;
 
 struct process *p[MAXPROC];
 
@@ -16,6 +20,18 @@ void init_user(void) {
     struct process *proc;
 
     proc = alloc_process();
+    initproc = proc;
+    
+    upaging_init(proc->pagetable, initcode, sizeof(initcode)); 
+    proc->size = PGESIZE;
+    
+    strncpy(proc->name, "initcode", sizeof(proc->name));
+    proc->cwd = name_inode("/");
+
+    proc->state = RUNNABLE;
+
+    release_lock(proc->lock);
+}
 
 struct process *alloc_process() {
    
@@ -54,6 +70,37 @@ struct process *alloc_process() {
 
         return proc;
 }   
+
+void forkret(void) {
+    
+    int first = 1;
+    release_lock(&get_process_struct()->lock);
+
+    if (first) {
+        first = 0;
+        filesys_init();
+    }
+    utrapret();
+}
+
+void freeproc(struct process *proc) {
+    if(p->trapframe) {
+        kfree((void*)p->trapframe);
+    }
+    p->trapframe = 0;
+    if(p->pagetable) {
+        proc_freepagetable(p->pagetable, p->sz);
+    }
+    proc->pagetable = 0;
+    proc->size = 0;
+    proc->process_id = 0;
+    proc->parent = 0;
+    proc->name[0] = 0;
+    proc->sleep_channel = 0;
+    proc->killed = 0;
+    proc->exit_state = 0;
+    proc->state = UNUSED;
+}
 
 int alloc_pid(void) {
 

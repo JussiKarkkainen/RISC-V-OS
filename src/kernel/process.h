@@ -57,6 +57,8 @@ struct process {
     
     uint32_t kernel_stack;              // Adress of kernel stack
     uint32_t mem_size;
+    
+    struct process *parent;
 
     uint32_t *pagetable;                // User page table
     struct trapframe *trapframe;
@@ -119,5 +121,6 @@ int either_copyin(void *dst, int user_src, uint32_t src, uint32_t len);
 int either_copyout(int user_dst, uint32_t dst, void *src, uint32_t len);
 void init_user(void);
 struct process *alloc_proc(void);
+void forkret(void);
 
 #endif
