@@ -16,23 +16,23 @@ struct file {
     struct inode *inode;
     unsigned int offset;
     short major_dev_num;
-}
+};
 
 struct inode {
     unsigned int dev;
-    unsigned int inode_num;
-    unsigned int refcnt;
-    struct sleeplock slock;
+    int inode_num;
+    unsigned int refcount;
+    struct sleeplock lock;
     int valid;                  // Inode has been read from disk 
     
     // Copy of disk inode
     uint16_t type;
-    uint16_t major;
-    uint16_t minor;
+    uint16_t major_dev_num;
+    uint16_t minor_dev_num;
     uint16_t num_link;
     unsigned int size;
     unsigned int addresses[13]; 
-}
+};
 
 struct devsw {
   int (*read)(int, uint32_t, int);

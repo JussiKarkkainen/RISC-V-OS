@@ -2,6 +2,7 @@
 #define DISK_H
 
 #include <stdint.h>
+#include "filesys.h"
 
 // Offsets for disk driver
 #define DISK_MAGIC_VAL 0x000
@@ -52,39 +53,33 @@ struct disk_used_elem {
     uint32_t len;
 };
 
-struct disk_used {
-    uint16_t flags;
-    uint16_t idx;
-    struct disk_used_elem ring[8]};
-};
-
 // Struct describing the format of the first 
 // descriptor in a disk request
 struct disk_block_req {
     uint32_t type;
     uint32_t reserved;
     uint32_t sector;
-}
+};
 
 struct disk_avail {
     uint16_t flags;
     uint16_t idx;
     uint16_t ring[NUM];
     uint16_t unused;
-}
+};
 
 struct disk_desc {
     uint32_t addr;
     uint32_t len;
     uint16_t flags;
     uint16_t next;
-}
+};
 
 struct disk_used {
     uint16_t flags;
     uint16_t idx;
     struct disk_used_elem ring[NUM];
-}
+};
 
 // Functions from disk.c
 void virtio_disk_intr(void);

@@ -4,8 +4,9 @@
 #include "../libc/include/string.h"
 #include "process.h"
 #include <stddef.h>
+#include "file.h"
 
-struct superblock *sb;
+struct superblock sb;
 
 // LOGGING
 // The logging layer provides security in case of a crash by keeping a log of disk writes.
@@ -36,7 +37,7 @@ struct log log;
 // Call recover_from_log
 void init_log(int dev, struct superblock *sb) {
     
-    if (sizeof(struct logheader) >= BUFFER_SIZE) {
+    if (sizeof(struct log_header) >= BUFFER_SIZE) {
         panic("logheader too big during init_log");
     }
     initlock(&log.lock, "log");
@@ -64,7 +65,7 @@ void begin_op(void) {
         }
         else {
             log.num_syscalls += 1;
-            release(&log.lock);
+            release_lock(&log.lock);
             break;
         }
     }
@@ -74,9 +75,9 @@ void begin_op(void) {
 // If the last op, commit
 void end_op(void) {
     
-    int make_connect = 0;
+    int make_commit = 0;
 
-    acquire_loc(&log.lock);
+    acquire_lock(&log.lock);
     log.num_syscalls -= 1;
 
     if (log.commit) {
@@ -113,13 +114,39 @@ void write_log(void) {
     }
 }
 
+void log_write(struct buffer *buf) {
+    
+    int i;
+
+    acquire_lock(&log.lock);
+    if (log.loghead.count >= LOGSIZE || log.loghead.count >= log.size - 1) {
+        panic("transaction too big, log_write");
+    }
+    if (log.num_syscalls < 1) {
+        panic("log_write outside of transaction");
+    }
+
+    for (i = 0; i < log.loghead.count; i++) {
+        if (log.loghead.block[i] == buf->blockno) {
+            break;
+        }
+    }
+    log.loghead.block[i] = buf->blockno;
+    if (i == log.loghead.count) {
+        inc_buf_refcount(buf);
+        log.loghead.count++;
+    }
+    release_lock(&log.lock);
+}
+
+
 // Read log header from disk into memory log header
 void read_header(void) {
     struct buffer *buf = buffer_read(log.dev, log.start);
-    struct log_header lockhead = (struct log_header *)buf->data;
+    struct log_header *log_head = (struct log_header *)(buf->data);
     
     for (int i = 0; i < log.loghead.count; i++) {
-        log.loghead.block[i] = lockhead->block[i];
+        log.loghead.block[i] = log_head->block[i];
     }
     
     buffer_release(buf);
@@ -130,10 +157,10 @@ void write_header(void) {
     
     struct buffer *buf = buffer_read(log.dev, log.start);
     struct log_header *lockhead = (struct log_header *)buf->data;
-    lockhead->count = log.logheader.count;
+    lockhead->count = log.loghead.count;
     
     for (int i = 0; i < log.loghead.count; i++) {
-        lockhead->block[i] = log.logheader.block[i];
+        lockhead->block[i] = log.loghead.block[i];
     }
     buffer_write(buf);
     buffer_release(buf);
@@ -148,8 +175,8 @@ void cpy_log_to_home(int recover) {
         memmove(logbuf, dest, BUFFER_SIZE);
         buffer_write(dest);
 
-        if (recover == 0) {
-            dec_refcount(dest);
+        if (recover == 0) {
+            dec_buf_refcount(dest);
         }
         buffer_release(logbuf);
         buffer_release(dest);
@@ -168,6 +195,7 @@ void commit(void) {
         write_header();
         cpy_log_to_home(0);
         write_header();
+    }
 }
 
 unsigned int buffer_alloc(unsigned int dev) {
@@ -178,18 +206,17 @@ unsigned int buffer_alloc(unsigned int dev) {
     buf = 0;
     for(i = 0; i < sb.size; i += BITMAP_PER_BLOCK) {
         buf = buffer_read(dev, (i / BITMAP_PER_BLOCK + sb.bitmap_start));
-        for(j = 0; j < BPB && i + j < sb.size; j++) {
+        for(j = 0; j < BITMAP_PER_BLOCK && i + j < sb.size; j++) {
             k = 1 << (i % 8);
             if((buf->data[j/8] & k) == 0) {
                 buf->data[j/8] |= k;  
-                log_write(buf)_
+                log_write(buf);
                 buffer_release(buf);
                 buffer_zero(dev, i + j);
                 return i + j;
             }
         }
-    buffer_release(buf);
-    
+        buffer_release(buf);
     }
     panic("buffer_alloc: no blocks left");
 }
@@ -198,12 +225,12 @@ void buffer_zero(int dev, int buffer_num) {
     struct buffer *buf;
 
     buf = buffer_read(dev, buffer_num);
-    memset(buffer->data, 0, BUFFER_SIZE;
-    write_log(buf);
+    memset(buf->data, 0, BUFFER_SIZE);
+    log_write(buf);
     buffer_release(buf);
 }
 
-void buffer_free(unsigned int dev, unsigned int b) {
+void buffer_free(unsigned int dev, unsigned int b) {
     
     struct buffer *buf;
     int i, j;
@@ -215,8 +242,8 @@ void buffer_free(unsigned int dev, unsigned int b) {
     if ((buf->data[i/8] & j) == 0) {
         panic("block alredy free");
     }
-    buf->data[i/8] &= ~j:
-    write_log(buf);
+    buf->data[i/8] &= ~j;
+    log_write(buf);
     buffer_release(buf);
 }
 
@@ -238,20 +265,20 @@ void inode_init(void) {
     
     initlock(&inode_table.lock, "inode_table lock");
     for (int i = 0; i < NUMINODE; i++) {
-        initsleeplock(&inode_table.inode.slock, "inode sleeplocks");
+        initsleeplock(&inode_table.inode[i].lock, "inode sleeplocks");
     }
 }
 
 // When the OS makes a new file, it calls inode_alloc()
 // Mark it allocated by changing the structs type
-struct inode *inode_alloc(unsigned int dev, uint16_t type) {
+struct inode *inode_alloc(int dev, uint16_t type) {
 
     struct buffer *buf;
     struct disk_inode *dinode;
     int inode_num;
 
     for (inode_num = 0; inode_num < sb.num_inodes; inode_num++) {
-        buf = buffer_read(dev, );
+        buf = buffer_read(dev, (inode_num / INODE_PER_BLOCK + sb.inode_start));
         dinode = (struct disk_inode *)buf->data + inode_num % INODE_PER_BLOCK;
         
         if (dinode == 0) {
@@ -267,16 +294,16 @@ struct inode *inode_alloc(unsigned int dev, uint16_t type) {
 }
 
 // Finds the inode on disk with inode_num, and returns the in memory copy of that inode
-struct inode *inode_get(unsigned int dev, unsigned int inode_num) {
+struct inode *inode_get(unsigned int dev, int inode_num) {
     
-        struct inode *inode, empty;
+        struct inode *inode, *empty;
 
         acquire_lock(&inode_table.lock);
 
         empty = 0;
         
         // Check if inode is in inode table
-        for (inode = &inode_table.inode[0]; inode < inode_table.inode[NUMINODE]; inode++) {
+        for (inode = &inode_table.inode[0]; inode < &inode_table.inode[NUMINODE]; inode++) {
             if (inode->refcount > 0 && inode->dev == dev && inode->inode_num == inode_num) {
                 inode->refcount++;
                 release_lock(&inode_table.lock);
@@ -293,7 +320,7 @@ struct inode *inode_get(unsigned int dev, unsigned int inode_num) {
         
         inode = empty;
         inode->dev = dev;
-        inode->inode_num = inode_num
+        inode->inode_num = inode_num;
         inode->refcount = 1;
         inode->valid = 0;
         release_lock(&inode_table.lock);
@@ -307,15 +334,15 @@ void inode_lock(struct inode *inode) {
     if(inode == 0 || inode->refcount < 1)
         panic("up == 0 || inode->refcount < 1, inode_lock");
 
-    acquire_sleep(&inode->lock);
+    acquire_sleeplock(&inode->lock);
 
-    if(ip->valid == 0) {
+    if(inode->valid == 0) {
 
-        buf = buffer_read(inode->dev, inode_num / INODE_PER_BLOCK + sb->inode_start);
-        dinode = (struct dinode*)buf->data + inode->inode_num % INODE_PER_BLOCK;
+        buf = buffer_read(inode->dev, inode->inode_num / INODE_PER_BLOCK + sb.inode_start);
+        dinode = (struct disk_inode*)buf->data + inode->inode_num % INODE_PER_BLOCK;
         inode->type = dinode->type;
-        inode->major = dinode->major;
-        inode->minor = dinode->minor;
+        inode->major_dev_num = dinode->major_dev_num;
+        inode->minor_dev_num = dinode->minor_dev_num;
         inode->num_link = dinode->num_link;
         inode->size = dinode->size;
         
@@ -335,7 +362,7 @@ void inode_unlock(struct inode *inode) {
         panic("inode_unlock");
     }
 
-    release_sleep(&inode->lock);
+    release_sleeplock(&inode->lock);
 }
 
 
@@ -347,7 +374,7 @@ void inode_put(struct inode *inode) {
 
     if (inode->refcount == 1 && inode->valid && inode->num_link == 0) {
 
-        acquire_sleep(&inode->lock);
+        acquire_sleeplock(&inode->lock);
 
         release_lock(&inode_table.lock);
 
@@ -356,7 +383,7 @@ void inode_put(struct inode *inode) {
         inode_update(inode);
         inode->valid = 0;
 
-        release_sleep(&inode->lock);
+        release_sleeplock(&inode->lock);
         acquire_lock(&inode_table.lock);
     }
     inode->refcount--;
@@ -367,18 +394,18 @@ void inode_truncate(struct inode *inode) {
 
     int i, j;
     struct buffer *buf;
-    unsigned int a;
+    unsigned int *a;
 
     for (i = 0; i < NDIRECT; i++) {
         if (inode->addresses[i]) {
             buffer_free(inode->dev, inode->addresses[i]);
-            inode->adresses[i] = 0;
+            inode->addresses[i] = 0;
         }
     }
 
     if (inode->addresses[NDIRECT]) {
         buf = buffer_read(inode->dev, inode->addresses[NDIRECT]);
-        a = (unsigned int *)buffer->data;
+        a = (unsigned int *)buf->data;
         for (j = 0; j < NDIRECT; j++) {
             if (a[j]) {
                 buffer_free(inode->dev, a[j]);
@@ -396,12 +423,12 @@ void inode_truncate(struct inode *inode) {
 // Copy a modified in-memory inode to disk.
 // Caller must hold lock
 // Needs to be called when any part in inode-> struct changes
-void inode_update(struct inode *inode) {
+void inode_update(struct inode *inode) {
 
    struct buffer *buf;
    struct disk_inode *dinode;
 
-   buf = buffer_read(inode->dev, (inode_num / INODE_PER_BLOCK + sb.inode_start));
+   buf = buffer_read(inode->dev, (inode->inode_num / INODE_PER_BLOCK + sb.inode_start));
    dinode = (struct disk_inode *)buf->data + inode->inode_num % INODE_PER_BLOCK;
    dinode->type = inode->type;
    dinode->major_dev_num = inode->major_dev_num;
@@ -410,7 +437,7 @@ void inode_update(struct inode *inode) {
    dinode->size = inode->size;
 
    memmove(dinode->addresses, inode->addresses, sizeof(inode->addresses));
-   write_log(buf);
+   log_write(buf);
    buffer_release(buf);
 }
 
@@ -427,7 +454,7 @@ unsigned int buffer_map(struct inode *inode, unsigned int buffer_num) {
     }
     buffer_num -= NDIRECT;
 
-    if (bn < NINDIRECT) {
+    if (buffer_num < NINDIRECT) {
         if ((addr = inode->addresses[NDIRECT]) == 0) {
             inode->addresses[NDIRECT] = addr = buffer_alloc(inode->dev);
         }
@@ -435,9 +462,9 @@ unsigned int buffer_map(struct inode *inode, unsigned int buffer_num) {
         a = (unsigned int *)buf->data;
         if ((addr = a[buffer_num]) == 0) {
             a[buffer_num] = addr = buffer_alloc(inode->dev);
-            write_log(buf);
+            log_write(buf);
         }
-        buffer_release(buffer_num);
+        buffer_release(buf);
         return addr;
   }
 
@@ -493,7 +520,7 @@ int write_inode(struct inode *inode, int user_src, uint32_t src, unsigned int of
     for (i = 0; i < n; i += j, off += j, src += j) {
         buf = buffer_read(inode->dev, buffer_map(inode, off/BUFFER_SIZE));
         j = (n - i) < (BUFFER_SIZE - off % BUFFER_SIZE) ? (n - i) : (BUFFER_SIZE - off % BUFFER_SIZE);
-        if (either_copyin(buf->data + (off % BUFFER_SIZE), user_src, src, m) == -1) {
+        if (either_copyin(buf->data + (off % BUFFER_SIZE), user_src, src, j) == -1) {
            buffer_release(buf);
            break;
         } 
@@ -513,7 +540,7 @@ void copy_stat_inode(struct inode *inode, struct stat *stat) {
     stat->dev = inode->dev;
     stat->inode_num = inode->inode_num;
     stat->num_link = inode->num_link;
-    stat->type = inode_type;
+    stat->type = inode->type;
     stat->size = inode->size;
 }
 
@@ -529,7 +556,7 @@ struct inode *dir_lookup(struct inode *inode, char *name, unsigned int *poff) {
         panic("dir lookup, not dir");
     }
     
-    for (offset = 0; offset < inode->size; offset += sizeof(de)) {
+    for (offset = 0; offset < inode->size; offset += sizeof(de)) {
         if (read_inode(inode, 0, (uint32_t)&de, offset, sizeof(de)) != sizeof(de)) {
             panic("dir_lookup read_inode");
         }
@@ -549,11 +576,11 @@ struct inode *dir_lookup(struct inode *inode, char *name, unsigned int *poff) {
 
 int dir_link(struct inode *inode, char *name, unsigned int inode_num) {
 
-    int off;
+    unsigned int offset;
     struct direntry de;
     struct inode *inod;
 
-    if (inod = dir_lookup(inode, name, 0) != 0) {
+    if ((inod = dir_lookup(inode, name, 0)) != 0) {
         inode_put(inod);
     }
 
@@ -566,7 +593,7 @@ int dir_link(struct inode *inode, char *name, unsigned int inode_num) {
         }
     }
 
-    strncpy(de.name, name, DIRSIZ);
+    strcpy(de.name, name, DIRSIZE);
 
     de.inode_num = inode_num;
     if (write_inode(inode, 0, (uint32_t)&de, offset, sizeof(de)) != sizeof(de)) {
@@ -582,9 +609,9 @@ int dir_link(struct inode *inode, char *name, unsigned int inode_num) {
 // Look up and return the inode for a pathname
 struct inode *name_fetch(char *path, int nameiparent, char *name) {
 
-    struct inode* inode, next;
+    struct inode* inode, *next;
     
-    if (*path == '/') {
+    if (*path == '/') {
         inode = inode_get(ROOTDEV, ROOTING);
     }
     else {
@@ -593,7 +620,7 @@ struct inode *name_fetch(char *path, int nameiparent, char *name) {
 
     while ((path = skip_elem(path, name)) != 0) {
         inode_lock(inode);
-        if (inode->type != DIR_TYPE) {
+        if (inode->type != DIR_TYPE) {
             inode_unlock(inode);
             return 0;
         }
@@ -601,7 +628,7 @@ struct inode *name_fetch(char *path, int nameiparent, char *name) {
             inode_unlock(inode);
             return 0;
         }
-        if (next = dir_lookup(inode, name, 0) == 0) {
+        if ((next = dir_lookup(inode, name, 0)) == 0) {
             inode_unlock(inode);
             return 0;
         }
@@ -633,8 +660,8 @@ char *skip_elem(char *path, char *name) {
         path++;
     }
     len = path - s;
-    if (len >= DIRSIZ) {
-        memmove(name, s, DIRSIZ);
+    if (len >= DIRSIZE) {
+        memmove(name, s, DIRSIZE);
     }
     else {
         memmove(name, s, len);
