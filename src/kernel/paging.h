@@ -30,7 +30,7 @@ extern uint32_t MEMORY_END,MEMORY_END,  HEAP_START, TEXT_START, RODATA_START, DA
 void pmm_init(void);
 uint32_t *kalloc(int n);
 uint32_t *zalloc(int n);
-void free(uint32_t *ptr, int n);
+void kfree(uint32_t *ptr, int n);
 
 
 // Functions from paging.c
@@ -41,5 +41,6 @@ uint32_t *kpagemake(void);
 void init_paging(void);
 void map_kstack(uint32_t *pagetable);
 void test_alloc(void);
+void upaging_init(uint32_t *pagetable, unsigned char *src, unsigned int size);
 
 #endif

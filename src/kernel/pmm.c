@@ -96,7 +96,7 @@ uint32_t *zalloc(int n) {
 }
 
 // Free size n amount of pages
-void free(uint32_t *ptr, int n) {
+void kfree(uint32_t *ptr, int n) {
     if (ptr != 0) {
         
         // Calculate where the corresponding bit is bitmap is

@@ -3,6 +3,7 @@
 #include "../libc/include/stdio.h"
 #include "../libc/include/string.h"
 #include "process.h"
+#include "syscall.h"
 
 uint32_t *kpagetable;
 
@@ -155,7 +156,7 @@ uint32_t *upaging_create(void) {
 }
 
 // Load the user initcode into address 0 of pagetable for the first process.
-void upaging_init(uint32_t pagetable, unsigned char *src, unsigned int size) {
+void upaging_init(uint32_t *pagetable, unsigned char *src, unsigned int size) {
     uint32_t *mem;
     
     if (size >= PGESIZE) {
@@ -164,7 +165,7 @@ void upaging_init(uint32_t pagetable, unsigned char *src, unsigned int size) {
     mem = zalloc(1);
     kmap(pagetable, 0, PGESIZE, (uint32_t)mem, PTE_W | PTE_R | PTE_X | PTE_U);
 
-    memove(mem, src, sz);
+    memmove(mem, src, size);
 }
 
 // Copies len amount of bytes to dst from virtual address srcaddr
