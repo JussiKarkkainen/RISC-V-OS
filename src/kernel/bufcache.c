@@ -4,8 +4,8 @@
 // buffer_read and buffer_write, the former reading a buffer from disk to memory
 // and the latter writing a modified buffer back to the disk.
 
-#include "disk.h"
-#include "filesys.h"
+//#include "disk.h"
+//#include "filesys.h"
 #include "locks.h"
 #include "process.h"
 #include "../libc/include/stdio.h"
@@ -15,7 +15,7 @@ struct {
     struct spinlock lock;
 
     // Create NUMBUF amount of buffers for buffer cache to hold
-    struct buffer[NUMBUF];
+    struct buffer buffer[NUMBUF];
     
     // Buffers are in a linked list connected by buffer structs
     // prev and next. Can be referred to with list_head.next/prev. 
@@ -113,7 +113,13 @@ void buffer_release(struct buffer *buf) {
 
 }
 
-void dec_refcount(struct buffer *buf) {
+void inc_buf_refcount(struct buffer *buf) {
+    acquire_lock(&buffer_cache.lock);
+    buf->refcount++;
+    release_lock(&buffer_cache.lock);
+}
+
+void dec_buf_refcount(struct buffer *buf) {
     acquire_lock(&buffer_cache.lock);
     buf->refcount--;
     release_lock(&buffer_cache.lock);

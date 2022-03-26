@@ -25,6 +25,7 @@ extern uint32_t MEMORY_END,MEMORY_END,  HEAP_START, TEXT_START, RODATA_START, DA
 #define PLIC 0xc0000000
 #define PLICSIZE 0x2000
 #define KERNEL_BASE 0x80000000
+#define TRAPFRAME (USERVEC - PGESIZE)
 
 // Functions from pmm.c
 void pmm_init(void);

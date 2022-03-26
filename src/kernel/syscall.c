@@ -3,6 +3,9 @@
 #include "process.h"
 #include "../libc/include/stdio.h"
 
+// Number of elements in array
+#define NUM_ELEM(x) (sizeof(x) / sizeof((x)[0]))
+
 uint32_t (*syscall[])(void) = {
     [SYS_FORK] sys_fork,
     [SYS_EXIT] sys_exit,
@@ -39,7 +42,7 @@ void handle_syscall(void) {
     
     // Syscalls is an array of function pointers
     // Check if given num exists and execute syscall
-    if (syscall_num > 0 && syscall_num < NUM_ELEM(syscall) && syscall[syscall_num]) {
+    if (syscall_num > 0 && syscall_num < (int)NUM_ELEM(syscall) && syscall[syscall_num]) {
         proc->trapframe->a0 = syscall[syscall_num]();
     }
     // Syscall not recognized, print for debug, return -1 for failure
