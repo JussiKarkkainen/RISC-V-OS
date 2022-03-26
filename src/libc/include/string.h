@@ -9,5 +9,6 @@ void *memset(void *str, int c, size_t n);
 size_t strlen(const char* str);
 void *memmove(void *dst, const void *src, size_t n);
 int strncmp(const char *a, const char *b, unsigned int n);
+char *strcpy(char *s, const char *t, int n);
 
 #endif
