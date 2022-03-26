@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include "locks.h"
-//#include "filesys.h"
+#include "filesys.h"
 
 #define MAXCPUS 8
 #define MAXPROC 64
@@ -122,5 +122,6 @@ int either_copyout(int user_dst, uint32_t dst, void *src, uint32_t len);
 void init_user(void);
 struct process *alloc_process(void);
 void forkret(void);
+void freeproc(struct process *proc);
 
 #endif

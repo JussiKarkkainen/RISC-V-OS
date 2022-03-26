@@ -5,6 +5,7 @@
 #include "../libc/include/stdio.h"
 #include "paging.h"
 #include "../libc/include/string.h"
+#include "filesys.h"
 
 extern void transfer();
 extern void forkret(void);
@@ -41,7 +42,7 @@ void init_user(void) {
     proc->trapframe->saved_pc = 0;
     proc->trapframe->kernel_sp = PGESIZE;
 
-    strncpy(proc->name, "initcode", sizeof(proc->name));
+    strcpy(proc->name, "initcode", sizeof(proc->name));
     proc->cwd = name_inode("/");
 
     proc->state = RUNNABLE;
@@ -97,6 +98,13 @@ void forkret(void) {
         filesys_init();
     }
     utrapret();
+}
+
+void proc_freepagetable(uint32_t pagetable, uint32_t size) {
+
+    user_munmap(pagetable, USERVEC, 1, 0); 
+    user_munmap(pagetable, TRAPFRAME, 1, 0);
+    user_mfree(pagetable, size);
 }
 
 void freeproc(struct process *proc) {
