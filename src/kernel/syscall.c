@@ -35,7 +35,7 @@ void handle_syscall(void) {
     struct process *proc = get_process_struct();
     
     // Syscall num is stored in the a7 register
-    sycall_num = proc->trapframe->a7;
+    syscall_num = proc->trapframe->a7;
     
     // Syscalls is an array of function pointers
     // Check if given num exists and execute syscall
