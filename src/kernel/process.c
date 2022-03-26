@@ -4,6 +4,7 @@
 #include "locks.h"
 #include "../libc/include/stdio.h"
 #include "paging.h"
+#include "../libc/include/string.h"
 
 extern void transfer();
 extern void forkret(void);
@@ -13,6 +14,8 @@ struct process *initproc;
 struct process *p[MAXPROC];
 
 struct spinlock pid_lock;
+
+int nextpid = 1;
 
 unsigned char initcode[] = {
     0x17, 0x05, 0x00, 0x00, 0x13, 0x05, 0x45, 0x02,
@@ -33,17 +36,20 @@ void init_user(void) {
     initproc = proc;
     
     upaging_init(proc->pagetable, initcode, sizeof(initcode)); 
-    proc->size = PGESIZE;
+    proc->mem_size = PGESIZE;
     
+    proc->trapframe->saved_pc = 0;
+    proc->trapframe->kernel_sp = PGESIZE;
+
     strncpy(proc->name, "initcode", sizeof(proc->name));
     proc->cwd = name_inode("/");
 
     proc->state = RUNNABLE;
 
-    release_lock(proc->lock);
+    release_lock(&proc->lock);
 }
 
-struct process *alloc_process() {
+struct process *alloc_process(void) {
    
     struct process *proc;
 
@@ -74,9 +80,9 @@ struct process *alloc_process() {
             release_lock(&proc->lock);
             return 0;
         }
-        memset(&proc->context, 0, sizeof(proc->contexti));
+        memset(&proc->context, 0, sizeof(proc->context));
         proc->context.ra = (uint32_t)forkret;
-        proc->contect.sp = (uint32_t)proc->kstack + PGESIZE;
+        proc->context.sp = (uint32_t)proc->kernel_stack + PGESIZE;
 
         return proc;
 }   
@@ -94,15 +100,15 @@ void forkret(void) {
 }
 
 void freeproc(struct process *proc) {
-    if(p->trapframe) {
-        kfree((void*)p->trapframe);
+    if(proc->trapframe) {
+        kfree((void*)proc->trapframe, 1);
     }
-    p->trapframe = 0;
-    if(p->pagetable) {
-        proc_freepagetable(p->pagetable, p->sz);
+    proc->trapframe = 0;
+    if(proc->pagetable) {
+        proc_freepagetable(proc->pagetable, proc->mem_size);
     }
     proc->pagetable = 0;
-    proc->size = 0;
+    proc->mem_size = 0;
     proc->process_id = 0;
     proc->parent = 0;
     proc->name[0] = 0;

@@ -3,10 +3,11 @@
 
 #include <stdint.h>
 #include "locks.h"
-#include "filesys.h"
+//#include "filesys.h"
 
 #define MAXCPUS 8
 #define MAXPROC 64
+#define NUMOFILES 16
 
 // This is used in scheduling between processes
 struct context {
@@ -53,8 +54,6 @@ struct process {
     int exit_state;
     int process_id;
 
-    struct proc *parent;
-    
     uint32_t kernel_stack;              // Adress of kernel stack
     uint32_t mem_size;
     
@@ -110,6 +109,7 @@ struct trapframe {
     uint32_t t5;
     uint32_t t6;
 };
+
 struct cpu *get_cpu_struct(void);
 struct process *get_process_struct(void);
 int which_cpu(void); 
@@ -120,7 +120,7 @@ void yield_process(void);
 int either_copyin(void *dst, int user_src, uint32_t src, uint32_t len);
 int either_copyout(int user_dst, uint32_t dst, void *src, uint32_t len);
 void init_user(void);
-struct process *alloc_proc(void);
+struct process *alloc_process(void);
 void forkret(void);
 
 #endif
