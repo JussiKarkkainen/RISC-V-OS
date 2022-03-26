@@ -9,8 +9,8 @@ void initlock(struct spinlock *lock, char *name) {
     lock->cpu = 0;
 }
 
-void initsleeplock(struct sleeplock *lock, char *name) {
-    initlock(&lock->lock, "sleeplock");
+void initsleeplock(struct sleeplock *lock, char *name) {
+    initlock(&lock->spinlock, "sleeplock");
     lock->name = name;
     lock->locked = 0;
     lock->process_id = 0;
@@ -86,10 +86,9 @@ void release_sleeplock(struct sleeplock *lock) {
 
 int is_holding_sleeplock(struct sleeplock *lock) {
     
-    int i
     acquire_lock(&lock->spinlock);
-    i = ((lock->locked) && (lock->process_id == get_process_struct()->process_id));
-    release(&lock->spinlock);
+    int i = ((lock->locked) && (lock->process_id == get_process_struct()->process_id));
+    release_lock(&lock->spinlock);
     
     return i;
 }
