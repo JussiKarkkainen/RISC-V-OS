@@ -81,6 +81,19 @@ int argint(int n, int *ip) {
     return 0;
 }
 
+int argaddr(int n, uint32_t *ip) {
+    *ip = argraw(n);
+    return 0;
+}
+
+int argstr(int n, char *buf, int max) {
+    uint32_t addr;
+    if (argaddr(, &addr) < 0) {
+        return -1;
+    }
+    return fetchstr(addr, buf, max);
+}
+
 // Handle syscalls, is called from utrap() in trap.c
 void handle_syscall(void) {
     
