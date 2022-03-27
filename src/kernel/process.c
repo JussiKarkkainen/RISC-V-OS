@@ -6,6 +6,7 @@
 #include "paging.h"
 #include "../libc/include/string.h"
 #include "filesys.h"
+#include "file.h"
 
 extern void transfer();
 extern void forkret(void);
@@ -247,7 +248,56 @@ int kill(int process_id) {
     return -1;
 }
 
+void reparent(struct process *proc) {
+    struct process *p;
+    for (p = proc; p < &process[NUMPROC]; p++) {
+        if (p->parent == p) {
+            p->parent = initproc;
+            wakeup(initproc);
+        }
+    }
+}
+
 void exit(int status) {
+
+    struct proc *proc = get_process_struct();
+
+    if (proc == initproc) {
+        panic("init exiting");
+    }
+
+    // Close all open files.
+    for (int fd = 0; fd < NUMFILE; fd++) {
+        if (proc->openfile[fd]) {
+            struct file *f = proc->openfile[fd];
+            fileclose(f);
+            proc->openfile[fd] = 0;
+        }
+    }
+
+    begin_op();
+    inode_put(proc->cwd);
+    end_op();
+    proc->cwd = 0;
+
+    acquire_lock(&wait_lock);
+
+    // Give any children to init.
+    reparent(p);
+
+    // Parent might be sleeping in wait().
+    wakeup(proc->parent);
+  
+    acquire_lock(&proc->lock);
+
+    p->exit_state = status;
+    p->state = ZOMBIE;
+
+    release_lock(&wait_lock);
+
+    // Jump into the scheduler, never to return.
+    scheduler();
+    panic("zombie exit"); 
 }
 
 int which_cpu(void) {

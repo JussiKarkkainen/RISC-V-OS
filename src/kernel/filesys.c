@@ -48,6 +48,9 @@ void init_log(int dev, struct superblock *sb) {
 }
 
 void recover_from_log(void) {
+
+
+
 }
 
 // Make sure that logging system is not committing and system calls
