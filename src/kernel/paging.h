@@ -36,6 +36,7 @@ void kfree(uint32_t *ptr, int n);
 
 // Functions from paging.c
 uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc);
+uint32_t walkaddr(uint32_t *pagetable, uint32_t va);
 int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int permission);
 void kpage_init(void);
 uint32_t *kpagemake(void);
@@ -45,5 +46,6 @@ void test_alloc(void);
 void upaging_init(uint32_t *pagetable, unsigned char *src, unsigned int size);
 int copyto(uint32_t *pagetable, char *dst, uint32_t srcaddr, uint32_t len);
 int copyout(uint32_t *pagetable, char *src, uint32_t dstaddr, uint32_t len);
+int copyinstr(uint32_t *pagetable, char *dst, uint32_t srcva, uint32_t max);
 
 #endif

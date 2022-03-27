@@ -96,6 +96,28 @@ uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc) {
     return &pagetable[(((uint32_t)(vir_addr >> (PGEOFFSET + (10 * 0)) & VPNMASK)))];
 }   
 
+uint32_t walkaddr(uint32_t pagetable, uint32_t va) {
+    
+    uint32_t *pte;
+    uint32_t pa;
+
+    if (va >= MAXVA) {
+        return 0;
+    }
+
+    pte = walk(pagetable, va, 0);
+    if (pte == 0) {
+        return 0;
+    }
+    if ((*pte & PTE_V) == 0) {
+        return 0;
+    }
+    if ((*pte & PTE_U) == 0) {
+        return 0;
+    }
+    pa = (((pte) >> 10) << 12);
+    return pa;
+}
  
 int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int permissions) {
 
@@ -216,4 +238,46 @@ int copyout(uint32_t *pagetable, char *src, uint32_t dstaddr, uint32_t len) {
     return 0;
 }
 
+int copyinstr(uint32_t pagetable, char *dst, uint32_t srcva, uint32_t max) {
+	uint32_t n, va0, pa0;
+  	int got_null = 0;
+
+  	while (got_null == 0 && max > 0) {
+    	va0 = (srcva & ~(PGESIZE - 1));
+    	pa0 = walkaddr(pagetable, va0);
+    	
+		if (pa0 == 0) {
+      		return -1;
+		}
+    	n = PGSIZE - (srcva - va0);
+    	if(n > max) {
+      		n = max;
+		}
+
+    	char *p = (char *) (pa0 + (srcva - va0));
+    	
+		while (n > 0) {	
+      		if (*p == '\0') {
+        		*dst = '\0';
+        		got_null = 1;
+        		break;
+      		} 
+			else {
+        		*dst = *p;
+      		}
+      		--n;
+      		--max;
+      		p++;
+      		dst++;
+    	}
+
+    	srcva = va0 + PGESIZE;
+  	}
+  	if (got_null) {
+    	return 0;
+  	} 
+	else {
+    	return -1;
+  	}
+}
 
