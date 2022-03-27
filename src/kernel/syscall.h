@@ -26,6 +26,10 @@
 #define SYS_CLOSE 21
 
 void handle_syscall(void);
+int argint(int n, int *ip);
+int fetchaddr(uint32_t addr, uint32_t *ip);
+int fetchstr(uint32_t addr, struct buffer *buf, int max);
+uint32_t argraw(int n);
 
 // file syscalls
 int argfd(int n, int *pfd, struct file **pf);

@@ -96,6 +96,7 @@ uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc) {
     return &pagetable[(((uint32_t)(vir_addr >> (PGEOFFSET + (10 * 0)) & VPNMASK)))];
 }   
 
+// Look up a virtual address, return the physical address, used for user pages
 uint32_t walkaddr(uint32_t pagetable, uint32_t va) {
     
     uint32_t *pte;
@@ -238,6 +239,7 @@ int copyout(uint32_t *pagetable, char *src, uint32_t dstaddr, uint32_t len) {
     return 0;
 }
 
+// Copy a null-terminated string from user to kernel
 int copyinstr(uint32_t pagetable, char *dst, uint32_t srcva, uint32_t max) {
 	uint32_t n, va0, pa0;
   	int got_null = 0;

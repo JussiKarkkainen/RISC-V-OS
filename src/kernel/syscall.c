@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include "syscall.h"
 #include "process.h"
+#include "paging.h"
+#include "../libc/include/stdio.h"
 #include "../libc/include/stdio.h"
 
 // Number of elements in array
@@ -30,6 +32,54 @@ uint32_t (*syscall[])(void) = {
     [SYS_CLOSE] sys_close
 };
 
+int fetchaddr(uint32_t addr, uint32_t *ip) {
+
+    struct process *proc;
+    if (addr >= proc->size || addr+sizeof(uint32_t) > proc->state) {
+        return -1;
+    }
+    if (copyto(proc->pagetable. (char *)ip, addr, sizeof(*ip) != 0)) {
+        return -1;
+    return 0;
+}
+
+int fetchstr(uint32_t addr, struct buffer *buf, int max) {
+    
+    struct process *proc;
+    int err = copyinstr(p->pagetable, buf, addr, max);
+
+    if (err < 0) {
+        return err;
+    }
+    return strlen(buffer);
+}
+
+uint32_t argraw(int n) {
+    struct process *proc;
+    switch (n) {
+        case 0:
+            return proc->trapframe->a0;
+        case 1:
+            return proc->trapframe->a1;
+        case 2: 
+            return proc->trapframe->a2;
+        case 3:
+            return proc->trapframe->a3;
+        case 4:
+            return proc->trapframe->a4;
+        case 5: 
+            return proc->trapframe->a5;
+        
+        default:
+            panic("argraw");
+    }
+    return -1;
+}
+
+int argint(int n, int *ip) {
+    *ip = argraw(n);
+    return 0;
+}
 
 // Handle syscalls, is called from utrap() in trap.c
 void handle_syscall(void) {
