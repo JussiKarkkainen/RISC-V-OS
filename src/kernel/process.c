@@ -100,7 +100,7 @@ void forkret(void) {
     utrapret();
 }
 
-void proc_freepagetable(uint32_t pagetable, uint32_t size) {
+void proc_freepagetable(uint32_t *pagetable, uint32_t size) {
 
     user_munmap(pagetable, USERVEC, 1, 0); 
     user_munmap(pagetable, TRAPFRAME, 1, 0);

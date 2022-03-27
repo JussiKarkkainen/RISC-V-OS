@@ -43,5 +43,7 @@ void init_paging(void);
 void map_kstack(uint32_t *pagetable);
 void test_alloc(void);
 void upaging_init(uint32_t *pagetable, unsigned char *src, unsigned int size);
+int copyto(uint32_t *pagetable, char *dst, uint32_t srcaddr, uint32_t len);
+int copyout(uint32_t *pagetable, char *src, uint32_t dstaddr, uint32_t len);
 
 #endif

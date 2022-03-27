@@ -3,6 +3,7 @@
 #include "paging.h"
 #include "process.h"
 #include "trap.h"
+#include "plic.h"
 #include "filesys.h"
 
 // This should be executed in supervisor mode, boot.S should first call 
@@ -23,11 +24,11 @@ void enter(void) {
         init_trapvec();     // Initialize timer trapvec
         plic_init();        // Setup interrupt controller  
         plic_init_hart();   // request device interrupts
-        console_init();     // Start console
-        buffer_init();      // Initialize the buffer cache for filesystem
-        inode_init();       // Initialize the inode table
-        file_init();        // Initialize file table
-        init_user();
+//        console_init();     // Start console
+//        buffer_init();      // Initialize the buffer cache for filesystem
+//        inode_init();       // Initialize the inode table
+//        file_init();        // Initialize file table
+//        init_user();
         __sync_synchronize();
         started = 1;    
     }
