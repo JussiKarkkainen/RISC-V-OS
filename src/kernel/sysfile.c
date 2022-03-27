@@ -1,4 +1,3 @@
-#include "sysfile.h"
 #include "filesys.h"
 #include "file.h"
 #include <stdint.h>
@@ -17,7 +16,7 @@ int argfd(int n, int *pfd, struct file **file) {
     if (argint(n, &fd) < 0) {
         return -1;
     }
-    if (fd < 0 || fd >= NOFILE || (file = get_process_struct()->openfile[fd]) == 0) {
+    if (fd < 0 || fd >= NUMFILE || (file = get_process_struct()->openfile[fd]) == 0) {
         return -1;
     }
     if (pfd) {
@@ -113,4 +112,35 @@ uint32_t sys_close(void) {
     get_process_struct()->openfile[a] = 0;
     file_close(file);
     return 0;
+}
+
+uint32_t sys_chdir(void) {
+}
+
+
+uint32_t sys_mknod(void) {
+}
+
+uint32_t sys_mkdir(void) {
+}
+
+uint32_t sys_open(void) {
+}
+
+uint32_t sys_unlink(void) {
+}
+
+uint32_t sys_link(void) {
+}
+
+uint32_t sys_fstat(void) {
+}
+
+uint32_t sys_open(void) {
+}
+
+uint32_t sys_dup(void) {
+}
+
+uint32_t sys_pipe(void) {
 }

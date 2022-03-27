@@ -1,6 +1,8 @@
 #ifndef SYSCALL_H
 #define SYSCALL_H
 
+#include <stdint.h>
+
 #define SYS_FORK 1
 #define SYS_EXIT 2
 #define SYS_WAIT 3
@@ -25,12 +27,31 @@
 
 void handle_syscall(void);
 
-/*
-// syscalls
+// file syscalls
 int argfd(int n, int *pfd, struct file **pf);
 uint32_t sys_exec(void);
 uint32_t sys_write(void);
 uint32_t sys_read(void);
 uint32_t sys_close(void);
-*/
+uint32_t sys_chdir(void);
+uint32_t sys_mknod(void);
+uint32_t sys_mkdir(void);
+uint32_t sys_open(void);
+uint32_t sys_unlink(void);
+uint32_t sys_link(void);
+uint32_t sys_fstat(void);
+uint32_t sys_open(void);
+uint32_t sys_dup(void);
+uint32_t sys_pipe(void);
+
+// process syscalls
+uint32_t sys_exit(void);
+uint32_t sys_getpid(void);
+uint32_t sys_fork(void);
+uint32_t sys_wait(void);
+uint32_t sys_sbrk(void);
+uint32_t sys_sleep(void);
+uint32_t sys_kill(void);
+uint32_t sys_uptime(void);
+
 #endif
