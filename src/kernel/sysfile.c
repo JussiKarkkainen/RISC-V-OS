@@ -382,12 +382,142 @@ uint32_t sys_unlink(void) {
 
 
 uint32_t sys_link(void) {
+
+    char name[DIRSIZE], new[MAXPATH], old[MAXPATH];
+    struct inode *dp, *ip;
+
+    if (argstr(0, old, MAXPATH) < 0 || argstr(1, new, MAXPATH) < 0) {
+        return -1;
+    }
+
+    begin_op();
+    if ((ip = name_inode(old)) == 0) {
+        end_op();
+        return -1;
+    }
+
+    inode_lock(ip);
+    if (ip->type == T_DIR) {
+        inode_unlock(ip);
+        end_op();
+        return -1;
+    }
+
+     ip->num_link++;
+    inode_update(ip);
+    inode_unlock(ip);
+
+    if ((dp = nameiparent(new, name)) == 0) {
+        goto bad;
+    }
+    inode_lock(dp);
+    if (dp->dev != ip->dev || dir_link(dp, name, ip->inode_num) < 0){
+        inode_unlock(dp);
+        inode_put(dp);
+        goto bad;
+    }
+    inode_unlock(dp);
+    inode_put(dp);
+    inode_put(ip);
+
+    end_op();
+
+    return 0;
+
+    bad:
+        inode_lock(ip);
+        ip->num_link--;
+        inode_update(ip);
+        inode_unlock(ip);
+        inode_put(ip);
+        end_op();
+        return -1;
+    }
 }
 
 uint32_t sys_fstat(void) {
+
+    struct file *f;
+    uint32_t st;
+
+    if (argfd(0, 0, &f) < 0 || argaddr(1, &st) < 0) {
+        return -1;
+    }
+    return file_stat(f, st);
 }
 
 uint32_t sys_open(void) {
+
+    char path[MAXPATH];
+    int fd, omode;
+    struct file *f;
+    struct inode *ip;
+    int n;
+
+    if ((n = argstr(0, path, MAXPATH)) < 0 || argint(1, &omode) < 0) {
+        return -1;
+    }
+
+    begin_op();
+
+    if (omode & O_CREATE) {
+        ip = create(path, T_FILE, 0, 0);
+        if (ip == 0) {
+            end_op();
+            return -1;
+        }
+    } 
+    else {
+        if ((ip = name_inode(path)) == 0) {
+            end_op();
+            return -1;
+        }
+        inode_lock(ip);
+        if (ip->type == T_DIR && omode != O_RDONLY) {
+            inode_unlock(ip);
+            inode_put(ip);
+            end_op();
+            return -1;
+        }
+    }
+
+    if (ip->type == T_DEVICE && (ip->major_dev_num < 0 || ip->major_dev_num >= NDEV)){
+        inode_unlock(ip);
+        inode_put(ip);
+        end_op();
+        return -1;
+    }
+
+    if ((f = file_alloc()) == 0 || (fd = fdalloc(f)) < 0) {
+        if(f) {
+            fileclose(f);
+        }
+        inode_unlock(ip);
+        inode_put(ip);
+        end_op();
+        return -1;
+    }
+
+    if (ip->type == T_DEVICE) {
+        f->type = FD_DEVICE;
+        f->major_dev_num = ip->major_dev_num;
+    } 
+    else {
+        f->type = FD_INODE;
+        f->offset = 0;
+    }
+    f->inode = ip;
+    f->readable = !(omode & O_WRONLY);
+    f->writable = (omode & O_WRONLY) || (omode & O_RDWR);
+
+    if ((omode & O_TRUNC) && ip->type == T_FILE) {
+        inode_truncate(ip);
+    }
+
+    inode_unlock(ip);
+    end_op();
+
+    return fd;
 }
 
 uint32_t sys_dup(void) {
