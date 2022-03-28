@@ -49,7 +49,10 @@ void init_log(int dev, struct superblock *sb) {
 
 void recover_from_log(void) {
 
-
+    read_header();
+    cpy_log_to_home(1);
+    log.loghead.count = 0;
+    write_header();
 
 }
 

@@ -1,6 +1,46 @@
 // Pipes are a way of passing information from one process to another
 #include <stdint.h>
 #include "pipes.h"
+#include "process.h"
+
+int pipealloc(struct file **f0, struct file **f1) {
+    struct pipe *pi;
+
+    pi = 0;
+    *f0 = *f1 = 0;
+    if ((*f0 = file_alloc()) == 0 || (*f1 = file_alloc()) == 0) {
+        goto bad;
+    }
+    if ((pi = (struct pipe*)zalloc(1)) == 0) {
+        goto bad;
+    }
+    pi->read-open = 1;
+    pi->write_open = 1;
+    pi->num_write = 0;
+    pi->num_read = 0;
+    initlock(&pi->lock, "pipe");
+    (*f0)->type = FD_PIPE;
+    (*f0)->readable = 1;
+    (*f0)->writable = 0;
+    (*f0)->pipe = pi;
+    (*f1)->type = FD_PIPE;
+    (*f1)->readable = 0;
+    (*f1)->writable = 1;
+    (*f1)->pipe = pi;
+    return 0;
+
+    bad:
+        if (pi) {
+            kfree((char*)pi); 
+        }
+        if (*f0) {
+            file_close(*f0);
+        }
+        if (*f1) {
+            file_close(*f1);
+        }
+        return -1;
+}
 
 int pipewrite(struct pipe *p, int n, uint32_t addr) {
     struct process *proc = get_process_struct();

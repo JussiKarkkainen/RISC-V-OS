@@ -75,6 +75,7 @@ uint32_t sys_exec(void) {
 }   
 
 
+
 uint32_t sys_read(void) {
 
     struct file *file;
@@ -115,13 +116,56 @@ uint32_t sys_close(void) {
 }
 
 uint32_t sys_chdir(void) {
+
+    char path[MAXPATH];
+    struct inode *ip;
+    struct proc *p = get_process_struct();
+  
+    begin_op();
+    if(argstr(0, path, MAXPATH) < 0 || (ip = namei(path)) == 0) {
+        end_op();
+        return -1;
+    }
+  
+    inode_lock(ip);
+    if(ip->type != T_DIR) {
+        iunlockput(ip);
+        end_op();
+        return -1;
+    }
+  
+    inode_unlock(ip);
+    inode_put(p->cwd);
+    end_op();
+    p->cwd = ip;
+    return 0;
 }
 
 
 uint32_t sys_mknod(void) {
+
+    struct inode *inode;
+    char path[MAXPATH];
+    int major, minor;
+
+    begin_op();
+    if((argstr(0, path, MAXPATH)) < 0 ||
+        argint(1, &major) < 0 ||
+        argint(2, &minor) < 0 ||
+        (inode = create(path, T_DEVICE, major, minor)) == 0) {
+        end_op();
+        return -1;
+    }
+    inode_unlock(inode);
+    inode_put(inode);
+    end_op();
+    return 0;
 }
 
 uint32_t sys_mkdir(void) {
+
+    
+
 }
 
 uint32_t sys_open(void) {
@@ -143,4 +187,34 @@ uint32_t sys_dup(void) {
 }
 
 uint32_t sys_pipe(void) {
+
+    uint32_t fdarray;
+    struct file *rf, *wf;
+    int fd0, fd1;
+    struct process *p = get_process_struct();
+
+    if(argaddr(0, &fdarray) < 0) {
+        return -1;
+    }
+    if(pipealloc(&rf, &wf) < 0) {
+        return -1;
+    }
+    fd0 = -1;
+    if((fd0 = fdalloc(rf)) < 0 || (fd1 = fdalloc(wf)) < 0) {
+        if(fd0 >= 0) {
+            p->openfile[fd0] = 0;
+        }
+        file_close(rf);
+        file_close(wf);
+        return -1;
+    }
+    if(copyout(p->pagetable, fdarray, (char*)&fd0, sizeof(fd0)) < 0 ||
+        copyout(p->pagetable, fdarray+sizeof(fd0), (char *)&fd1, sizeof(fd1)) < 0) {
+        p->openfile[fd0] = 0;
+        p->openfile[fd1] = 0;
+        file_close(rf);
+        file_close(wf);
+        return -1;
+    }
+    return 0;
 }
