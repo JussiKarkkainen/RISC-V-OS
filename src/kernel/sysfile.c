@@ -2,6 +2,7 @@
 #include "file.h"
 #include <stdint.h>
 #include <stddef.h>
+#include "syscall.h"
 
 // File system system calls
 
@@ -28,6 +29,18 @@ int argfd(int n, int *pfd, struct file **file) {
     return 0;
 }
 
+int fdalloc(struct file *f) {
+    int fd;
+    struct proc *p = myproc();
+
+    for (fd = 0; fd < NUMFILE; fd++) {
+        if (p->openfile[fd] == 0) {
+            p->openfile[fd] = f;
+            return fd;
+        }
+    } 
+    return -1;
+}
 
 uint32_t sys_exec(void) {
     
@@ -101,6 +114,57 @@ uint32_t sys_write(void) {
     return write_file(file, p, n);
 }
 
+struct inode* create(char *path, short type, short major, short minor) {
+  
+    struct inode *ip, *dp;
+    char name[DIRSIZE];
+
+    if ((dp = nameiparent(path, name)) == 0) {
+        return 0;
+    }
+
+    inode_lock(dp);
+
+    if ((ip = dir_lookup(dp, name, 0)) != 0) {
+        inode_unlock(dp);
+        inode_put(dp);
+        inode_lock(ip);
+        if (type == T_FILE && (ip->type == T_FILE || ip->type == T_DEVICE)) {
+            return ip;
+        }
+        inode_unlock(ip);
+        inode_put(ip);
+        return 0;
+    }
+
+    if ((ip = inode_alloc(dp->dev, type)) == 0) {
+        panic("create: inode_alloc");
+    }
+
+    inode_lock(ip);
+    ip->major_dev_num = major;
+    ip->minor_dev_num = minor;
+    ip->num_link = 1;
+    inode_update(ip);
+
+    if (type == T_DIR) { 
+        dp->num_link++; 
+        inode_update(dp);
+    
+        if (dirlink(ip, ".", ip->inode_num) < 0 || dirlink(ip, "..", dp->inode_num) < 0) {
+            panic("create dots, create()");
+        }
+    }
+
+    if (dirlink(dp, name, ip->inum) < 0) {
+        panic("create: dirlink");
+    }
+
+    inode_unlock(dp);
+    inode_put(dp);
+
+    return ip;
+}
 
 uint32_t sys_close(void) {
 
@@ -149,7 +213,7 @@ uint32_t sys_mknod(void) {
     int major, minor;
 
     begin_op();
-    if((argstr(0, path, MAXPATH)) < 0 ||
+    if ((argstr(0, path, MAXPATH)) < 0 ||
         argint(1, &major) < 0 ||
         argint(2, &minor) < 0 ||
         (inode = create(path, T_DEVICE, major, minor)) == 0) {
@@ -164,15 +228,158 @@ uint32_t sys_mknod(void) {
 
 uint32_t sys_mkdir(void) {
 
-    
+    char path[MAXPATH];
+    struct inode *inode;
 
+    begin_op();
+    if (argstr(0, path, MAXPATH) < 0 || (ininodee = create(path, T_DIR, 0, 0)) == 0) {
+        end_op();
+        return -1;
+    }
+    inode_unlock(inode);
+    inode_put(inode);
+    end_op();
+    return 0; 
 }
 
 uint32_t sys_open(void) {
+
+    char path[MAXPATH];
+    int fd, omode;
+    struct file *f;
+    struct inode *ip;
+    int n;
+
+    if ((n = argstr(0, path, MAXPATH)) < 0 || argint(1, &omode) < 0) {
+        return -1;
+    }
+
+    begin_op();
+
+    if (omode & O_CREATE) {
+        ip = create(path, T_FILE, 0, 0);
+        if (ip == 0) {
+            end_op();
+            return -1;
+        }
+    } 
+    else {
+        if ((ip = name_inode(path)) == 0) {
+            end_op();
+            return -1;
+        }
+        inode_lock(ip);
+        if (ip->type == T_DIR && omode != O_RDONLY) {
+            inode_unlock(ip);
+            inode_put(ip);
+            end_op();
+            return -1;
+        }
+    }
+
+    if (ip->type == T_DEVICE && (ip->major_dev_num < 0 || ip->major_dev_num >= NDEV)) {
+        inode_unlock(ip);
+        inode_put(ip);
+        end_op();
+        return -1;
+    }
+
+    if ((f = file_alloc()) == 0 || (fd = fdalloc(f)) < 0) {
+        if (f) {
+            file_close(f);
+        }
+        inode_unlock(ip);
+        inode_put(ip);
+        end_op();
+        return -1;
+    }
+
+    if (ip->type == T_DEVICE) {
+        f->type = FD_DEVICE;
+        f->major = ip->major_dev_num;
+    } 
+    else {
+        f->type = FD_INODE;
+        f->off = 0;
+    }
+    f->inode = ip;
+    f->readable = !(omode & O_WRONLY);
+    f->writable = (omode & O_WRONLY) || (omode & O_RDWR);
+
+    if ((omode & O_TRUNC) && ip->type == T_FILE) {
+        inode_truncate(ip);
+    }
+
+    inode_unlock(ip);
+    end_op();
+
+    return fd;
 }
 
 uint32_t sys_unlink(void) {
+
+    struct inode *ip, *dp;
+    struct direntry de;
+    char name[DIRSIZE], path[MAXPATH];
+    unsigned int off;
+
+    if (argstr(0, path, MAXPATH) < 0) {
+        return -1;
+    }
+
+    begin_op();
+    if ((dp = nameiparent(path, name)) == 0) {
+        end_op();
+        return -1;
+    }
+
+    inode_lock(dp);
+
+    if(strncmp(name, ".") == 0 || strncmp(name, "..") == 0) {
+        goto bad;
+    }
+
+    if ((ip = dir_lookup(dp, name, &off)) == 0) {
+        goto bad;
+    }
+    inode_lock(ip);
+
+    if (ip->num_link < 1) {
+        panic("unlink: num_link < 1");
+    }
+    if (ip->type == T_DIR && !isdirempty(ip)) {
+        inode_unlock(ip);
+        inode_put(ip);
+        goto bad;
+    }
+
+    memset(&de, 0, sizeof(de));
+    if (write_inode(dp, 0, (uint32_t)&de, off, sizeof(de)) != sizeof(de)) {
+        panic("unlink: write_inode");
+    }
+    if (ip->type == T_DIR) {
+        dp->num_link--;
+        inode_update(dp);
+    }
+    inode_unlock(dp);
+    inode_put(dp;
+
+    ip->num_link--;
+    inode_update(ip);
+    inode_unlock(ip);
+    inode_put(ip);
+
+    end_op();
+
+    return 0;
+
+    bad:
+        inode_unlock(dp);
+        inode_put(dp);
+        end_op();
+        return -1;
 }
+
 
 uint32_t sys_link(void) {
 }
@@ -184,6 +391,18 @@ uint32_t sys_open(void) {
 }
 
 uint32_t sys_dup(void) {
+
+    struct file *f;
+    int fd;
+
+    if (argfd(0, 0, &f) < 0) {
+        return -1;
+    }
+    if ((fd=fdalloc(f)) < 0) {
+        return -1;
+    }
+    file_dup(f);
+    return fd;
 }
 
 uint32_t sys_pipe(void) {
@@ -193,22 +412,22 @@ uint32_t sys_pipe(void) {
     int fd0, fd1;
     struct process *p = get_process_struct();
 
-    if(argaddr(0, &fdarray) < 0) {
+    if (argaddr(0, &fdarray) < 0) {
         return -1;
     }
-    if(pipealloc(&rf, &wf) < 0) {
+    if (pipealloc(&rf, &wf) < 0) {
         return -1;
     }
     fd0 = -1;
-    if((fd0 = fdalloc(rf)) < 0 || (fd1 = fdalloc(wf)) < 0) {
-        if(fd0 >= 0) {
+    if ((fd0 = fdalloc(rf)) < 0 || (fd1 = fdalloc(wf)) < 0) {
+        if (fd0 >= 0) {
             p->openfile[fd0] = 0;
         }
         file_close(rf);
         file_close(wf);
         return -1;
     }
-    if(copyout(p->pagetable, fdarray, (char*)&fd0, sizeof(fd0)) < 0 ||
+    if (copyout(p->pagetable, fdarray, (char*)&fd0, sizeof(fd0)) < 0 ||
         copyout(p->pagetable, fdarray+sizeof(fd0), (char *)&fd1, sizeof(fd1)) < 0) {
         p->openfile[fd0] = 0;
         p->openfile[fd1] = 0;

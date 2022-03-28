@@ -55,6 +55,10 @@ struct disk_inode {
     unsigned int addresses[13];  // Data block addresses
 };
 
+#define T_DIR     1   
+#define T_FILE    2   
+#define T_DEVICE  3
+
 struct stat {
     int dev;
     unsigned int inode_num;

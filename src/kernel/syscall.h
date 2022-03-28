@@ -25,6 +25,12 @@
 #define SYS_MKDIR 20
 #define SYS_CLOSE 21
 
+#define O_RDONLY  0x000
+#define O_WRONLY  0x001
+#define O_RDWR    0x002
+#define O_CREATE  0x200
+#define O_TRUNC   0x400
+
 void handle_syscall(void);
 int argint(int n, int *ip);
 int fetchaddr(uint32_t addr, uint32_t *ip);

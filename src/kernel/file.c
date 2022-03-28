@@ -170,3 +170,13 @@ int write_file(struct file *file, uint32_t address, int n) {
 
     return ret;
 }
+
+struct file *file_dup(struct file *f) {
+    acquire_lock(&file_table.lock);
+    if(f->ref < 1) {
+        panic("filedup");
+    }
+    f->ref++;
+    release_lock(&file_table.lock);
+    return f;
+}
