@@ -235,6 +235,17 @@ uint32_t uvmdealloc(uint32_t *pagetable, uint32_t oldsize, uint32_t newsize) {
     return newsize;
 }
 
+void uvmclear(uint32_t pagetable, uint32_t va) {
+  
+    uint32_t *pte;
+  
+    pte = walk(pagetable, va, 0);
+    if (pte == 0) {
+        panic("uvmclear");
+    }
+    *pte &= ~PTE_U;
+}
+
 void uvmunmap(uint32_t pagetable, uint32 va, uint32_t num_pages, int free) {
   
     uint32_t a;
