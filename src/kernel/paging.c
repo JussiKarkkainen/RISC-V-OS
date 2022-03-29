@@ -235,7 +235,32 @@ uint32_t uvmdealloc(uint32_t *pagetable, uint32_t oldsize, uint32_t newsize) {
     return newsize;
 }
 
+void uvmunmap(uint32_t pagetable, uint32 va, uint32_t num_pages, int free) {
+  
+    uint32_t a;
+    uint32_t *pte;
 
+    if ((va % PGESIZE) != 0) {
+        panic("uvmunmap: not aligned");
+    }
+
+    for (a = va; a < va + num_pages*PGESIZE; a += PGESIZE) {
+        if ((pte = walk(pagetable, a, 0)) == 0) {
+            panic("uvmunmap: walk");
+        }
+        if ((*pte & PTE_V) == 0) {
+            panic("uvmunmap: not mapped");
+        }
+        if (PTE_FLAGS(*pte) == PTE_V) {
+            panic("uvmunmap: not a leaf");
+        }
+        if (free) {
+            uint32_t pa = (((*pte) >> 10) << 12);
+            kfree((void*)pa);
+        }
+        *pte = 0;
+    }
+}
 
 
 // Copies len amount of bytes to dst from virtual address srcaddr
