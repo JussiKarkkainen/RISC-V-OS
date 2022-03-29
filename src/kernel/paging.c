@@ -191,6 +191,53 @@ void upaging_init(uint32_t *pagetable, unsigned char *src, unsigned int size) {
     memmove(mem, src, size);
 }
 
+// Allocate user pages for processes to grow process memory from oldsize to newsize
+uint32_t uvmalloc(uint32_t *pagetable, uint32_t oldsize, uint32_t newsize) {
+
+    char *mem;
+    uint32_t a;
+
+    if (newsize < oldsize) {
+        return oldsize;
+    }
+
+    oldsize = (((oldsize) + PGESIZE-1) & ~(PGESIZE-1))      // Round up to pagesize
+    for (a = oldsize; a < newsize; a += PGESIZE) {
+        mem = zalloc(1);
+        if (mem == 0) {
+            uvmdealloc(pagetable, a, oldsz);
+            return 0;
+        }
+        memset(mem, 0, PGESIZE);
+        if (kmap(pagetable, a, PGESIZE, (uint32_t)mem, PTE_W|PTE_X|PTE_R|PTE_U) != 0) {
+            kfree(mem);
+            uvmdealloc(pagetable, a, oldsizE);
+            return 0;
+        }
+    }
+    return newsize;
+}
+
+// Deallocate user pages for processes to grow process memory from oldsize to newsize
+uint32_t uvmdealloc(uint32_t *pagetable, uint32_t oldsize, uint32_t newsize) {
+
+    if (newsize >= oldsize) {
+        return oldsize;
+    }
+
+    rounded_newsize = (((new) + PGESIZE-1) & ~(PGESIZE-1))      // Round up to pagesize
+    rounded_oldsize = (((oldsize) + PGESIZE-1) & ~(PGESIZE-1))    
+
+    if (rounded_newszize < rounded_oldsize) {
+        int num_pages = (rounded_oldsize - rounded_newsize) / PGESIZE;
+        uvmunmap(pagetable, rounded_newsize, num_pages, 1);
+    }
+    return newsize;
+}
+
+
+
+
 // Copies len amount of bytes to dst from virtual address srcaddr
 // in a given pagetable. Returns 0 on success and -1 for failure
 int copyto(uint32_t *pagetable, char *dst, uint32_t srcaddr, uint32_t len) {
