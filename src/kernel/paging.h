@@ -50,7 +50,7 @@ int copyinstr(uint32_t *pagetable, char *dst, uint32_t srcva, uint32_t max);
 uint32_t *upaging_create(void);
 uint32_t uvmalloc(uint32_t *pagetable, uint32_t oldsize, uint32_t newsize);
 uint32_t uvmdealloc(uint32_t *pagetable, uint32_t oldsize, uint32_t newsize);
-void uvmclear(uint32_t pagetable, uint32_t va);
-void uvmunmap(uint32_t pagetable, uint32_t va, uint32_t num_pages, int free);
+void uvmclear(uint32_t *pagetable, uint32_t va);
+void uvmunmap(uint32_t *pagetable, uint32_t va, uint32_t num_pages, int free);
 
 #endif

@@ -4,6 +4,7 @@
 #include "paging.h"
 #include "../libc/include/stdio.h"
 #include "../libc/include/stdio.h"
+#include "filesys.h"
 
 // Number of elements in array
 #define NUM_ELEM(x) (sizeof(x) / sizeof((x)[0]))
@@ -38,7 +39,7 @@ int fetchaddr(uint32_t addr, uint32_t *ip) {
     if (addr >= proc->mem_size || addr+sizeof(uint32_t) > proc->state) {
         return -1;
     }
-    if (copyto(proc->pagetable (char *)ip, addr, sizeof(*ip) != 0)) {
+    if (copyto(proc->pagetable, (char *)ip, addr, sizeof(*ip) != 0)) {
         return -1;
     }
     return 0;

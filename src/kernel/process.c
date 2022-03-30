@@ -13,7 +13,7 @@ extern void forkret(void);
 
 struct process *initproc;
 
-struct process *p[MAXPROC];
+struct process p[MAXPROC];
 
 struct spinlock pid_lock;
 
@@ -51,6 +51,16 @@ void init_user(void) {
     proc->state = RUNNABLE;
 
     release_lock(&proc->lock);
+}
+
+int alloc_pid(void) {
+
+    int pid;
+    acquire_lock(&pid_lock);
+    pid = nextpid;
+    nextpid = nextpid + 1;
+    release_lock(&pid_lock);
+    return pid;
 }
 
 struct process *alloc_process(void) {
@@ -161,16 +171,16 @@ int fork(void) {
 }
 
 int wait(uint32_t addrs) {
-    struct proc *np;
+    struct process *np;
     int havekids, pid;
-    struct proc *p = get_process_struct();
+    struct process *p = get_process_struct();
 
     acquire_lock(&wait_lock);
 
     while (1) {
         // Scan through table looking for exited children.
         havekids = 0;
-        for (np = process; np < &process[NPROC]; np++) {
+        for (np = process; np < &process[MAXPROC]; np++) {
             if (np->parent == p) {
                 // make sure the child isn't still in exit() or swtch().
                 acquire_lock(&np->lock);
@@ -243,15 +253,6 @@ void freeproc(struct process *proc) {
     proc->state = UNUSED;
 }
 
-int alloc_pid(void) {
-
-    int pid;
-    acquire_lock(&pid_lock);
-    pid = nextpid;
-    nextpid = nextpid + 1;
-    release_lock(&pid_lock);
-    return pid;
-}
 
 // Wake up processes sleeping on sleep channel
 void wakeup(void *sleep_channel) {
@@ -366,7 +367,7 @@ int kill(int process_id) {
 
 void reparent(struct process *proc) {
     struct process *p;
-    for (p = proc; p < &process[NUMPROC]; p++) {
+    for (p = proc; p < &process[MAXPROC]; p++) {
         if (p->parent == p) {
             p->parent = initproc;
             wakeup(initproc);
@@ -406,8 +407,8 @@ void exit(int status) {
   
     acquire_lock(&proc->lock);
 
-    p->exit_state = status;
-    p->state = ZOMBIE;
+    proc->exit_state = status;
+    proc->state = ZOMBIE;
 
     release_lock(&wait_lock);
 

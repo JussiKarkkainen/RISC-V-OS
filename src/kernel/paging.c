@@ -97,7 +97,7 @@ uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc) {
 }   
 
 // Look up a virtual address, return the physical address, used for user pages
-uint32_t walkaddr(uint32_t pagetable, uint32_t va) {
+uint32_t walkaddr(uint32_t *pagetable, uint32_t va) {
     
     uint32_t *pte;
     uint32_t pa;
@@ -116,7 +116,7 @@ uint32_t walkaddr(uint32_t pagetable, uint32_t va) {
     if ((*pte & PTE_U) == 0) {
         return 0;
     }
-    pa = (((pte) >> 10) << 12);
+    pa = (((*pte) >> 10) << 12);
     return pa;
 }
  
@@ -194,24 +194,24 @@ void upaging_init(uint32_t *pagetable, unsigned char *src, unsigned int size) {
 // Allocate user pages for processes to grow process memory from oldsize to newsize
 uint32_t uvmalloc(uint32_t *pagetable, uint32_t oldsize, uint32_t newsize) {
 
-    char *mem;
+    uint32_t *mem;
     uint32_t a;
 
     if (newsize < oldsize) {
         return oldsize;
     }
 
-    oldsize = (((oldsize) + PGESIZE-1) & ~(PGESIZE-1))      // Round up to pagesize
+    oldsize = (((oldsize) + PGESIZE-1) & ~(PGESIZE-1));      // Round up to pagesize
     for (a = oldsize; a < newsize; a += PGESIZE) {
         mem = zalloc(1);
         if (mem == 0) {
-            uvmdealloc(pagetable, a, oldsz);
+            uvmdealloc(pagetable, a, oldsize);
             return 0;
         }
         memset(mem, 0, PGESIZE);
         if (kmap(pagetable, a, PGESIZE, (uint32_t)mem, PTE_W|PTE_X|PTE_R|PTE_U) != 0) {
-            kfree(mem);
-            uvmdealloc(pagetable, a, oldsizE);
+            kfree(mem, 1);
+            uvmdealloc(pagetable, a, oldsize);
             return 0;
         }
     }
@@ -225,17 +225,17 @@ uint32_t uvmdealloc(uint32_t *pagetable, uint32_t oldsize, uint32_t newsize) {
         return oldsize;
     }
 
-    rounded_newsize = (((new) + PGESIZE-1) & ~(PGESIZE-1))      // Round up to pagesize
-    rounded_oldsize = (((oldsize) + PGESIZE-1) & ~(PGESIZE-1))    
+    uint32_t rounded_newsize = (((newsize) + PGESIZE-1) & ~(PGESIZE-1));      // Round up to pagesize
+    uint32_t rounded_oldsize = (((oldsize) + PGESIZE-1) & ~(PGESIZE-1));    
 
-    if (rounded_newszize < rounded_oldsize) {
+    if (rounded_newsize < rounded_oldsize) {
         int num_pages = (rounded_oldsize - rounded_newsize) / PGESIZE;
         uvmunmap(pagetable, rounded_newsize, num_pages, 1);
     }
     return newsize;
 }
 
-void uvmclear(uint32_t pagetable, uint32_t va) {
+void uvmclear(uint32_t *pagetable, uint32_t va) {
   
     uint32_t *pte;
   
@@ -246,7 +246,7 @@ void uvmclear(uint32_t pagetable, uint32_t va) {
     *pte &= ~PTE_U;
 }
 
-void uvmunmap(uint32_t pagetable, uint32 va, uint32_t num_pages, int free) {
+void uvmunmap(uint32_t *pagetable, uint32_t va, uint32_t num_pages, int free) {
   
     uint32_t a;
     uint32_t *pte;
@@ -262,12 +262,12 @@ void uvmunmap(uint32_t pagetable, uint32 va, uint32_t num_pages, int free) {
         if ((*pte & PTE_V) == 0) {
             panic("uvmunmap: not mapped");
         }
-        if (PTE_FLAGS(*pte) == PTE_V) {
+        if ((*pte & 0x3ff) == PTE_V) {
             panic("uvmunmap: not a leaf");
         }
         if (free) {
             uint32_t pa = (((*pte) >> 10) << 12);
-            kfree((void*)pa);
+            kfree((void*)pa, 1);
         }
         *pte = 0;
     }
@@ -323,7 +323,7 @@ int copyout(uint32_t *pagetable, char *src, uint32_t dstaddr, uint32_t len) {
 }
 
 // Copy a null-terminated string from user to kernel
-int copyinstr(uint32_t pagetable, char *dst, uint32_t srcva, uint32_t max) {
+int copyinstr(uint32_t *pagetable, char *dst, uint32_t srcva, uint32_t max) {
 	uint32_t n, va0, pa0;
   	int got_null = 0;
 
@@ -334,7 +334,7 @@ int copyinstr(uint32_t pagetable, char *dst, uint32_t srcva, uint32_t max) {
 		if (pa0 == 0) {
       		return -1;
 		}
-    	n = PGSIZE - (srcva - va0);
+    	n = PGESIZE - (srcva - va0);
     	if(n > max) {
       		n = max;
 		}
