@@ -36,7 +36,7 @@ int argfd(int n, int *pfd, struct file **file) {
 
 int fdalloc(struct file *f) {
     int fd;
-    struct proc *p = myproc();
+    struct proc *p = get_process_struct();
 
     for (fd = 0; fd < NUMFILE; fd++) {
         if (p->openfile[fd] == 0) {
@@ -112,20 +112,20 @@ int exec(char *path, char **argv) {
     ip = 0;
 
     p = get_process_struct();
-    uint32_t oldsz = p->size;
+    uint32_t oldsz = p->mem_size;
 
     // Allocate two pages at the next page boundary.
     // Use the second as the user stack.
     sz = PGROUNDUP(sz);
     uint32_t sz1;
-    if ((sz1 = uvmalloc(pagetable, sz, sz + 2*PGSIZE)) == 0) {
+    if ((sz1 = uvmalloc(pagetable, sz, sz + 2*PGESIZE)) == 0) {
         goto bad;
     }
 
     sz = sz1;
-    uvmclear(pagetable, sz-2*PGSIZE);
+    uvmclear(pagetable, sz-2*PGESIZE);
     sp = sz;
-    stackbase = sp - PGSIZE;
+    stackbase = sp - PGESIZE;
 
     // Push argument strings, prepare rest of stack in ustack.
     for (argc = 0; argv[argc]; argc++) {
@@ -222,7 +222,7 @@ uint32_t sys_exec(void) {
     }
     memset(argv, 0, sizeof(argv));
     for (i = 0;; i++) {
-        if (i >= NELEM(argv)) {
+        if (i >= NUM_ELEM(argv)) {
             goto bad;
         }
         if(fetchaddr(uargv+sizeof(uint32_t)*i, (uint32_t*)&uarg) < 0) {
@@ -243,14 +243,14 @@ uint32_t sys_exec(void) {
 
     int ret = exec(path, argv);
 
-    for(i = 0; i < NELEM(argv) && argv[i] != 0; i++) {
+    for(i = 0; i < NUM_ELEM(argv) && argv[i] != 0; i++) {
         kfree(argv[i], 1);
     }
 
     return ret;
 
     bad:
-        for (i = 0; i < NELEM(argv) && argv[i] != 0; i++) {
+        for (i = 0; i < NUM_ELEM(argv) && argv[i] != 0; i++) {
             kfree(argv[i], 1);
         }
         return -1;

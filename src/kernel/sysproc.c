@@ -16,7 +16,7 @@ uint32_t sys_exit(void) {
 
 uint32_t sys_getpid(void) {
 
-    return get_process_struct();
+    return get_process_struct()->process_id;
 }
 
 uint32_t sys_fork(void) {
@@ -36,7 +36,7 @@ uint32_t sys_wait(void) {
 uint32_t sys_sbrk(void) {
 
     int addr, n;
-    if (argaddr(0, &n) < 0) {
+    if (argint(0, &n) < 0) {
         return -1;
     }
     addr = get_process_struct()->mem_size;

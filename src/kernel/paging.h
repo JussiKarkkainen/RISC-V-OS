@@ -47,5 +47,10 @@ void upaging_init(uint32_t *pagetable, unsigned char *src, unsigned int size);
 int copyto(uint32_t *pagetable, char *dst, uint32_t srcaddr, uint32_t len);
 int copyout(uint32_t *pagetable, char *src, uint32_t dstaddr, uint32_t len);
 int copyinstr(uint32_t *pagetable, char *dst, uint32_t srcva, uint32_t max);
+uint32_t *upaging_create(void);
+uint32_t uvmalloc(uint32_t *pagetable, uint32_t oldsize, uint32_t newsize);
+uint32_t uvmdealloc(uint32_t *pagetable, uint32_t oldsize, uint32_t newsize);
+void uvmclear(uint32_t pagetable, uint32_t va);
+void uvmunmap(uint32_t pagetable, uint32_t va, uint32_t num_pages, int free);
 
 #endif

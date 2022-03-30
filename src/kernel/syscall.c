@@ -32,26 +32,27 @@ uint32_t (*syscall[])(void) = {
     [SYS_CLOSE] sys_close
 };
 
-int fetchaddr(uint32_t addr, uint32_t *ip) {
+int fetchaddr(uint32_t addr, uint32_t *ip) {
 
     struct process *proc;
-    if (addr >= proc->size || addr+sizeof(uint32_t) > proc->state) {
+    if (addr >= proc->mem_size || addr+sizeof(uint32_t) > proc->state) {
         return -1;
     }
-    if (copyto(proc->pagetable. (char *)ip, addr, sizeof(*ip) != 0)) {
+    if (copyto(proc->pagetable (char *)ip, addr, sizeof(*ip) != 0)) {
         return -1;
+    }
     return 0;
 }
 
 int fetchstr(uint32_t addr, struct buffer *buf, int max) {
     
     struct process *proc;
-    int err = copyinstr(p->pagetable, buf, addr, max);
+    int err = copyinstr(proc->pagetable, buf, addr, max);
 
     if (err < 0) {
         return err;
     }
-    return strlen(buffer);
+    return strlen(buf);
 }
 
 uint32_t argraw(int n) {
@@ -88,7 +89,7 @@ int argaddr(int n, uint32_t *ip) {
 
 int argstr(int n, char *buf, int max) {
     uint32_t addr;
-    if (argaddr(, &addr) < 0) {
+    if (argaddr(n, &addr) < 0) {
         return -1;
     }
     return fetchstr(addr, buf, max);

@@ -56,10 +56,10 @@ int handle_device_intr(void) {
 
 void timer_interrupt(void) {
     
-    acquire_lock(&ticklock);
+    acquire_lock(&tickslock);
     ticks++;
     wakeup(&ticks);
-    release_lock(&ticklock);
+    release_lock(&tickslock);
 }
 
 void utrap(void) {
@@ -169,7 +169,7 @@ void ktrap(void) {
 }
 
 void init_trapvec(void) {
-    initlock(&ticklock, "timer lock");
+    initlock(&tickslock, "timer lock");
 }
 
 void init_ktrapvec(void) {

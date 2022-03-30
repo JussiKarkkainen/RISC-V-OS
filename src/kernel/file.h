@@ -2,6 +2,7 @@
 #define FILE_H
 
 #include <stdint.h>
+#include "locks.h"
 
 #define NUMFILE 100
 #define NUMDEV 10
@@ -47,5 +48,6 @@ void file_close(struct file *file);
 int file_stat(struct file *file, uint32_t address);
 int read_file(struct file *file, uint32_t address, int n);
 int write_file(struct file *file, uint32_t address, int n);
+struct file *file_dup(struct file *f);
 
 #endif

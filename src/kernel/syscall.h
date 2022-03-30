@@ -2,6 +2,7 @@
 #define SYSCALL_H
 
 #include <stdint.h>
+#include "file.h"
 
 #define SYS_FORK 1
 #define SYS_EXIT 2
@@ -30,6 +31,9 @@
 #define O_RDWR    0x002
 #define O_CREATE  0x200
 #define O_TRUNC   0x400
+
+// Number of elements in array
+#define NUM_ELEM(x) (sizeof(x) / sizeof((x)[0]))
 
 void handle_syscall(void);
 int argint(int n, int *ip);

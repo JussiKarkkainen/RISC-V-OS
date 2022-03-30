@@ -366,7 +366,7 @@ int kill(int process_id) {
 
 void reparent(struct process *proc) {
     struct process *p;
-    for (p = proc; p < &process[NUMPROC]; p++) {
+    for (p = proc; p < &process[NUMPROC]; p++) {
         if (p->parent == p) {
             p->parent = initproc;
             wakeup(initproc);
