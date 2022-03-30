@@ -17,6 +17,8 @@ struct process *p[MAXPROC];
 
 struct spinlock pid_lock;
 
+struct spinlock wait_lock;
+
 int nextpid = 1;
 
 unsigned char initcode[] = {
@@ -88,6 +90,53 @@ struct process *alloc_process(void) {
 
         return proc;
 }   
+
+
+
+int wait(uint32_t addrs) {
+    struct proc *np;
+    int havekids, pid;
+    struct proc *p = get_process_struct();
+
+    acquire_lock(&wait_lock);
+
+    while (1) {
+        // Scan through table looking for exited children.
+        havekids = 0;
+        for (np = process; np < &process[NPROC]; np++) {
+            if (np->parent == p) {
+                // make sure the child isn't still in exit() or swtch().
+                acquire_lock(&np->lock);
+        
+
+                havekids = 1;
+                if (np->state == ZOMBIE) { 
+                    // Found one.
+                    pid = np->pid;
+                    if (addr != 0 && copyout(p->pagetable, addr, (char *)&np->exit_state, sizeof(np->xstate)) < 0) {
+                        release_lock(&np->lock);
+                        release_lock(&wait_lock);
+                        return -1;
+                    }
+                    freeproc(np);
+                    release_lock(&np->lock);
+                    release_lock(&wait_lock);
+                    return pid;
+                }
+                release_lock(&np->lock);
+            }
+        }
+
+        // No point waiting if we don't have any children.
+        if (!havekids || p->killed) {
+            release_lock(&wait_lock);
+            return -1;
+        }
+
+        // Wait for a child to exit.
+        sleep(p, &wait_lock);  //DOC: wait-sleep
+    }
+}
 
 void forkret(void) {
     

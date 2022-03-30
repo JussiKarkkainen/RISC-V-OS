@@ -30,7 +30,7 @@ uint32_t sys_wait(void) {
     if (argaddr(0, &i) < 0) {
         return -1;
     }
-    return wait(p);
+    return wait(i);
 }
 
 uint32_t sys_sbrk(void) {
@@ -39,7 +39,7 @@ uint32_t sys_sbrk(void) {
     if (argaddr(0, &n) < 0) {
         return -1;
     }
-    addr = get_process_struct()->size;
+    addr = get_process_struct()->mem_size;
     if (growproc(n) < 0) {
         return -1;
     }

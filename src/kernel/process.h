@@ -123,5 +123,6 @@ void init_user(void);
 struct process *alloc_process(void);
 void forkret(void);
 void freeproc(struct process *proc);
+int wait(uint32_t addr);
 
 #endif
