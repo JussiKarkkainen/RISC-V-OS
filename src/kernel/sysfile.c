@@ -4,6 +4,10 @@
 #include <stddef.h>
 #include "syscall.h"
 #include "paging.h"
+#include "../libc/include/string.h"
+#include "../libc/include/stdio.h"
+#include "pipes.h"
+#include "process.h"
 
 // File system system calls
 
@@ -51,7 +55,7 @@ int exec(char *path, char **argv) {
     struct inode *ip;
     struct proghdr ph;
     uint32_t *pagetable = 0, oldpagetable;
-    struct proc *p = get_rocess_struct();
+    struct process *p = get_process_struct();
 
     begin_op();
 
@@ -108,7 +112,7 @@ int exec(char *path, char **argv) {
     ip = 0;
 
     p = get_process_struct();
-    uint32_t oldsz = proc->size;
+    uint32_t oldsz = p->size;
 
     // Allocate two pages at the next page boundary.
     // Use the second as the user stack.
@@ -166,7 +170,7 @@ int exec(char *path, char **argv) {
     // Commit to the user image.
     oldpagetable = p->pagetable;
     p->pagetable = pagetable;
-    p->size = sz;
+    p->mem_size = sz;
     p->trapframe->saved_pc = elf.entry;  // initial program counter = main
     p->trapframe->sp = sp; // initial stack pointer
     proc_freepagetable(oldpagetable, oldsz);
@@ -185,12 +189,12 @@ int exec(char *path, char **argv) {
     return -1;
 }
 
-int loadseg(pagetable_t pagetable, uint64 va, struct inode *ip, uint offset, uint sz) {
+int loadseg(uint32_t pagetable, uint32_t va, struct inode *ip, unsigned int offset, unsigned int sz) {
     unsigned int i, n;
     uint32_t pa;
 
     for (i = 0; i < sz; i += PGESIZE) {
-        pa = walk(pagetable, va + i);
+        pa = walkaddr(pagetable, va + i);
         if (pa == 0) {
             panic("loadseg: address should exist");
         }
@@ -218,7 +222,7 @@ uint32_t sys_exec(void) {
     }
     memset(argv, 0, sizeof(argv));
     for (i = 0;; i++) {
-        if (i >= NELEM(argv)) {
+        if (i >= NELEM(argv)) {
             goto bad;
         }
         if(fetchaddr(uargv+sizeof(uint32_t)*i, (uint32_t*)&uarg) < 0) {
@@ -232,7 +236,7 @@ uint32_t sys_exec(void) {
         if (argv[i] == 0) {
             goto bad;
         }
-        if (fetchstr(arg, argv[i], PGESIZE) < 0) {
+        if (fetchstr(uarg, argv[i], PGESIZE) < 0) {
             goto bad;
         }
     }
@@ -240,14 +244,14 @@ uint32_t sys_exec(void) {
     int ret = exec(path, argv);
 
     for(i = 0; i < NELEM(argv) && argv[i] != 0; i++) {
-        kfree(argv[i]);
+        kfree(argv[i], 1);
     }
 
     return ret;
 
     bad:
         for (i = 0; i < NELEM(argv) && argv[i] != 0; i++) {
-            kfree(argv[i]);
+            kfree(argv[i], 1);
         }
         return -1;
 }   
@@ -316,12 +320,12 @@ struct inode* create(char *path, short type, short major, short minor) {
         dp->num_link++; 
         inode_update(dp);
     
-        if (dirlink(ip, ".", ip->inode_num) < 0 || dirlink(ip, "..", dp->inode_num) < 0) {
+        if (dir_link(ip, ".", ip->inode_num) < 0 || dir_link(ip, "..", dp->inode_num) < 0) {
             panic("create dots, create()");
         }
     }
 
-    if (dirlink(dp, name, ip->inode_num) < 0) {
+    if (dir_link(dp, name, ip->inode_num) < 0) {
         panic("create: dirlink");
     }
 
@@ -348,17 +352,18 @@ uint32_t sys_chdir(void) {
 
     char path[MAXPATH];
     struct inode *ip;
-    struct proc *p = get_process_struct();
+    struct process *p = get_process_struct();
   
     begin_op();
-    if(argstr(0, path, MAXPATH) < 0 || (ip = namei(path)) == 0) {
+    if(argstr(0, path, MAXPATH) < 0 || (ip = name_inode(path)) == 0) {
         end_op();
         return -1;
     }
   
     inode_lock(ip);
     if(ip->type != T_DIR) {
-        iunlockput(ip);
+        inode_unlock(ip);
+        inode_put(ip);
         end_op();
         return -1;
     }
@@ -426,7 +431,7 @@ uint32_t sys_unlink(void) {
 
     inode_lock(dp);
 
-    if(strncmp(name, ".") == 0 || strncmp(name, "..") == 0) {
+    if(strncmp(name, ".", 14) == 0 || strncmp(name, "..", 14) == 0) {
         goto bad;
     }
 
@@ -580,7 +585,7 @@ uint32_t sys_open(void) {
 
     if ((f = file_alloc()) == 0 || (fd = fdalloc(f)) < 0) {
         if(f) {
-            fileclose(f);
+            file_close(f);
         }
         inode_unlock(ip);
         inode_put(ip);

@@ -12,4 +12,8 @@ struct pipe {
     int write_open;
 };
 
+int pipealloc(struct file **f0, struct file **f1);
+int pipewrite(struct pipe *p, int n, uint32_t addr);
+int piperead(struct pipe *p, int n, uint32_t addr);
+
 #endif

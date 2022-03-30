@@ -20,6 +20,7 @@
 #define ROOTING 1
 #define ROOTDEV 1       // Device number of root disk
 #define MAXPATH 128
+#define MAXARG 32
 
 struct buffer {
     int valid;
