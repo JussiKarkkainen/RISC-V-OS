@@ -407,80 +407,6 @@ uint32_t sys_mkdir(void) {
     return 0; 
 }
 
-uint32_t sys_open(void) {
-
-    char path[MAXPATH];
-    int fd, omode;
-    struct file *f;
-    struct inode *ip;
-    int n;
-
-    if ((n = argstr(0, path, MAXPATH)) < 0 || argint(1, &omode) < 0) {
-        return -1;
-    }
-
-    begin_op();
-
-    if (omode & O_CREATE) {
-        ip = create(path, T_FILE, 0, 0);
-        if (ip == 0) {
-            end_op();
-            return -1;
-        }
-    } 
-    else {
-        if ((ip = name_inode(path)) == 0) {
-            end_op();
-            return -1;
-        }
-        inode_lock(ip);
-        if (ip->type == T_DIR && omode != O_RDONLY) {
-            inode_unlock(ip);
-            inode_put(ip);
-            end_op();
-            return -1;
-        }
-    }
-
-    if (ip->type == T_DEVICE && (ip->major_dev_num < 0 || ip->major_dev_num >= NDEV)) {
-        inode_unlock(ip);
-        inode_put(ip);
-        end_op();
-        return -1;
-    }
-
-    if ((f = file_alloc()) == 0 || (fd = fdalloc(f)) < 0) {
-        if (f) {
-            file_close(f);
-        }
-        inode_unlock(ip);
-        inode_put(ip);
-        end_op();
-        return -1;
-    }
-
-    if (ip->type == T_DEVICE) {
-        f->type = FD_DEVICE;
-        f->major = ip->major_dev_num;
-    } 
-    else {
-        f->type = FD_INODE;
-        f->off = 0;
-    }
-    f->inode = ip;
-    f->readable = !(omode & O_WRONLY);
-    f->writable = (omode & O_WRONLY) || (omode & O_RDWR);
-
-    if ((omode & O_TRUNC) && ip->type == T_FILE) {
-        inode_truncate(ip);
-    }
-
-    inode_unlock(ip);
-    end_op();
-
-    return fd;
-}
-
 uint32_t sys_unlink(void) {
 
     struct inode *ip, *dp;
@@ -527,7 +453,7 @@ uint32_t sys_unlink(void) {
         inode_update(dp);
     }
     inode_unlock(dp);
-    inode_put(dp;
+    inode_put(dp);
 
     ip->num_link--;
     inode_update(ip);
@@ -568,7 +494,7 @@ uint32_t sys_link(void) {
         return -1;
     }
 
-     ip->num_link++;
+    ip->num_link++;
     inode_update(ip);
     inode_unlock(ip);
 
@@ -597,7 +523,6 @@ uint32_t sys_link(void) {
         inode_put(ip);
         end_op();
         return -1;
-    }
 }
 
 uint32_t sys_fstat(void) {
@@ -646,7 +571,7 @@ uint32_t sys_open(void) {
         }
     }
 
-    if (ip->type == T_DEVICE && (ip->major_dev_num < 0 || ip->major_dev_num >= NDEV)){
+    if (ip->type == T_DEVICE && (ip->major_dev_num < 0 || ip->major_dev_num >= NUMDEV)){
         inode_unlock(ip);
         inode_put(ip);
         end_op();
@@ -700,7 +625,7 @@ uint32_t sys_dup(void) {
     return fd;
 }
 
-uint32_t sys_pipe(void) {
+uint32_t sys_pipe(void) {
 
     uint32_t fdarray;
     struct file *rf, *wf;

@@ -8,11 +8,7 @@
 #include "plic.h"
 #include "paging.h"
 
-struct spinlock ticklock;
-
 extern void ktrapvec();
-
-unsigned int ticks;
 
 int handle_device_intr(void) {
     // Check if external/device interrupt

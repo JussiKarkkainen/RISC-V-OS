@@ -14,6 +14,9 @@
 #define VIRTIO_DISK 1
 #define SSTATUS_SIE_CLEAR 0xFFFFFFFD
 
+struct spinlock tickslock;
+unsigned int ticks;
+
 int handle_device_intr(void);
 void timer_interrupt(void);
 void utrap(void);

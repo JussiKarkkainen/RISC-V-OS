@@ -91,7 +91,56 @@ struct process *alloc_process(void) {
         return proc;
 }   
 
+int fork(void) {
 
+    int i, pid;
+    struct proc *np;
+    struct proc *p = get_process_struct();
+
+    // Allocate process.
+    if ((np = alloc_process()) == 0) {
+        return -1;
+    }
+
+    // Copy user memory from parent to child.
+    if (uvmcopy(p->pagetable, np->pagetable, p->mem_size) < 0) {
+        freeproc(np);
+        release-lock(&np->lock);
+        return -1;
+    }
+  
+    np->mem_size = p->mem_size;
+
+    // copy saved user registers.
+    *(np->trapframe) = *(p->trapframe);
+
+    // Cause fork to return 0 in the child.
+    np->trapframe->a0 = 0;
+
+    // increment reference counts on open file descriptors.
+    for (i = 0; i < NUMFILE; i++) {
+        if (p->openfile[i]) {
+            np->openfile[i] = filedup(p->openfile[i]);
+        }
+    }
+    np->cwd = inode_dup(p->cwd);
+
+    strcpy(np->name, p->name, sizeof(p->name));
+
+    pid = np->process_id;
+
+    release_lock(&np->lock);
+
+    acquire_lock(&wait_lock);
+    np->parent = p;
+    release_lock(&wait_lock);
+
+    acquire_lock(&np->lock);
+    np->state = RUNNABLE;
+    release_lock(&np->lock);
+
+    return pid;
+}
 
 int wait(uint32_t addrs) {
     struct proc *np;

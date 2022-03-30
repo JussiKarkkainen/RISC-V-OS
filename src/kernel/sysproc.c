@@ -1,8 +1,8 @@
 #include "syscall.h"
 #include "process.h"
 #include "locks.h"
+#include "trap.h"
 #include <stdint.h>
-
 
 uint32_t sys_exit(void) {
 
@@ -54,14 +54,14 @@ uint32_t sys_sleep(void) {
    if (argint(0, &n) < 0) {
        return -1;
     }
-    acquire_lock(&ticklock);
+    acquire_lock(&tickslock);
     ticks0 = ticks;
     while(ticks - ticks0 < n) {
         if (get_process_struct()->killed) {
             release_lock(&tickslock);
             return -1;
         }
-        sleep(&tickslock);
+        sleep(&ticks, &tickslock);
     }
     release_lock(&tickslock);
     return 0;
