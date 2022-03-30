@@ -91,6 +91,24 @@ struct process *alloc_process(void) {
         return proc;
 }   
 
+int growproc(int n) {
+
+    unsigned int sz;
+    struct process *p = get_process_struct();
+
+    sz = p->mem_size;
+    if (n > 0) {
+        if ((sz = uvmalloc(p->pagetable, sz, sz + n)) == 0) {
+            return -1;
+        }
+    } 
+    else if (n < 0) {
+        sz = uvmdealloc(p->pagetable, sz, sz + n);
+    }
+    p->mem_size = sz;
+    return 0;
+}
+
 int fork(void) {
 
     int i, pid;

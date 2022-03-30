@@ -321,7 +321,7 @@ struct inode* create(char *path, short type, short major, short minor) {
         }
     }
 
-    if (dirlink(dp, name, ip->inum) < 0) {
+    if (dirlink(dp, name, ip->inode_num) < 0) {
         panic("create: dirlink");
     }
 
@@ -397,7 +397,7 @@ uint32_t sys_mkdir(void) {
     struct inode *inode;
 
     begin_op();
-    if (argstr(0, path, MAXPATH) < 0 || (ininodee = create(path, T_DIR, 0, 0)) == 0) {
+    if (argstr(0, path, MAXPATH) < 0 || (inode = create(path, T_DIR, 0, 0)) == 0) {
         end_op();
         return -1;
     }

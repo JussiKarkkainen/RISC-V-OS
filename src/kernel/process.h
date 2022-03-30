@@ -125,5 +125,6 @@ void forkret(void);
 void freeproc(struct process *proc);
 int wait(uint32_t addr);
 int fork(void);
+int growproc(int n);
 
 #endif
