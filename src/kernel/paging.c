@@ -273,6 +273,13 @@ void uvmunmap(uint32_t *pagetable, uint32_t va, uint32_t num_pages, int free) {
     }
 }
 
+void uvmfree(uint32_t pagetable, uint32_t size) {
+
+    if (size > 0) {
+        uvmunmap(pagetable, 0, (((size) + PGESIZE-1) & ~(PGESIZE-1)) / PGESIZE, 1);
+    }
+    freewalk(pagetable);
+} 
 
 // Copies len amount of bytes to dst from virtual address srcaddr
 // in a given pagetable. Returns 0 on success and -1 for failure

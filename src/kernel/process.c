@@ -65,6 +65,24 @@ int alloc_pid(void) {
     return pid;
 }
 
+uint32_t proc_pagetable(struct process *proc) {
+    
+    uint32_t *pagetable;
+    pagetable = upaging_create();
+
+    if (kmap(pagetable, USERVEC, PGESIZE, (uint32_t)uservec, PTE_R | PTE_X) < 0) {
+        uvmfree(pagetable);
+        return 0;
+    }
+
+    if (kmap(pagetable, TRAPFRAME, PGESIZE, (uint32_t)(proc->trapframe), PTE_R | PTE_W) < 0) {
+        uvmunmap(pagetable, USERVEC, 1, 0);
+        uvmfree(pagetable, 0);
+        return 0;
+    }
+    return pagetable;
+}
+
 struct process *alloc_process(void) {
    
     struct process *proc;
@@ -102,24 +120,6 @@ struct process *alloc_process(void) {
 
         return proc;
 }   
-
-uint32_t proc_pagetable(struct process *proc) {
-    
-    uint32_t pagetable;
-    pagetable = uvmcreate();
-
-    if (kmap(pagetable, TRAMPOLINE, PGESIZE, (uint32_t)trampoline, PTE_R | PTE_X) < 0) {
-        uvmfree(pagetable);
-        return 0;
-    }
-
-    if (kmap(pagetable, TRAPFRAME, PGESIZE, (uint32_t)(proc->trapframe), PTE_R | PTE_W) < 0) {
-        uvmunmap(pagetable, USERVEC, 1, 0);
-        uvmfree(pagetable, 0);
-        return 0;
-    }
-    return pagetable;
-}
 
 int growproc(int n) {
 
@@ -210,7 +210,7 @@ int wait(uint32_t addrs) {
                 if (np->state == ZOMBIE) { 
                     // Found one.
                     pid = np->process_id;
-                    if (addrs != 0 && copyout(p->pagetable, addr, (char *)&np->exit_state, sizeof(np->exit_state)) < 0) {
+                    if (addrs != 0 && copyout(p->pagetable, addrs, (char *)&np->exit_state, sizeof(np->exit_state)) < 0) {
                         release_lock(&np->lock);
                         release_lock(&wait_lock);
                         return -1;
