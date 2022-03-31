@@ -275,7 +275,7 @@ void uvmunmap(uint32_t *pagetable, uint32_t va, uint32_t num_pages, int free) {
 
 void freewalk(uint32_t *pagetable) {
 
-    for (int i = 0; i < 1024; 1++) {
+    for (int i = 0; i < 1024; i++) {
         uint32_t pte = pagetable[i];
         if ((pte & PTE_V) && (pte & (PTE_R|PTE_W|PTE_X)) == 0) {
             uint32_t child = ((pte >> 10) << 12);
@@ -286,10 +286,10 @@ void freewalk(uint32_t *pagetable) {
             panic("freewalk, leaf"); 
         }
     }
-    kfree((void *)pagetable);
+    kfree((void *)pagetable, 1);
 }
 
-void uvmfree(uint32_t pagetable, uint32_t size) {
+void uvmfree(uint32_t *pagetable, uint32_t size) {
 
     if (size > 0) {
         uvmunmap(pagetable, 0, (((size) + PGESIZE-1) & ~(PGESIZE-1)) / PGESIZE, 1);
@@ -323,7 +323,7 @@ int copyto(uint32_t *pagetable, char *dst, uint32_t srcaddr, uint32_t len) {
 
 // Copy len amount of bytes to dstaddr from src in a given pagetable
 // returns 0 on success and -1 for failure
-int copyout(uint32_t *pagetable, char *src, uint32_t dstaddr, uint32_t len) {
+int copyout(uint32_t *pagetable, uint32_t *src, char *dstaddr, uint32_t len) {
     uint32_t n, va, pa;
 
     while(len > 0) {

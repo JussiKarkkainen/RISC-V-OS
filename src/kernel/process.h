@@ -128,5 +128,6 @@ int fork(void);
 int growproc(int n);
 int kill(int process_id);
 void proc_freepagetable(uint32_t *pagetable, uint32_t size);
+uint32_t *proc_pagetable(struct process *proc);
 
 #endif

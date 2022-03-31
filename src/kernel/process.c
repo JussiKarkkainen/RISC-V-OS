@@ -65,13 +65,13 @@ int alloc_pid(void) {
     return pid;
 }
 
-uint32_t proc_pagetable(struct process *proc) {
+uint32_t *proc_pagetable(struct process *proc) {
     
     uint32_t *pagetable;
     pagetable = upaging_create();
 
     if (kmap(pagetable, USERVEC, PGESIZE, (uint32_t)uservec, PTE_R | PTE_X) < 0) {
-        uvmfree(pagetable);
+        uvmfree(pagetable, 0);
         return 0;
     }
 
