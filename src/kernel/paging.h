@@ -53,5 +53,6 @@ uint32_t uvmdealloc(uint32_t *pagetable, uint32_t oldsize, uint32_t newsize);
 void uvmclear(uint32_t *pagetable, uint32_t va);
 void uvmunmap(uint32_t *pagetable, uint32_t va, uint32_t num_pages, int free);
 void uvmfree(uint32_t *pagetable, uint32_t size);
+void freewalk(uint32_t *pagetable);
 
 #endif

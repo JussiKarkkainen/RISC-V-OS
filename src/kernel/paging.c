@@ -273,6 +273,22 @@ void uvmunmap(uint32_t *pagetable, uint32_t va, uint32_t num_pages, int free) {
     }
 }
 
+void freewalk(uint32_t *pagetable) {
+
+    for (int i = 0; i < 1024; 1++) {
+        uint32_t pte = pagetable[i];
+        if ((pte & PTE_V) && (pte & (PTE_R|PTE_W|PTE_X)) == 0) {
+            uint32_t child = ((pte >> 10) << 12);
+            freewalk((uint32_t *)child);
+            pagetable[i] = 0;
+        }
+        else if (pte & PTE_V) {
+            panic("freewalk, leaf"); 
+        }
+    }
+    kfree((void *)pagetable);
+}
+
 void uvmfree(uint32_t pagetable, uint32_t size) {
 
     if (size > 0) {
