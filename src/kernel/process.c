@@ -19,6 +19,8 @@ struct spinlock pid_lock;
 
 struct spinlock wait_lock;
 
+char uservec[];
+
 int nextpid = 1;
 
 unsigned char initcode[] = {
@@ -101,6 +103,24 @@ struct process *alloc_process(void) {
         return proc;
 }   
 
+uint32_t proc_pagetable(struct process *proc) {
+    
+    uint32_t pagetable;
+    pagetable = uvmcreate();
+
+    if (kmap(pagetable, TRAMPOLINE, PGESIZE, (uint32_t)trampoline, PTE_R | PTE_X) < 0) {
+        uvmfree(pagetable);
+        return 0;
+    }
+
+    if (kmap(pagetable, TRAPFRAME, PGESIZE, (uint32_t)(proc->trapframe), PTE_R | PTE_W) < 0) {
+        uvmunmap(pagetable, USERVEC, 1, 0);
+        uvmfree(pagetable, 0);
+        return 0;
+    }
+    return pagetable;
+}
+
 int growproc(int n) {
 
     unsigned int sz;
@@ -122,8 +142,8 @@ int growproc(int n) {
 int fork(void) {
 
     int i, pid;
-    struct proc *np;
-    struct proc *p = get_process_struct();
+    struct process *np;
+    struct process *p = get_process_struct();
 
     // Allocate process.
     if ((np = alloc_process()) == 0) {
@@ -133,7 +153,7 @@ int fork(void) {
     // Copy user memory from parent to child.
     if (uvmcopy(p->pagetable, np->pagetable, p->mem_size) < 0) {
         freeproc(np);
-        release-lock(&np->lock);
+        release_lock(&np->lock);
         return -1;
     }
   
@@ -148,7 +168,7 @@ int fork(void) {
     // increment reference counts on open file descriptors.
     for (i = 0; i < NUMFILE; i++) {
         if (p->openfile[i]) {
-            np->openfile[i] = filedup(p->openfile[i]);
+            np->openfile[i] = file_dup(p->openfile[i]);
         }
     }
     np->cwd = inode_dup(p->cwd);
@@ -189,8 +209,8 @@ int wait(uint32_t addrs) {
                 havekids = 1;
                 if (np->state == ZOMBIE) { 
                     // Found one.
-                    pid = np->pid;
-                    if (addr != 0 && copyout(p->pagetable, addr, (char *)&np->exit_state, sizeof(np->xstate)) < 0) {
+                    pid = np->process_id;
+                    if (addrs != 0 && copyout(p->pagetable, addr, (char *)&np->exit_state, sizeof(np->exit_state)) < 0) {
                         release_lock(&np->lock);
                         release_lock(&wait_lock);
                         return -1;
@@ -229,9 +249,9 @@ void forkret(void) {
 
 void proc_freepagetable(uint32_t *pagetable, uint32_t size) {
 
-    user_munmap(pagetable, USERVEC, 1, 0); 
-    user_munmap(pagetable, TRAPFRAME, 1, 0);
-    user_mfree(pagetable, size);
+    uvmunmap(pagetable, USERVEC, 1, 0); 
+    uvmunmap(pagetable, TRAPFRAME, 1, 0);
+    uvmfree(pagetable, size);
 }
 
 void freeproc(struct process *proc) {
@@ -377,7 +397,7 @@ void reparent(struct process *proc) {
 
 void exit(int status) {
 
-    struct proc *proc = get_process_struct();
+    struct process *proc = get_process_struct();
 
     if (proc == initproc) {
         panic("init exiting");
@@ -387,7 +407,7 @@ void exit(int status) {
     for (int fd = 0; fd < NUMFILE; fd++) {
         if (proc->openfile[fd]) {
             struct file *f = proc->openfile[fd];
-            fileclose(f);
+            file_close(f);
             proc->openfile[fd] = 0;
         }
     }

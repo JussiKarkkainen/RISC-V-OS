@@ -3,7 +3,7 @@
 #include "process.h"
 #include "paging.h"
 #include "../libc/include/stdio.h"
-#include "../libc/include/stdio.h"
+#include "../libc/include/string.h"
 #include "filesys.h"
 
 // Number of elements in array
