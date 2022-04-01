@@ -77,7 +77,7 @@ int exec(char *path, char **argv) {
     struct elfhdr elf;
     struct inode *ip;
     struct proghdr ph;
-    uint32_t *pagetable = 0, oldpagetable;
+    uint32_t *pagetable = 0, *oldpagetable;
     struct process *p = get_process_struct();
 
     begin_op();
@@ -214,7 +214,8 @@ int exec(char *path, char **argv) {
 
 uint32_t sys_exec(void) {
     
-    char path[MAXPATH], *argv[MAXARG];
+    char path[MAXPATH]; 
+    char *argv[MAXARG];
     int i;
     uint32_t uargv, uarg;
 
@@ -223,7 +224,7 @@ uint32_t sys_exec(void) {
     }
     memset(argv, 0, sizeof(argv));
     for (i = 0;; i++) {
-        if (i >= NUM_ELEM(argv)) {
+        if (i >= (int)NUM_ELEM(argv)) {
             goto bad;
         }
         if(fetchaddr(uargv+sizeof(uint32_t)*i, (uint32_t*)&uarg) < 0) {
@@ -233,7 +234,7 @@ uint32_t sys_exec(void) {
             argv[i] = 0;
             break;
         }
-        argv[i] = zalloc(1);
+        argv[i] = (char *)zalloc(1);
         if (argv[i] == 0) {
             goto bad;
         }
@@ -244,15 +245,15 @@ uint32_t sys_exec(void) {
 
     int ret = exec(path, argv);
 
-    for(i = 0; i < NUM_ELEM(argv) && argv[i] != 0; i++) {
-        kfree(argv[i], 1);
+    for(i = 0; i < (int)NUM_ELEM(argv) && argv[i] != 0; i++) {
+        kfree((uint32_t *)argv[i], 1);
     }
 
     return ret;
 
     bad:
-        for (i = 0; i < NUM_ELEM(argv) && argv[i] != 0; i++) {
-            kfree(argv[i], 1);
+        for (i = 0; i < (int)NUM_ELEM(argv) && argv[i] != 0; i++) {
+            kfree((uint32_t *)argv[i], 1);
         }
         return -1;
 }   
@@ -268,7 +269,7 @@ uint32_t sys_read(void) {
     if (argfd(0, 0, &file) < 0 || argint(2, &n) < 0 || argaddr(1, &p) < 0) {
         return -1;
     }
-    return file;
+    return read_file(file, p, n);
 }
 
 
@@ -412,6 +413,23 @@ uint32_t sys_mkdir(void) {
     end_op();
     return 0; 
 }
+
+int isdirempty(struct inode *inode) {
+
+    int offset;
+    struct direntry d;
+
+    for (offset=2*sizeof(d); offset<(int)inode->size; offset+=sizeof(d)) {
+        if (read_inode(inode, 0, (uint32_t)&d, offset, sizeof(d)) != sizeof(d)) {
+            panic("isdirempty, read_inode");
+        }
+        if (d.inode_num != 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
 
 uint32_t sys_unlink(void) {
 

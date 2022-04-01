@@ -56,7 +56,7 @@ uint32_t sys_sleep(void) {
     }
     acquire_lock(&tickslock);
     ticks0 = ticks;
-    while(ticks - ticks0 < n) {
+    while((int)(ticks - ticks0) < n) {
         if (get_process_struct()->killed) {
             release_lock(&tickslock);
             return -1;

@@ -42,7 +42,7 @@ int fetchstr(uint32_t addr, char *buf, int max);
 int argaddr(int n, uint32_t *ip);
 int argstr(int n, char *buf, int max);
 uint32_t argraw(int n);
-
+int isdirempty(struct inode *inode);
 
 // file syscalls
 int argfd(int n, int *pfd, struct file **pf);
