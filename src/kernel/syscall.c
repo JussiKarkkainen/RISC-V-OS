@@ -45,7 +45,7 @@ int fetchaddr(uint32_t addr, uint32_t *ip) {
     return 0;
 }
 
-int fetchstr(uint32_t addr, struct buffer *buf, int max) {
+int fetchstr(uint32_t addr, char *buf, int max) {
     
     struct process *proc;
     int err = copyinstr(proc->pagetable, buf, addr, max);

@@ -36,7 +36,7 @@ void kfree(uint32_t *ptr, int n);
 
 // Functions from paging.c
 uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc);
-uint32_t walkaddr(uint32_t *pagetable, uint32_t va);
+uint32_t fetch_pa_addr(uint32_t *pagetable, uint32_t va);
 int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int permission);
 void kpage_init(void);
 uint32_t *kpagemake(void);
@@ -45,7 +45,7 @@ void map_kstack(uint32_t *pagetable);
 void test_alloc(void);
 void upaging_init(uint32_t *pagetable, unsigned char *src, unsigned int size);
 int copyto(uint32_t *pagetable, char *dst, uint32_t srcaddr, uint32_t len);
-int copyout(uint32_t *pagetable, char *src, uint32_t dstaddr, uint32_t len);
+int copyout(uint32_t *pagetable, uint32_t dstaddr, char *src, uint32_t len);
 int copyinstr(uint32_t *pagetable, char *dst, uint32_t srcva, uint32_t max);
 uint32_t *upaging_create(void);
 uint32_t uvmalloc(uint32_t *pagetable, uint32_t oldsize, uint32_t newsize);
@@ -54,5 +54,6 @@ void uvmclear(uint32_t *pagetable, uint32_t va);
 void uvmunmap(uint32_t *pagetable, uint32_t va, uint32_t num_pages, int free);
 void uvmfree(uint32_t *pagetable, uint32_t size);
 void freewalk(uint32_t *pagetable);
+int uvmcopy(uint32_t *old, uint32_t *new, uint32_t size);
 
 #endif

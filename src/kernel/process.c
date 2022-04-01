@@ -242,7 +242,7 @@ void forkret(void) {
 
     if (first) {
         first = 0;
-        filesys_init();
+        filesys_init(ROOTDEV);
     }
     utrapret();
 }

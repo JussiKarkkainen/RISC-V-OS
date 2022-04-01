@@ -38,7 +38,7 @@
 void handle_syscall(void);
 int argint(int n, int *ip);
 int fetchaddr(uint32_t addr, uint32_t *ip);
-int fetchstr(uint32_t addr, struct buffer *buf, int max);
+int fetchstr(uint32_t addr, char *buf, int max);
 int argaddr(int n, uint32_t *ip);
 int argstr(int n, char *buf, int max);
 uint32_t argraw(int n);

@@ -95,13 +95,11 @@ uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc) {
     }
     return &pagetable[(((uint32_t)(vir_addr >> (PGEOFFSET + (10 * 0)) & VPNMASK)))];
 }   
-
-// Look up a virtual address, return the physical address, used for user pages
-uint32_t walkaddr(uint32_t *pagetable, uint32_t va) {
-    
+ 
+uint32_t fetch_pa_addr(uint32_t *pagetable, uint32_t va) {
     uint32_t *pte;
     uint32_t pa;
-
+    
     if (va >= MAXVA) {
         return 0;
     }
@@ -116,10 +114,10 @@ uint32_t walkaddr(uint32_t *pagetable, uint32_t va) {
     if ((*pte & PTE_U) == 0) {
         return 0;
     }
-    pa = (((*pte) >> 10) << 12);
+    pa = ((*pte >> 10) << 12);
     return pa;
 }
- 
+
 int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int permissions) {
 
     uint32_t *pte;
@@ -149,24 +147,6 @@ int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, i
         phy_addr += PGESIZE;
     }
     return 0;
-}
-
-uint32_t fetch_pa_addr(uint32_t *pagetable, uint32_t va) {
-    uint32_t *pte;
-    uint32_t pa;
-
-    pte = walk(pagetable, va, 0);
-    if (*pte == 0) {
-        return 0;
-    }
-    if ((*pte & PTE_V) == 0) {
-        return 0;
-    }
-    if ((*pte & PTE_U) == 0) {
-        return 0;
-    }
-    pa = ((*pte >> 10) << 12);
-    return pa;
 }
 
 uint32_t *upaging_create(void) {
@@ -246,6 +226,38 @@ void uvmclear(uint32_t *pagetable, uint32_t va) {
     *pte &= ~PTE_U;
 }
 
+int uvmcopy(uint32_t *old, uint32_t *new, uint32_t size) {
+
+    uint32_t *pte;
+    uint32_t pa, i;
+    unsigned int flags;
+    uint32_t *mem;
+
+    for (i = 0; i < size; i += PGESIZE) {
+        if ((pte = walk(old, i, 0)) == 0) {
+            panic("uvmcopy: pte should exist");
+        }
+        if ((*pte & PTE_V) == 0) {
+            panic("uvmcopy: page not present");
+        }
+        pa = (((*pte) >> 10) << 12);
+        flags = ((*pte) & 0x3ff);
+        if ((mem = zalloc(1)) == 0) {
+            goto err;
+        }
+        memmove(mem, (char*)pa, PGESIZE);
+        if (kmap(new, i, PGESIZE, (uint32_t)mem, flags) != 0) {
+            kfree(mem, 1);
+            goto err;
+        }
+    }
+    return 0;
+
+    err:
+        uvmunmap(new, 0, i / PGESIZE, 1);
+        return -1;
+}
+
 void uvmunmap(uint32_t *pagetable, uint32_t va, uint32_t num_pages, int free) {
   
     uint32_t a;
@@ -323,14 +335,14 @@ int copyto(uint32_t *pagetable, char *dst, uint32_t srcaddr, uint32_t len) {
 
 // Copy len amount of bytes to dstaddr from src in a given pagetable
 // returns 0 on success and -1 for failure
-int copyout(uint32_t *pagetable, uint32_t *src, char *dstaddr, uint32_t len) {
+int copyout(uint32_t *pagetable, uint32_t dstaddr, char *src, uint32_t len) {
     uint32_t n, va, pa;
 
     while(len > 0) {
         va = (dstaddr & ~(PGESIZE - 1));
         pa = fetch_pa_addr(pagetable, va);
         if (pa == 0) {
-            return 0;
+            return -1;
         }
         n = PGESIZE - (dstaddr - va);
         if (n > len) {
@@ -352,7 +364,7 @@ int copyinstr(uint32_t *pagetable, char *dst, uint32_t srcva, uint32_t max) {
 
   	while (got_null == 0 && max > 0) {
     	va0 = (srcva & ~(PGESIZE - 1));
-    	pa0 = walkaddr(pagetable, va0);
+    	pa0 = fetch_pa_addr(pagetable, va0);
     	
 		if (pa0 == 0) {
       		return -1;

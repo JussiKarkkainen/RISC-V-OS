@@ -8,6 +8,22 @@
 
 struct superblock sb;
 
+void read_superblock(int dev, struct superblock *sb) {
+    
+    struct buffer *buf;
+    buf = buffer_read(dev, 1);
+    memmove(sb, buf->data, sizeof(*sb));
+    buffer_release(buf);
+}
+
+void filesys_init(int dev) {
+    read_superblock(dev, &sb);
+    if (sb.magic != FSMAGIC) {
+        panic("invalid filesys");
+    }
+    init_log(dev, &sb);
+}
+
 // LOGGING
 // The logging layer provides security in case of a crash by keeping a log of disk writes.
 // 

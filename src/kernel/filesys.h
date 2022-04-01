@@ -21,6 +21,7 @@
 #define ROOTDEV 1       // Device number of root disk
 #define MAXPATH 128
 #define MAXARG 32
+#define FSMAGIC 0x10203040
 
 struct buffer {
     int valid;
@@ -82,6 +83,9 @@ void dec_buf_refcount(struct buffer *buf);
 void inc_buf_refcount(struct buffer *buf);
 
 // Functions from filesys.c
+void filesys_init(int dev);
+void read_superblock(int dev, struct superblock *sb);
+
 //  logging layer
 void init_log(int dev, struct superblock *sb);
 void recover_from_log(void);
