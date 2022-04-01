@@ -22,7 +22,7 @@ int argfd(int n, int *pfd, struct file **file) {
     if (argint(n, &fd) < 0) {
         return -1;
     }
-    if (fd < 0 || fd >= NUMFILE || (file = get_process_struct()->openfile[fd]) == 0) {
+    if (fd < 0 || fd >= NUMFILE || (f = get_process_struct()->openfile[fd]) == 0) {
         return -1;
     }
     if (pfd) {
@@ -36,7 +36,7 @@ int argfd(int n, int *pfd, struct file **file) {
 
 int fdalloc(struct file *f) {
     int fd;
-    struct proc *p = get_process_struct();
+    struct process *p = get_process_struct();
 
     for (fd = 0; fd < NUMFILE; fd++) {
         if (p->openfile[fd] == 0) {
@@ -45,6 +45,29 @@ int fdalloc(struct file *f) {
         }
     } 
     return -1;
+}
+
+int loadseg(uint32_t *pagetable, uint32_t va, struct inode *ip, unsigned int offset, unsigned int sz) {
+    unsigned int i; 
+    int n;
+    uint32_t pa;
+
+    for (i = 0; i < sz; i += PGESIZE) {
+        pa = fetch_pa_addr(pagetable, va + i);
+        if (pa == 0) {
+            panic("loadseg: address should exist");
+        }
+        if (sz - i < PGESIZE) {
+            n = sz - i;
+        }
+        else {
+            n = PGESIZE;
+        }
+        if (read_inode(ip, 0, (uint32_t)pa, offset+i, n) != n) {
+            return -1;
+        }
+    }
+    return 0;
 }
 
 int exec(char *path, char **argv) {
@@ -116,7 +139,7 @@ int exec(char *path, char **argv) {
 
     // Allocate two pages at the next page boundary.
     // Use the second as the user stack.
-    sz = PGROUNDUP(sz);
+    sz = (((sz) + PGESIZE-1) & ~(PGESIZE - 1));
     uint32_t sz1;
     if ((sz1 = uvmalloc(pagetable, sz, sz + 2*PGESIZE)) == 0) {
         goto bad;
@@ -187,28 +210,6 @@ int exec(char *path, char **argv) {
         end_op();
     }
     return -1;
-}
-
-int loadseg(uint32_t pagetable, uint32_t va, struct inode *ip, unsigned int offset, unsigned int sz) {
-    unsigned int i, n;
-    uint32_t pa;
-
-    for (i = 0; i < sz; i += PGESIZE) {
-        pa = walkaddr(pagetable, va + i);
-        if (pa == 0) {
-            panic("loadseg: address should exist");
-        }
-        if (sz - i < PGESIZE) {
-            n = sz - i;
-        }
-        else {
-            n = PGESIZE;
-        }
-        if (read_inode(ip, 0, (uint32_t)pa, offset+i, n) != n) {
-            return -1;
-        }
-    }
-    return 0;
 }
 
 uint32_t sys_exec(void) {

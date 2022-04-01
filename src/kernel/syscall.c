@@ -47,7 +47,7 @@ int fetchaddr(uint32_t addr, uint32_t *ip) {
 
 int fetchstr(uint32_t addr, char *buf, int max) {
     
-    struct process *proc;
+    struct process *proc = get_process_struct();
     int err = copyinstr(proc->pagetable, buf, addr, max);
 
     if (err < 0) {
@@ -57,7 +57,7 @@ int fetchstr(uint32_t addr, char *buf, int max) {
 }
 
 uint32_t argraw(int n) {
-    struct process *proc;
+    struct process *proc = get_process_struct();
     switch (n) {
         case 0:
             return proc->trapframe->a0;
