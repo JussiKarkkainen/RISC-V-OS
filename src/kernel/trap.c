@@ -13,7 +13,7 @@ extern void ktrapvec();
 int handle_device_intr(void) {
     // Check if external/device interrupt
     uint32_t scause = get_scause();
-    if (((scause & INTERRUPT_BIT) == 1) && ((scause & EXT_INTERRUPT) == 9)) {  
+    if (((scause & INTERRUPT_BIT)) && ((scause & EXT_INTERRUPT) == 9)) {  
         // Interrupt given by PLIC
         int intr_id = plic_read();
 
@@ -146,7 +146,7 @@ void ktrap(void) {
         panic("trap not in supervisor mode");
     }
     // Make sure interrupts are not enabled
-    if ((sstatus & SSTATUS_SIE) == 1) {
+    if (sstatus & SSTATUS_SIE) {
         panic("interrupts are enabled");
     }
 

@@ -1,4 +1,4 @@
-#include "disk.c"
+#include "disk.h"
 #include "paging.c"
 #include "locks.h"
 #include "process.h"

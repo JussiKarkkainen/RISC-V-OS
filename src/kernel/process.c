@@ -19,7 +19,7 @@ struct spinlock pid_lock;
 
 struct spinlock wait_lock;
 
-char uservec[];
+extern char uservec[];
 
 int nextpid = 1;
 

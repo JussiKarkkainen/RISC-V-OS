@@ -35,7 +35,7 @@ uint32_t (*syscall[])(void) = {
 
 int fetchaddr(uint32_t addr, uint32_t *ip) {
 
-    struct process *proc;
+    struct process *proc = get_process_struct();
     if (addr >= proc->mem_size || addr+sizeof(uint32_t) > proc->state) {
         return -1;
     }
