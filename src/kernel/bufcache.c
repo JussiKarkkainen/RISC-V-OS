@@ -4,8 +4,8 @@
 // buffer_read and buffer_write, the former reading a buffer from disk to memory
 // and the latter writing a modified buffer back to the disk.
 
-//#include "disk.h"
-//#include "filesys.h"
+#include "disk.h"
+#include "filesys.h"
 #include "locks.h"
 #include "process.h"
 #include "../libc/include/stdio.h"
@@ -32,16 +32,16 @@ void buffer_init(void) {
     initlock(&buffer_cache.lock, "buffer_cache lock");
 
     // Create a linked list of buffers
-    buffer_cache.list_head.prev = &buffer_cache.head;
-    buffer_cache.list_head.next = &buffer_cache.head;
+    buffer_cache.list_head.prev = &buffer_cache.list_head;
+    buffer_cache.list_head.next = &buffer_cache.list_head;
     
     // loop over buffers in cache
     for (buf = buffer_cache.buffer; buf < buffer_cache.buffer+NUMBUF; buf++) {
-        b->next = buffer_cache.list_head.next;
-        b->prev = &buffer_cache.list_head;
-        initsleep(&buf->lock, "buffer_lock");
+        buf->next = buffer_cache.list_head.next;
+        buf->prev = &buffer_cache.list_head;
+        initsleeplock(&buf->lock, "buffer_lock");
         buffer_cache.list_head.next->prev = buf;
-        buffer_cachw.list_head.next = buf;
+        buffer_cache.list_head.next = buf;
     }
 }
 
@@ -56,8 +56,8 @@ struct buffer *buffer_read(int dev, int blockno) {
     // Check if buffer is cached
     for (buf = buffer_cache.list_head.next; buf != &buffer_cache.list_head; buf = buf->next); {
         if ((buf->dev == dev) && (buf->blockno == blockno)) {
-            b->refcount++;
-            release_lock(&buffer_cache-lock);
+            buf->refcount++;
+            release_lock(&buffer_cache.lock);
             acquire_sleeplock(&buf->lock);
             is_cached = 1;
         }
@@ -69,8 +69,8 @@ struct buffer *buffer_read(int dev, int blockno) {
             if (buf->refcount == 0) {
                 buf->valid = 0;
                 buf->dev = dev;
-                buf->blocno = blockno;
-                buf->refcount = 0
+                buf->blockno = blockno;
+                buf->refcount = 0;
                 release_lock(&buffer_cache.lock);
                 acquire_sleeplock(&buf->lock);
             }
@@ -80,7 +80,7 @@ struct buffer *buffer_read(int dev, int blockno) {
     if (!buf->valid) {
         disk_read_write(buf, 0);
         buf->valid = 1;
-
+    }
     return buf; 
 }
 
@@ -92,13 +92,14 @@ void buffer_write(struct buffer *buf) {
 // Buffer returned by buffer_read is still holding a lock, release it.jjkkk
 void buffer_release(struct buffer *buf) {
     
-    if (is_holding_sleeplock() == 0) {
+    if (is_holding_sleeplock(&buf->lock)) {
         panic("buffer_release, not holding lock");
     }
     
     release_sleeplock(&buf->lock);
 
     acquire_lock(&buffer_cache.lock);
+    buf->refcount--;
     if (buf->refcount == 0) {
         buf->next->prev = buf->prev;
         buf->prev->next = buf->next;

@@ -24,7 +24,7 @@ struct disk {
     struct disk_block_req ops[NUM];
     struct disk_avail *avail;
     struct disk_used *used;
-};
+}__attribute__((aligned (PGESIZE))) disk;
 
 
 // Configuring the device:
@@ -40,6 +40,8 @@ struct disk {
 void disk_init(void) {
     uint32_t status_bits;
 
+    initlock(&disk.disk_lock, "disk");
+
     // 1. Reset the device
     *(base_addr + DISK_STATUS) = 0;
 
@@ -48,7 +50,7 @@ void disk_init(void) {
     *(base_addr + DISK_STATUS) = status_bits;
 
     // 3. Set DRIVER status bit to status reg
-    status_bits |= DISK_DRIVER
+    status_bits |= DRIVER_STATUS;
     *(base_addr + DISK_STATUS) |= status_bits;
 
     // 4. Read device features from host_features register
@@ -68,7 +70,7 @@ void disk_init(void) {
 
     // Set status bit to indicate we're ready
     status_bits |= DISK_FEATURES_OK;
-    *(base_address + DISK_STATUS) = status_bits;
+    *(base_addr + DISK_STATUS) = status_bits;
 
     status_bits = DISK_DRIVER_OK;
     *(base_addr + DISK_STATUS) = status_bits;
@@ -78,7 +80,7 @@ void disk_init(void) {
     
     // Initialize queue 0
     uint32_t max = *(base_addr + DISK_QUEUE_NUM_MAX);
-    *(base_addr + DISK_QUEUE_NUM) = NUM   // Number of descriptors
+    *(base_addr + DISK_QUEUE_NUM) = NUM;   // Number of descriptors
     memset(disk.pages, 0, sizeof(disk.pages));
     *(base_addr + DISK_QUEUE_PFN) = disk.pages;
 
@@ -88,7 +90,7 @@ void disk_init(void) {
 
 
     // descriptors start unused
-    for (i=0; 1<8; i++) {
+    for (int i=0; 1<8; i++) {
         disk.free[i] = 1;
     }
 }
@@ -145,7 +147,7 @@ int alloc3_descriptors(int *idx) {
 void free_descriptor(int i) {
     if (i >= NUM) {
         panic("free descriptor i >= NUM");
-    },
+    }
     if (disk.free[i]) {
         panic("descriptor is already free");
     }
@@ -155,6 +157,19 @@ void free_descriptor(int i) {
     disk.desc[i].next = 0;
     disk.free[i] = 1;
     wakeup(&disk.free[0]);
+}
+static void
+free_chain(int i)
+{
+  while(1){
+    int flag = disk.desc[i].flags;
+    int nxt = disk.desc[i].next;
+    free_desc(i);
+    if(flag & VRING_DESC_F_NEXT)
+      i = nxt;
+    else
+      break;
+  }
 }
 
 void disk_read_write(struct buffer *buf, int write) {
@@ -227,7 +242,8 @@ void disk_read_write(struct buffer *buf, int write) {
     disk.info[idx[0]].b = 0;
     free_chain(idx[0]);
 
-    release_lock(&disk.vdisk_lock);
+    release_lock(&disk.disk_lock);
+    }
 }
 
 

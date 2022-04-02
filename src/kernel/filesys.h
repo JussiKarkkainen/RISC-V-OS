@@ -22,6 +22,7 @@
 #define MAXPATH 128
 #define MAXARG 32
 #define FSMAGIC 0x10203040
+#define BLOCK_SIZE 1024
 
 struct buffer {
     int valid;

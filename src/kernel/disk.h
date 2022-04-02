@@ -37,6 +37,7 @@
 #define DISK_RING_F_EVENT_IDX 29
 #define DISK_FEATURES_OK 8
 #define DISK_DRIVER_OK 4
+#define VRING_DESC_F_NEXT 1
 
 #define NUM 8
 #define BUFFER_SIZE 512
@@ -85,6 +86,6 @@ struct disk_used {
 void virtio_disk_intr(void);
 int alloc_descriptor(void);
 void free_descriptor(int i);
-//void disk_read_write(struct buffer *buf, int write);
+void disk_read_write(struct buffer *buf, int write);
 
 #endif

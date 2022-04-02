@@ -138,7 +138,7 @@ int write_file(struct file *file, uint32_t address, int n) {
         pipewrite(file->pipe, address, n);
     }
     else if (file->type == FD_DEVICE) {
-        if ((file->major_dev_num < ) || (file->major_dev_num >= NUMDEV) || (!devsw[file->major_dev_num].write)) {
+        if ((file->major_dev_num < 0) || (file->major_dev_num >= NUMDEV) || (!devsw[file->major_dev_num].write)) {
             return -1;
         }
         ret = devsw[file->major_dev_num].write(1, address, n);
