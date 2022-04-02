@@ -3,11 +3,14 @@
 #include "locks.h"
 #include "process.h"
 #include "filesys.h"
+#include "../libc/include/stdio.h"
+#include "../libc/include/string.h"
+#include "pipes.h"
 
 // File descriptor layer
 // These functions are used in file system system calls
 
-struct devsw devsw[NDEV]
+struct devsw devsw[NUMDEV];
 
 struct {
     struct spinlock lock;
@@ -47,7 +50,7 @@ struct file *file_inc(struct file *file) {
 
 void file_close(struct file *file) {
 
-    struct file *f;
+    struct file f;
 
     acquire_lock(&file_table.lock);
     if (file->ref < 1) {
@@ -66,7 +69,7 @@ void file_close(struct file *file) {
     if (f.type == FD_PIPE) {
         pipe_close(f.pipe, f.writable);
     }
-    else if (f.type == FD_INODE || f.type == FD_DEVICE) {
+    else if (f.type == FD_INODE || f.type == FD_DEVICE) {
         begin_op();
         inode_put(f.inode);
         end_op();
@@ -112,7 +115,7 @@ int read_file(struct file *file, uint32_t address, int n) {
     else if (file->type == FD_INODE) {
         inode_lock(file->inode);
         if ((a = read_inode(file->inode, 1, address, file->offset, n)) > 0) {
-            file->offset += r;
+            file->offset += a;
         }
         inode_unlock(file->inode);
     }
@@ -125,7 +128,7 @@ int read_file(struct file *file, uint32_t address, int n) {
 
 int write_file(struct file *file, uint32_t address, int n) {
 
-    int r, ret, = 0;
+    int r, ret = 0;
 
     if (file->writable == 0) {
         return -1;
@@ -135,7 +138,7 @@ int write_file(struct file *file, uint32_t address, int n) {
         pipewrite(file->pipe, address, n);
     }
     else if (file->type == FD_DEVICE) {
-        if (file->major_dev_number < 0 || file->major_dev_num >= NUMDEV; ¦¦ !devsw[file->major_dev_num].write) {
+        if ((file->major_dev_num < ) || (file->major_dev_num >= NUMDEV) || (!devsw[file->major_dev_num].write)) {
             return -1;
         }
         ret = devsw[file->major_dev_num].write(1, address, n);
@@ -151,7 +154,7 @@ int write_file(struct file *file, uint32_t address, int n) {
             }
             begin_op();
             inode_lock(file->inode);
-            if ((r = write_inode(file->inode, 1, address + i, file->offser, n1)) > 0) {
+            if ((r = write_inode(file->inode, 1, address + i, file->offset, n1)) > 0) {
                 file->offset += r;
             }
             inode_unlock(file->inode);
