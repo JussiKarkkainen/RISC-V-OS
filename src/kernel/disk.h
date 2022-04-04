@@ -82,6 +82,8 @@ struct disk_used {
     struct disk_used_elem ring[NUM];
 };
 
+struct buffer;
+
 // Functions from disk.c
 void virtio_disk_intr(void);
 int alloc_descriptor(void);

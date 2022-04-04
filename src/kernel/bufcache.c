@@ -54,8 +54,8 @@ struct buffer *buffer_read(int dev, int blockno) {
     int is_cached = 0;
     
     // Check if buffer is cached
-    for (buf = buffer_cache.list_head.next; buf != &buffer_cache.list_head; buf = buf->next); {
-        if ((buf->dev == dev) && (buf->blockno == blockno)) {
+    for (buf = buffer_cache.list_head.next; buf != &buffer_cache.list_head; buf = buf->next) {
+        if (((int)buf->dev == dev) && (buf->blockno == blockno)) {
             buf->refcount++;
             release_lock(&buffer_cache.lock);
             acquire_sleeplock(&buf->lock);

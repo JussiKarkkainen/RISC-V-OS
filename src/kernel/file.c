@@ -80,7 +80,7 @@ void file_close(struct file *file) {
 int file_stat(struct file *file, uint32_t address) {
 
     struct process *proc = get_process_struct();
-    struct stat *stat;
+    struct stat stat;
 
     if (file->type == FD_INODE || file->type == FD_DEVICE) {
         inode_lock(file->inode);

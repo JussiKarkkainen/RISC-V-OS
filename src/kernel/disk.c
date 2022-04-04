@@ -38,7 +38,7 @@ struct disk {
 // 8. Perform device-specific setup
 // 9. Set the DRIVER_OK status bit to the status register.
 void disk_init(void) {
-    uint32_t status_bits;
+    uint32_t status_bits = 0;
 
     initlock(&disk.disk_lock, "disk");
 
@@ -53,10 +53,6 @@ void disk_init(void) {
     status_bits |= DRIVER_STATUS;
     *(base_addr + DISK_STATUS) |= status_bits;
 
-    // 4. Read device features from host_features register
-    uint32_t host_features = *(base_addr + DISK_HOST_FEATURES);
-    uint32_t guest_features = *(base_addr + DISK_GUEST_FEATURES);
-    
     // 5. Negotiate the set of features and write what you'll accept to guest_features register
     uint32_t features = *(base_addr + DISK_HOST_FEATURES);
     features &= ~(1 << DISK_BLK_F_RO);
@@ -79,10 +75,19 @@ void disk_init(void) {
     *(base_addr + DISK_GUEST_PAGE_SIZE) = PGESIZE;
     
     // Initialize queue 0
+    *(base_addr + DISK_QUEUE_SEL) = 0;
     uint32_t max = *(base_addr + DISK_QUEUE_NUM_MAX);
+    
+    if (max == 0) {
+        panic("no queue 0");
+    }
+    if (max < NUM) {
+        panic("queue too short");
+    }
+
     *(base_addr + DISK_QUEUE_NUM) = NUM;   // Number of descriptors
     memset(disk.pages, 0, sizeof(disk.pages));
-    *(base_addr + DISK_QUEUE_PFN) = disk.pages;
+    *(base_addr + DISK_QUEUE_PFN) = ((uint32_t)disk.pages >> 12);
 
     disk.desc = (struct disk_desc *) disk.pages;
     disk.avail = (struct disk_avail *)(disk.pages + NUM * sizeof(struct disk_desc));

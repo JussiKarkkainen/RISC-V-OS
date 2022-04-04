@@ -1,5 +1,4 @@
 #include "filesys.h"
-#include "disk.h"
 #include "../libc/include/stdio.h"
 #include "../libc/include/string.h"
 #include "process.h"
