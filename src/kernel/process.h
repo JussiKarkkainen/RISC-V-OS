@@ -110,6 +110,34 @@ struct trapframe {
     uint32_t t6;
 };
 
+struct elf_header {
+    unsigned int magic;
+    unsigned char elf[12];
+    unsigned short type;
+    unsigned short machine;
+    unsigned int version;
+    uint32_t entry;
+    uint32_t phoff;
+    uint32_t shoff;
+    unsigned int flags;
+    unsigned short ehsize;
+    unsigned short phnum;
+    unsigned short shentsize;
+    unsigned short shnum;
+    unsigned short shstrndx;
+};
+
+struct proghdr {
+    uint32_t type;
+    uint32_t flags;
+    uint64_t off;
+    uint64_t vaddr;
+    uint64_t paddr;
+    uint64_t filesz;
+    uint64_t memsz;
+    uint64_t align;
+};
+
 struct cpu *get_cpu_struct(void);
 struct process *get_process_struct(void);
 int which_cpu(void); 
