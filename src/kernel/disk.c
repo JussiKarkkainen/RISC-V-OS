@@ -164,7 +164,7 @@ free_chain(int i)
   while(1){
     int flag = disk.desc[i].flags;
     int nxt = disk.desc[i].next;
-    free_desc(i);
+    free_descriptor(i);
     if(flag & VRING_DESC_F_NEXT)
       i = nxt;
     else

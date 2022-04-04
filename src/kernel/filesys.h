@@ -35,7 +35,7 @@ struct buffer {
     unsigned int refcount;
     struct buffer *prev;
     struct buffer *next;
-    char data[BUFFER_SIZE];
+    char data[BLOCK_SIZE];
 };
 
 struct superblock {

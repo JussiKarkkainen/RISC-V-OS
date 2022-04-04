@@ -6,6 +6,7 @@
 #include "../libc/include/stdio.h"
 #include "../libc/include/string.h"
 #include "pipes.h"
+#include "paging.h"
 
 // File descriptor layer
 // These functions are used in file system system calls

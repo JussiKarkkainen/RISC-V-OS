@@ -70,6 +70,26 @@ int pipewrite(struct pipe *p, int n, uint32_t addr) {
     }   
 }
 
+void pipe_close(struct pipe *pi, int writable) {
+  
+    acquire_lock(&pi->lock);
+    if (writable) {
+        pi->write_open = 0;
+        wakeup(&pi->num_read);
+    } 
+    else {
+        pi->read_open = 0;
+        wakeup(&pi->num_write);
+    }
+    if(pi->read_open == 0 && pi->write_open == 0) {
+        release_lock(&pi->lock);
+        kfree((char*)pi, 1);
+    } 
+    else {
+        release_lock(&pi->lock);
+    }
+}
+
 int piperead(struct pipe *p, int n, uint32_t addr) {
     
     int i;
