@@ -1,5 +1,9 @@
-.globl utrapvec
+
+.section uvecsec
+.globl uvec
+uvec:
 .align 4
+.globl utrapvec
 
 utrapvec;
     # Traps from user mode should come here
