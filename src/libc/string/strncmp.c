@@ -1,4 +1,3 @@
-#include "../include/string.h"
 
 int strncmp(const char *a, const char *b, unsigned int n) {
     while (n && *a && (*a == *b)) {

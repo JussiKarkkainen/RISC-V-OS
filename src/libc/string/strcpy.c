@@ -1,16 +1,15 @@
-#include "../include/string.h"
 
-char *strcpy(char *s, const char *t unsigned int n) {
+char *strcpy(char *s, const char *t, unsigned int n) {
     
     char *ps;
 
-    os = s;
+    ps = s;
     if(n <= 0) {
-        return os;
+        return ps;
     }
     while(--n > 0 && (*s++ = *t++) != 0) {
         ;
     }
     *s = 0;
-    return os;
+    return ps;
 }
