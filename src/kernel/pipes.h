@@ -1,6 +1,8 @@
 #ifndef PIPES_H
 #define PIPES_H
 
+#include "locks.h"
+
 #define PIPESIZE 512
 
 struct pipe {
@@ -11,6 +13,8 @@ struct pipe {
     int read_open;      
     int write_open;
 };
+
+struct file;
 
 int pipealloc(struct file **f0, struct file **f1);
 int pipewrite(struct pipe *p, int n, uint32_t addr);

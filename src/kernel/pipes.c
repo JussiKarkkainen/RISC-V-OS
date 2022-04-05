@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include "pipes.h"
 #include "process.h"
+#include "file.h"
+#include "paging.h"
 
 int pipealloc(struct file **f0, struct file **f1) {
     struct pipe *pi;
@@ -14,7 +16,7 @@ int pipealloc(struct file **f0, struct file **f1) {
     if ((pi = (struct pipe*)zalloc(1)) == 0) {
         goto bad;
     }
-    pi->read-open = 1;
+    pi->read_open = 1;
     pi->write_open = 1;
     pi->num_write = 0;
     pi->num_read = 0;
@@ -31,7 +33,7 @@ int pipealloc(struct file **f0, struct file **f1) {
 
     bad:
         if (pi) {
-            kfree((char*)pi); 
+            kfree((uint32_t *)pi, 1); 
         }
         if (*f0) {
             file_close(*f0);
@@ -45,26 +47,28 @@ int pipealloc(struct file **f0, struct file **f1) {
 int pipewrite(struct pipe *p, int n, uint32_t addr) {
     struct process *proc = get_process_struct();
     
+    int i = 0;
+
     acquire_lock(&p->lock);
-    while ((int i = 0) < n) {
+    while (i < n) {
         if (p->read_open == 0 || proc->killed) {
             release_lock(&p->lock);
         }
 
         if (p->num_write == p->num_read + PIPESIZE) {
             wakeup(&p->num_read);
-            sleep(&pi->num_write, &p->lock);
+            sleep(&p->num_write, &p->lock);
         }
         else {
             char ch;
             if (copyto(proc->pagetable, &ch, addr + 1, 1) == -1) {
                 break;
-            p->data[p->num_write++ % PIPESIZE] = ch
+            p->data[p->num_write++ % PIPESIZE] = ch;
             i++;
             }
         }
         wakeup(&p->num_read);
-        release_lock(p->lock);
+        release_lock(&p->lock);
 
         return i;
     }   
@@ -83,7 +87,7 @@ void pipe_close(struct pipe *pi, int writable) {
     }
     if(pi->read_open == 0 && pi->write_open == 0) {
         release_lock(&pi->lock);
-        kfree((char*)pi, 1);
+        kfree((uint32_t *)pi, 1);
     } 
     else {
         release_lock(&pi->lock);
@@ -96,7 +100,7 @@ int piperead(struct pipe *p, int n, uint32_t addr) {
     struct process *proc = get_process_struct();
     char ch;
 
-    acquire_loc(&p->lock);
+    acquire_lock(&p->lock);
     while (p->num_read == p->num_write && p->write_open) {
        if (proc->killed) {
            release_lock(&p->lock);

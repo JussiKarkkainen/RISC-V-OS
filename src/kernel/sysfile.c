@@ -74,9 +74,9 @@ int exec(char *path, char **argv) {
     char *s, *last;
     int i, off;
     uint32_t argc, sz = 0, sp, ustack[MAXARG], stackbase;       // These need to be added
-    struct elfhdr elf;
+    struct elf_header elf;
     struct inode *ip;
-    struct proghdr ph;
+    struct prog_header ph;
     uint32_t *pagetable = 0, *oldpagetable;
     struct process *p = get_process_struct();
 

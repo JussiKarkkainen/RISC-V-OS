@@ -24,7 +24,7 @@ void enter(void) {
         init_trapvec();     // Initialize timer trapvec
         plic_init();        // Setup interrupt controller  
         plic_init_hart();   // request device interrupts
-//        console_init();     // Start console
+        console_init();     // Start console
 //        buffer_init();      // Initialize the buffer cache for filesystem
 //        inode_init();       // Initialize the inode table
 //        file_init();        // Initialize file table

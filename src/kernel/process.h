@@ -8,6 +8,8 @@
 #define MAXCPUS 8
 #define MAXPROC 64
 #define NUMOFILES 16
+#define ELF_MAGIC 0x464C457FU
+#define ELF_PROG_LOAD 1
 
 // This is used in scheduling between processes
 struct context {
@@ -127,7 +129,7 @@ struct elf_header {
     unsigned short shstrndx;
 };
 
-struct proghdr {
+struct prog_header {
     uint32_t type;
     uint32_t flags;
     uint64_t off;
