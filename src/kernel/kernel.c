@@ -13,17 +13,18 @@ static volatile int started = 0;
 void enter(void) {  
     
     if (which_cpu() == 0) {
-
+        
+        kprintf_init();
         kprintf("%s\n", "Booting OS");
 
         pmm_init();         // Initialize physical memory manager
-        test_alloc();
+//        test_alloc();
         kpage_init();       // Initilaize kernel pagetable
         init_paging();      // Initialize paging
-        init_ktrapvec();    // Write ktrapvec addr into stvec to init trap handling
-        init_trapvec();     // Initialize timer trapvec
-        plic_init();        // Setup interrupt controller  
-        plic_init_hart();   // request device interrupts
+//        init_ktrapvec();    // Write ktrapvec addr into stvec to init trap handling
+//        init_trapvec();     // Initialize timer trapvec
+//        plic_init();        // Setup interrupt controller  
+//        plic_init_hart();   // request device interrupts
         console_init();     // Start console
 //        buffer_init();      // Initialize the buffer cache for filesystem
 //        inode_init();       // Initialize the inode table

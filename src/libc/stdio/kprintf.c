@@ -1,10 +1,34 @@
 #include <stdarg.h>
 #include "../../kernel/uart.h"
-#include "putchar.c"
 #include "../include/stdio.h"
 #include <stddef.h>
+#include "../../kernel/locks.h"
+
+volatile int panicked = 0;
 
 static char digits[] = "0123456789abcdef";
+
+static struct {
+  struct spinlock lock;
+  int locking;
+} pr;
+
+void kprintf_init(void) {
+  initlock(&pr.lock, "print lock");
+  pr.locking = 1;
+}
+
+void panic(char *string) {
+    pr.locking = 0;
+    kprintf("panic: ");
+    kprintf(string);
+    kprintf("\n");
+    panicked = 1;
+    
+    while (1) {
+        ;
+    }
+}
 
 void intprint(int num, int base, int sign) {
   
@@ -48,9 +72,14 @@ void kprintf(char *format, ...) {
     va_start(arg, format);
 
     char *traverse = format;
-    int i;
+    int i, locking;
     char *str;
     uint32_t p;
+    
+    locking = pr.locking;
+    if (locking) {
+        acquire_lock(&pr.lock);
+    }
 
     while (*traverse != '\0') {
         if (*traverse != '%') {
@@ -87,7 +116,11 @@ void kprintf(char *format, ...) {
         traverse++;
     }
 
-    
+     
     va_end(arg);
-
+    
+    if (locking) {
+        release_lock(&pr.lock);
+    }
 }
+
