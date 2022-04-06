@@ -1,8 +1,9 @@
 #include "disk.h"
-#include "paging.c"
+#include "paging.h"
 #include "locks.h"
 #include "process.h"
 #include "../libc/include/stdio.h"
+#include "../libc/include/string.h"
 
 volatile uint32_t *base_addr = (volatile uint32_t *)(VIRTIO0);
 

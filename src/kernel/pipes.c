@@ -117,7 +117,7 @@ int piperead(struct pipe *p, int n, uint32_t addr) {
             break;
         }
     }
-    wakeup(p->num_write);
+    wakeup(&p->num_write);
     release_lock(&p->lock);
     return i;
 }

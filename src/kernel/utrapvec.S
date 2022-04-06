@@ -5,7 +5,7 @@ uvec:
 .align 4
 .globl utrapvec
 
-utrapvec;
+utrapvec:
     # Traps from user mode should come here
     # utrapvec saves registers, fetches the current CPU hartid, the address
     # of utrap() and the address of the kernel page table from a trapframe.

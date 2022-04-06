@@ -19,7 +19,7 @@ struct spinlock pid_lock;
 
 struct spinlock wait_lock;
 
-extern char uservec[];
+extern char uvec[];
 
 int nextpid = 1;
 
@@ -70,7 +70,11 @@ uint32_t *proc_pagetable(struct process *proc) {
     uint32_t *pagetable;
     pagetable = upaging_create();
 
-    if (kmap(pagetable, USERVEC, PGESIZE, (uint32_t)uservec, PTE_R | PTE_X) < 0) {
+    if (pagetable == 0) {
+        return 0;
+    }
+
+    if (kmap(pagetable, USERVEC, PGESIZE, (uint32_t)uvec, PTE_R | PTE_X) < 0) {
         uvmfree(pagetable, 0);
         return 0;
     }
