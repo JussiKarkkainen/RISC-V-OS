@@ -23,6 +23,19 @@ extern char uvec[];
 
 int nextpid = 1;
 
+void map_kstack(uint32_t *pagetable) {
+    struct process *proc;
+
+    for (proc = process; proc < &p[MAXPROC]; proc++) {
+        uint32_t *phy_addr = kalloc(1);
+        if (phy_addr == 0) {
+            panic("map_kstack, phy_addr = 0, error with kalloc");
+        }
+        uint32_t va = (USERVEC - ((proc - process) + 1) * 2 * PGESIZE);
+        kmap(pagetable, va, (uint32_t)phy_addr, PGESIZE, PTE_W | PTE_R);
+    }
+}
+
 unsigned char initcode[] = {
     0x17, 0x05, 0x00, 0x00, 0x13, 0x05, 0x45, 0x02,
     0x97, 0x05, 0x00, 0x00, 0x93, 0x85, 0x35, 0x02,

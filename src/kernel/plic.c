@@ -1,5 +1,6 @@
 #include "process.h"
 #include "plic.h"
+#include "paging.h"
 
 // https://github.com/qemu/qemu/blob/master/include/hw/riscv/virt.h
 // UART intr_id = 10.

@@ -19,10 +19,11 @@ SECTIONS
           
           .text : ALIGN(4K) {
                   PROVIDE(text_start = .);
-                  . = ALIGN(0x1000);
+                  /*. = ALIGN(0x1000);
                   _uvec = .;
                   *(uvecsec);
                   . = ALIGN(0x1000);
+                  */
                   *(.text.init) *(.text .text.*);
                   PROVIDE(text_end = .);
           } >ram AT>ram :text

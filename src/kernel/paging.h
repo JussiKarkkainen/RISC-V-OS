@@ -22,7 +22,7 @@ extern uint32_t MEMORY_END,MEMORY_END,  HEAP_START, TEXT_START, RODATA_START, DA
 #define VIRTIO0 0x10001000
 #define CLINT 0x20000000
 #define CLINT_OFFSET 0x4000
-#define PLIC 0xc0000000
+#define PLIC 0x0C000000
 #define PLICSIZE 0x2000
 #define KERNEL_BASE 0x80000000
 #define TRAPFRAME (USERVEC - PGESIZE)
@@ -41,7 +41,6 @@ int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, i
 void kpage_init(void);
 uint32_t *kpagemake(void);
 void init_paging(void);
-void map_kstack(uint32_t *pagetable);
 void test_alloc(void);
 void upaging_init(uint32_t *pagetable, unsigned char *src, unsigned int size);
 int copyto(uint32_t *pagetable, char *dst, uint32_t srcaddr, uint32_t len);

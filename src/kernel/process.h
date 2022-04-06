@@ -140,6 +140,7 @@ struct prog_header {
     uint64_t align;
 };
 
+void map_kstack(uint32_t *pagetable);
 struct cpu *get_cpu_struct(void);
 struct process *get_process_struct(void);
 int which_cpu(void); 

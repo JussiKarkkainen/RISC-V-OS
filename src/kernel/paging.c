@@ -3,9 +3,13 @@
 #include "../libc/include/stdio.h"
 #include "../libc/include/string.h"
 #include "process.h"
-#include "syscall.h"
+#include "syscall.h" 
 
 uint32_t *kpagetable;
+
+struct process process[MAXPROC];
+
+struct cpu cpu[MAXCPUS];
 
 static inline void flush_tlb(void) {
     asm volatile("sfence.vma zero, zero");
@@ -19,8 +23,6 @@ static inline void satp_write(uint32_t *kpage) {
 
 // create the kernel pagetable
 uint32_t *kpagemake(void) {
-    kprintf("maxva %p and HEAP_START %p uservec %p\n", MAXVA, HEAP_START, USERVEC);
-    kprintf("Memory_end %p\n", MEMORY_END);
     uint32_t *kpage = zalloc(1);
     // Create a virtual memory map
     kmap(kpage, UART0, UART0, PGESIZE, PTE_R | PTE_W);
@@ -41,24 +43,11 @@ uint32_t *kpagemake(void) {
 
     kmap(kpage, BSS_START, BSS_START, BSS_SIZE, PTE_R | PTE_W);         // BSS_SIZE is apparently zero, needs fixing
 
-    kmap(kpage, KERNEL_STACK_START, KERNEL_STACK_START, KERNEL_STACK_SIZE, PTE_R | PTE_W);
+//    kmap(kpage, KERNEL_STACK_START, KERNEL_STACK_START, KERNEL_STACK_SIZE, PTE_R | PTE_W);
 
     map_kstack(kpage);
 
     return kpage;
-}
-
-void map_kstack(uint32_t *pagetable) {
-    struct process *proc;
-
-    for (proc = process; proc < &process[MAXPROC]; proc++) {
-        uint32_t *phy_addr = kalloc(1);
-        if (phy_addr == 0) {
-            panic("map_kstack, phy_addr = 0, error with kalloc");
-        }
-        uint32_t va = (USERVEC - ((proc - process) + 1) * 2 * PGESIZE);
-        kmap(pagetable, va, (uint32_t)phy_addr, PGESIZE, PTE_W | PTE_R);
-    }
 }
 
 // Initializes the kernel page table
