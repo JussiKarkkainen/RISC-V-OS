@@ -32,7 +32,6 @@ void map_kstack(uint32_t *pagetable) {
             panic("map_kstack, phy_addr = 0, error with kalloc");
         }
         uint32_t va = (USERVEC - ((proc - p) + 1) * 2 * PGESIZE);
-        kprintf("heelo: %p\n", pagetable); 
         kmap(pagetable, va, (uint32_t)phy_addr, PGESIZE, PTE_R | PTE_W);
     }
 }

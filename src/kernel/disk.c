@@ -80,10 +80,10 @@ void disk_init(void) {
     uint32_t max = *(base_addr + DISK_QUEUE_NUM_MAX);
     
     if (max == 0) {
-        panic("no queue 0");
+        panic("no queue 0, disk");
     }
     if (max < NUM) {
-        panic("queue too short");
+        panic("queue too short, disk");
     }
 
     *(base_addr + DISK_QUEUE_NUM) = NUM;   // Number of descriptors

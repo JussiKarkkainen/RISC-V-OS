@@ -21,7 +21,6 @@ void enter(void) {
         kprintf("%s\n", "Booting OS");
 
         pmm_init();         // Initialize physical memory manager
-//        test_alloc();
         kpage_init();       // Initilaize kernel pagetable
         init_paging();      // Initialize paging
         init_ktrapvec();    // Write ktrapvec addr into stvec to init trap handling
@@ -32,6 +31,7 @@ void enter(void) {
         buffer_init();      // Initialize the buffer cache for filesystem
         inode_init();       // Initialize the inode table
         file_init();        // Initialize file table
+        disk_init();        // Initialize virtio disk
         init_user();
         console_init();     // Start console
         __sync_synchronize();
@@ -47,4 +47,6 @@ void enter(void) {
         init_ktrapvec();    
         plic_init_hart();
     }
+
+    cpu_scheduler();
 }

@@ -85,6 +85,7 @@ struct disk_used {
 struct buffer;
 
 // Functions from disk.c
+void disk_init(void);
 void virtio_disk_intr(void);
 int alloc_descriptor(void);
 void free_descriptor(int i);
