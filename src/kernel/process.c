@@ -26,13 +26,14 @@ int nextpid = 1;
 void map_kstack(uint32_t *pagetable) {
     struct process *proc;
 
-    for (proc = process; proc < &p[MAXPROC]; proc++) {
+    for (proc = p; proc < &p[MAXPROC]; proc++) {
         uint32_t *phy_addr = kalloc(1);
         if (phy_addr == 0) {
             panic("map_kstack, phy_addr = 0, error with kalloc");
         }
-        uint32_t va = (USERVEC - ((proc - process) + 1) * 2 * PGESIZE);
-        kmap(pagetable, va, (uint32_t)phy_addr, PGESIZE, PTE_W | PTE_R);
+        uint32_t va = (USERVEC - ((proc - p) + 1) * 2 * PGESIZE);
+        kprintf("heelo: %p\n", pagetable); 
+        kmap(pagetable, va, (uint32_t)phy_addr, PGESIZE, PTE_R | PTE_W);
     }
 }
 
@@ -50,7 +51,6 @@ unsigned char initcode[] = {
 void init_user(void) {
     
     struct process *proc;
-
     proc = alloc_process();
     initproc = proc;
     
@@ -82,17 +82,15 @@ uint32_t *proc_pagetable(struct process *proc) {
     
     uint32_t *pagetable;
     pagetable = upaging_create();
-
+    
     if (pagetable == 0) {
         return 0;
     }
-
-    if (kmap(pagetable, USERVEC, PGESIZE, (uint32_t)uvec, PTE_R | PTE_X) < 0) {
+    if (kmap(pagetable, USERVEC, (uint32_t)uvec, PGESIZE, PTE_R | PTE_X) < 0) {
         uvmfree(pagetable, 0);
         return 0;
     }
-
-    if (kmap(pagetable, TRAPFRAME, PGESIZE, (uint32_t)(proc->trapframe), PTE_R | PTE_W) < 0) {
+    if (kmap(pagetable, TRAPFRAME, (uint32_t)(proc->trapframe), PGESIZE, PTE_R | PTE_W) < 0) {
         uvmunmap(pagetable, USERVEC, 1, 0);
         uvmfree(pagetable, 0);
         return 0;
@@ -103,7 +101,6 @@ uint32_t *proc_pagetable(struct process *proc) {
 struct process *alloc_process(void) {
    
     struct process *proc;
-
     for (proc = p; proc < &p[MAXPROC]; proc++) {
         acquire_lock(&proc->lock);
         if (proc->state == UNUSED) {
@@ -124,7 +121,6 @@ struct process *alloc_process(void) {
             release_lock(&proc->lock);
             return 0;
         }
-
         proc->pagetable = proc_pagetable(proc);
         if (proc->pagetable == 0) {
             freeproc(proc);

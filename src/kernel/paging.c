@@ -41,11 +41,10 @@ uint32_t *kpagemake(void) {
 
     kmap(kpage, DATA_START, DATA_START, DATA_SIZE, PTE_R | PTE_W);
 
-    kmap(kpage, BSS_START, BSS_START, BSS_SIZE, PTE_R | PTE_W);         // BSS_SIZE is apparently zero, needs fixing
-
+    kmap(kpage, BSS_START, BSS_START, BSS_SIZE, PTE_R | PTE_W);       
 //    kmap(kpage, KERNEL_STACK_START, KERNEL_STACK_START, KERNEL_STACK_SIZE, PTE_R | PTE_W);
 
-    map_kstack(kpage);
+//    map_kstack(kpage);
 
     return kpage;
 }
@@ -82,7 +81,7 @@ uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc) {
         *pte = (((uint32_t)pagetable >> 12) << 10) | PTE_V;
         }
     }
-    return &pagetable[(((uint32_t)(vir_addr >> (PGEOFFSET + (10 * 0)) & VPNMASK)))];
+    return &pagetable[((vir_addr >> (PGEOFFSET + (10 * 0))) & VPNMASK)];
 }   
  
 uint32_t fetch_pa_addr(uint32_t *pagetable, uint32_t va) {
@@ -120,8 +119,8 @@ int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, i
     vir = (vir_addr & ~(PGESIZE - 1));
 
     while(1) {
-        pte = walk(kpage, vir, 1);        
-        if (pte == 0) {
+        
+        if ((pte = walk(kpage, vir, 1)) == 0) {        
             return -1;
         }
         if (*pte & PTE_V) {
@@ -142,7 +141,7 @@ uint32_t *upaging_create(void) {
     uint32_t *pagetable;
     pagetable = zalloc(1);
     if (pagetable == 0) {
-        panic("pagetable == 0, upaging_init");
+        panic("pagetable == 0, upaging_create");
     }
     return pagetable;
 }
@@ -155,7 +154,7 @@ void upaging_init(uint32_t *pagetable, unsigned char *src, unsigned int size) {
         panic("size >= PGESIZE, upaging_init()");
     }
     mem = zalloc(1);
-    kmap(pagetable, 0, PGESIZE, (uint32_t)mem, PTE_W | PTE_R | PTE_X | PTE_U);
+    kmap(pagetable, 0, (uint32_t)mem, PGESIZE, PTE_W | PTE_R | PTE_X | PTE_U);
 
     memmove(mem, src, size);
 }
@@ -178,7 +177,7 @@ uint32_t uvmalloc(uint32_t *pagetable, uint32_t oldsize, uint32_t newsize) {
             return 0;
         }
         memset(mem, 0, PGESIZE);
-        if (kmap(pagetable, a, PGESIZE, (uint32_t)mem, PTE_W|PTE_X|PTE_R|PTE_U) != 0) {
+        if (kmap(pagetable, a, (uint32_t)mem, PGESIZE, PTE_W|PTE_X|PTE_R|PTE_U) != 0) {
             kfree(mem, 1);
             uvmdealloc(pagetable, a, oldsize);
             return 0;

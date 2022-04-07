@@ -5,6 +5,9 @@
 #include "trap.h"
 #include "plic.h"
 #include "filesys.h"
+#include "file.h"
+#include "syscall.h"
+#include "disk.h"
 
 // This should be executed in supervisor mode, boot.S should first call 
 // start() for setup before tranfering control to enter().
@@ -21,15 +24,16 @@ void enter(void) {
 //        test_alloc();
         kpage_init();       // Initilaize kernel pagetable
         init_paging();      // Initialize paging
-//        init_ktrapvec();    // Write ktrapvec addr into stvec to init trap handling
-//        init_trapvec();     // Initialize timer trapvec
-//        plic_init();        // Setup interrupt controller  
-//        plic_init_hart();   // request device interrupts
+        init_ktrapvec();    // Write ktrapvec addr into stvec to init trap handling
+        init_trapvec();     // Initialize timer trapvec
+        plic_init();        // Setup interrupt controller  
+        plic_init_hart();   // request device interrupts
+
+        buffer_init();      // Initialize the buffer cache for filesystem
+        inode_init();       // Initialize the inode table
+        file_init();        // Initialize file table
+        init_user();
         console_init();     // Start console
-//        buffer_init();      // Initialize the buffer cache for filesystem
-//        inode_init();       // Initialize the inode table
-//        file_init();        // Initialize file table
-//        init_user();
         __sync_synchronize();
         started = 1;    
     }

@@ -105,7 +105,7 @@ void buffer_free(unsigned int dev, unsigned int b);
 void buffer_zero(int dev, int buffer_num);
 
 //  inode layer
-void init_inode(void);
+void inode_init(void);
 struct inode *inode_alloc(int dev, uint16_t type);
 struct inode *inode_get(unsigned int dev, int inode_num);
 struct inode *inode_dup(struct inode *inode);
