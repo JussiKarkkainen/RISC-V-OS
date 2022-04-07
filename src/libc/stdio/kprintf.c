@@ -91,7 +91,7 @@ void kprintf(char *format, ...) {
             switch (*traverse) {
                 
                 case 'c' : i = va_arg(arg, int);
-                    putchar(i);
+                    uart_putchar(i);
                     break;
                 
                 case 's' : str = va_arg(arg, char *); // Returns pointer to beginning of string.

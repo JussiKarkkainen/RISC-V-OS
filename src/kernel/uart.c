@@ -32,7 +32,7 @@ uart_return uart_configure(void) {
     return UART_OK;
 }
 
-volatile int panicked = 0;
+extern volatile int panicked;
 
 void uart_putc(int c) {
     
