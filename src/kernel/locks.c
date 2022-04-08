@@ -93,7 +93,7 @@ int is_holding_sleeplock(struct sleeplock *lock) {
     return i;
 }
 
-// Functions for matched interrupt enabling ad disabling
+// Functions for matched interrupt enabling and disabling
 void lock_intr_enable(void) {
     struct cpu *c = get_cpu_struct();
     if (get_intr()) {
@@ -103,7 +103,7 @@ void lock_intr_enable(void) {
         panic("lock_intr_enablei, intr depth");
     }
     c->depth_lock_intr_disable -= 1;
-    if ((c->depth_lock_intr_disable == 0) && (c->depth_lock_intr_disable)) {
+    if ((c->depth_lock_intr_disable == 0) && (c->intr_prev_state)) {
         enable_intr();
     }
 }

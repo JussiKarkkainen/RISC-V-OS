@@ -4,6 +4,7 @@
 #include "process.h"
 #include "paging.h"
 
+#define C(x)  ((x)-'@')  // Control-x
 #define INPUT_BUF 128
 #define BACKSPACE 0x100
 

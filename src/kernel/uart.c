@@ -1,9 +1,16 @@
 #include "uart.h"
 #include "locks.h"
+#include "stdint.h"
+#include "process.h"
 
 static volatile uart_regs* uart = (uart_regs *)0x10000000;
 
 struct spinlock uart_tx_lock;
+
+char uart_tx_buf[TX_BUFSIZE];
+
+uint32_t uart_tx_w;
+uint32_t uart_tx_r;
 
 uart_return uart_configure(void) {
     // disable interrupts for configure
@@ -34,7 +41,7 @@ uart_return uart_configure(void) {
 
 extern volatile int panicked;
 
-void uart_putc(int c) {
+void uartputc_sync(int c) {
     
     lock_intr_disable();
 
@@ -43,16 +50,16 @@ void uart_putc(int c) {
             ;
         }
     }
-    while ((uart->LSR & LCR_THRE) == 0) {
+    while ((uart->LSR & LSR_TX_IDLE) == 0) {
         ;
     }
     uart->BF = c;
     lock_intr_enable();
 }
 
-void uartputc_sync(int c) {
-
-    push_off();
+void uart_putc(int c) {
+  
+    acquire_lock(&uart_tx_lock);
 
     if (panicked) {
         while (1) {
@@ -60,11 +67,22 @@ void uartputc_sync(int c) {
         }
     }
 
-    while ((uart->LSR & LSR_TX_IDLE) == 0) {
-        ;
+    while (1) {
+        if(uart_tx_w == uart_tx_r + TX_BUFSIZE) {
+            // buffer is full.
+            // wait for uartstart() to open up space in the buffer.
+            sleep(&uart_tx_r, &uart_tx_lock);
+        } 
+        else {
+            uart_tx_buf[uart_tx_w % TX_BUFSIZE] = c;
+            uart_tx_w += 1;
+            uart_start();
+            release_lock(&uart_tx_lock);
+            return;
+        }
     }
-    uart->BF = c;
 }
+
 
 void uart_putchar(char c) {
     if (uart->LSR & (1 << 6)) {
@@ -77,7 +95,6 @@ void write_uart(char *data) {
         uart_putchar(*data++);
     }
 }
-
 
 uart_return read_uart(char *c) {
     
@@ -97,6 +114,26 @@ uart_return read_uart(char *c) {
     return UART_OK;
 }
 
+void uart_start(void) {
+
+    while (1) {
+        if (uart_tx_w == uart_tx_r) {
+            return;
+        }
+
+        if ((uart->LSR & LSR_TX_IDLE) == 0) {
+            return;
+        }
+
+        int c = uart_tx_buf[uart_tx_r % TX_BUFSIZE];
+        uart_tx_r += 1;
+
+        wakeup(&uart_tx_r);
+
+        uart->BF = c;
+    }
+}
+
 void uart_intr(void) {
 
     while (1) {
@@ -111,9 +148,4 @@ void uart_intr(void) {
     uart_start();
     release_lock(&uart_tx_lock);
 }
-
-
-
-
-
 
