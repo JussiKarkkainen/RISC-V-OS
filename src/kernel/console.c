@@ -5,6 +5,7 @@
 #include "paging.h"
 
 #define INPUT_BUF 128
+#define BACKSPACE 0x100
 
 struct {
     struct spinlock lock;
@@ -13,6 +14,18 @@ struct {
     unsigned int write;
     unsigned int edit;
 } console;
+
+void console_putc(int c) {
+    
+    if (c == BACKSPACE) {
+        uartputc_sync('\b'); 
+        uartputc_sync(' '); 
+        uartputc_sync('\b');
+    }
+    else {
+        uartputc_sync(c);
+    }
+}
 
 int console_write(int user_src, uint32_t src, int n) {
 
@@ -74,6 +87,55 @@ int console_read(int user_dst, uint32_t dst, int n) {
     release_lock(&console.lock);
 
     return target - n;
+}
+
+void console_intr(int c) {
+  
+    acquire_lock(&console.lock);
+
+    switch(c) {
+        
+        case C('P'):  // Print process list.
+            procdump();
+            break;
+        
+        case C('U'):  // Kill line.
+            while(console.edit != console.write &&
+                  console.buf[(console.edit-1) % INPUT_BUF] != '\n') {
+                
+                console.edit--;
+                console_putc(BACKSPACE);
+            }
+            break;
+  
+        case '\x7f':
+            if(cons.e != cons.w) {
+                cons.e--;
+                console_putc(BACKSPACE);
+            }
+            break;
+  
+        default:
+            if (c != 0 && console.edit-console.read < INPUT_BUF) {
+                c = (c == '\r') ? '\n' : c;
+
+                // echo back to the user.
+                console_putc(c);
+
+                // store for consumption by consoleread().
+                console.buf[console.edit++ % INPUT_BUF] = c;
+
+                if (c == '\n' || c == C('D') || console.edit == console.read+INPUT_BUF) {
+                    // wake up consoleread() if a whole line (or end-of-file)
+                    // has arrived.
+                    console.write = console.edit;
+                    wakeup(&console.read);
+                }
+            }
+            break;
+    }
+  
+    release_lock(&console.lock);
 }
 
 int console_init(void) {
