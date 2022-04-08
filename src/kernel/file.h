@@ -7,6 +7,7 @@
 #define NUMFILE 100
 #define NUMDEV 10
 #define MAXOPBLOCKS 10
+#define CONSOLE 1
 
 struct file {
     enum { FD_NONE, FD_PIPE, FD_INODE, FD_DEVICE } type;
