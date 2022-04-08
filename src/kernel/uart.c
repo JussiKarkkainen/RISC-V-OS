@@ -50,6 +50,21 @@ void uart_putc(int c) {
     lock_intr_enable();
 }
 
+void uartputc_sync(int c) {
+
+    push_off();
+
+    if (panicked) {
+        while (1) {
+            ;
+        }
+    }
+
+    while ((uart->LSR & LSR_TX_IDLE) == 0) {
+        ;
+    }
+    uart->BF = c;
+}
 
 void uart_putchar(char c) {
     if (uart->LSR & (1 << 6)) {
@@ -83,4 +98,22 @@ uart_return read_uart(char *c) {
 }
 
 void uart_intr(void) {
+
+    while (1) {
+        int c = read_uart();
+        if (c == -1) {
+            break;
+        }
+        console_intr(c);
+    }
+
+    acquire_lock(&uart_tx_loxk);
+    uart_start();
+    release_lock(&uart_tx_lock);
 }
+
+
+
+
+
+

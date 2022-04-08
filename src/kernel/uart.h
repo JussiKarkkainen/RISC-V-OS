@@ -12,6 +12,7 @@
 #define DATA_MASK 0xff
 #define PARITY_ENABLE (1 << 3)
 #define LCR_THRE (1 << 5)
+#define LSR_TX_IDLE (1 << 5)
 
 typedef volatile struct __attribute__((packed)) {   // Tell compiler to not padd struct
     uint8_t BF;            // Read/Write registers
@@ -45,8 +46,13 @@ void write_uart(char* data);
 uart_return read_uart(char* c);
 void uart_putc(int c);
 void uart_intr(void);
+void uartputc_sync(void);
 
 // Console init function
 int console_init(void);
+void console_putc(int c);
+int console_write(int user_src, uint32_t src, int n);
+int console_read(int user_dst, uint32_t dst, int n);
+void console_intr(int c);
 
 #endif
