@@ -270,7 +270,6 @@ uint32_t sys_read(void) {
     return read_file(file, p, n);
 }
 
-
 uint32_t sys_write(void) {
     
     struct file *file;
