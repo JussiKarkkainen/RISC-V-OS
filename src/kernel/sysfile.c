@@ -258,8 +258,6 @@ uint32_t sys_exec(void) {
         return -1;
 }   
 
-
-
 uint32_t sys_read(void) {
 
     struct file *file;

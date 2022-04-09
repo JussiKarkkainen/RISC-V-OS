@@ -42,7 +42,7 @@ int console_write(int user_src, uint32_t src, int n) {
 
 int console_read(int user_dst, uint32_t dst, int n) {
   
-    unsigned int target;
+    int target;
     int c;
     char cbuf;
 
