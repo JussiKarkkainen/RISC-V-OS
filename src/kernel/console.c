@@ -29,9 +29,9 @@ void console_putc(int c) {
 }
 
 int console_write(int user_src, uint32_t src, int n) {
-
-    for (int i = 0; i < n; i++) {
-        char c:
+    int i;
+    for (i = 0; i < n; i++) {
+        char c;
         if (either_copyin(&c, user_src, src+i, 1) == -1) {
             break;
         }
@@ -65,7 +65,7 @@ int console_read(int user_dst, uint32_t dst, int n) {
             if(n < target){
                 // Save ^D for next time, to make sure
                 // caller gets a 0-byte result.
-                cons.r--;
+                console.read--;
             }
             break;
         }
@@ -110,8 +110,8 @@ void console_intr(int c) {
             break;
   
         case '\x7f':
-            if(cons.e != cons.w) {
-                cons.e--;
+            if(console.edit != console.write) {
+                console.edit--;
                 console_putc(BACKSPACE);
             }
             break;
@@ -141,7 +141,7 @@ void console_intr(int c) {
 
 int console_init(void) {
 
-    initlock(console.lock, "console lock");
+    initlock(&console.lock, "console lock");
 
     uart_configure();
     

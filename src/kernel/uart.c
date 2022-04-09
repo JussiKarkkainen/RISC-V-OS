@@ -57,6 +57,16 @@ void uartputc_sync(int c) {
     lock_intr_enable();
 }
 
+int uart_getc(void) {
+
+    if (uart->LSR & 0x01) {
+        return uart->BF;
+    }
+    else {
+        return -1;
+    }
+}
+
 void uart_putc(int c) {
   
     acquire_lock(&uart_tx_lock);
@@ -137,14 +147,14 @@ void uart_start(void) {
 void uart_intr(void) {
 
     while (1) {
-        int c = read_uart();
+        int c = uart_getc();
         if (c == -1) {
             break;
         }
         console_intr(c);
     }
 
-    acquire_lock(&uart_tx_loxk);
+    acquire_lock(&uart_tx_lock);
     uart_start();
     release_lock(&uart_tx_lock);
 }

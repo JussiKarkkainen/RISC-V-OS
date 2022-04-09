@@ -6,9 +6,6 @@
 #include "../libc/include/string.h"
 #include "filesys.h"
 
-// Number of elements in array
-#define NUM_ELEM(x) (sizeof(x) / sizeof((x)[0]))
-
 uint32_t (*syscall[])(void) = {
     [SYS_FORK] sys_fork,
     [SYS_EXIT] sys_exit,

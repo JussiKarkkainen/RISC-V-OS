@@ -47,6 +47,8 @@ void write_uart(char* data);
 uart_return read_uart(char* c);
 void uart_intr(void);
 void uartputc_sync(int c);
+void uart_putc(int c);
+int uart_getc(void);
 
 // Console init function
 int console_init(void);

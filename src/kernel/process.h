@@ -11,6 +11,9 @@
 #define ELF_MAGIC 0x464C457FU
 #define ELF_PROG_LOAD 1
 
+// Number of elements in array
+#define NUM_ELEM(x) (sizeof(x) / sizeof((x)[0]))
+
 // This is used in scheduling between processes
 struct context {
     uint32_t ra;
@@ -161,5 +164,6 @@ int kill(int process_id);
 void proc_freepagetable(uint32_t *pagetable, uint32_t size);
 uint32_t *proc_pagetable(struct process *proc);
 void cpu_scheduler(void);
+void procdump(void);
 
 #endif

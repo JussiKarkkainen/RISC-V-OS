@@ -41,6 +41,8 @@ struct devsw {
   int (*write)(int, uint32_t, int);
 };
 
+extern struct devsw devsw[];
+
 // Functions from file.c
 void file_init(void);
 struct file *file_alloc(void);

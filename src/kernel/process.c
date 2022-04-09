@@ -492,3 +492,32 @@ struct process *get_process_struct(void) {
     struct process *p = c->proc;
     return p;
 }
+
+void procdump(void) {
+  
+    static char *states[] = {
+    [UNUSED]    "unused",
+    [SLEEPING]  "sleep ",
+    [RUNNABLE]  "runble",
+    [RUNNING]   "run   ",
+    [ZOMBIE]    "zombie"
+    };
+
+    struct process *proc;
+    char *state;
+
+    kprintf("\n");
+    for (proc = p; proc < &p[MAXPROC]; proc++){
+        if (proc->state == UNUSED) {
+            continue;
+        }
+        if (proc->state >= 0 && proc->state < NUM_ELEM(states) && states[proc->state]) {
+            state = states[p->state];
+        }
+        else {
+            state = "???";
+        }
+        kprintf("%d %s %s", proc->process_id, state, proc->name);
+        kprintf("\n");
+    }
+}
