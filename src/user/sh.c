@@ -1,5 +1,5 @@
 #include "user.h"
-
+#include <stdarg.h>
 
 #define O_RDONLY  0x000
 #define O_WRONLY  0x001
@@ -14,6 +14,21 @@
 #define BACK  5
 
 #define MAXARGS 10
+
+int fork1(void);  // Fork but panics on failure.
+void panic(char *);
+struct cmd *parsecmd(char *);
+
+int getcmd(char *buf, int nbuf) {
+    fprintf(2, "$ ");
+    memset(buf, 0, nbuf);
+    gets(buf, nbuf);
+    if (buf[0] == 0) { // EOF
+        return -1;
+    }
+    return 0;
+}
+
 
 
 int main(void) {
@@ -63,4 +78,58 @@ int fork1(void) {
     return process_id;
 }
 
+struct cmd *execcmd(void) {
+    struct execcmd *cmd;
+
+    cmd = malloc(sizeof(*cmd));
+    memset(cmd, 0, sizeof(*cmd));
+    cmd->type = EXEC;
+    return (struct cmd*)cmd;
+}
+
+struct cmd *redircmd(struct cmd *subcmd, char *file, char *efile, int mode, int fd) {
+    struct redircmd *cmd;
+
+    cmd = malloc(sizeof(*cmd));
+    memset(cmd, 0, sizeof(*cmd));
+    cmd->type = REDIR;
+    cmd->cmd = subcmd;
+    cmd->file = file;
+    cmd->efile = efile;
+    cmd->mode = mode;
+    cmd->fd = fd;
+    return (struct cmd*)cmd;
+}
+
+struct cmd *pipecmd(struct cmd *left, struct cmd *right) {
+    struct pipecmd *cmd;
+
+    cmd = malloc(sizeof(*cmd));
+    memset(cmd, 0, sizeof(*cmd));
+    cmd->type = PIPE;
+    cmd->left = left;
+    cmd->right = right;
+    return (struct cmd*)cmd;
+}
+
+struct cmd *listcmd(struct cmd *left, struct cmd *right) {
+    struct listcmd *cmd;
+
+    cmd = malloc(sizeof(*cmd));
+    memset(cmd, 0, sizeof(*cmd));
+    cmd->type = LIST;
+    cmd->left = left;
+    cmd->right = right;
+    return (struct cmd*)cmd;
+}
+
+struct cmd *backcmd(struct cmd *subcmd) {
+    struct backcmd *cmd;
+
+    cmd = malloc(sizeof(*cmd));
+    memset(cmd, 0, sizeof(*cmd));
+    cmd->type = BACK;
+    cmd->cmd = subcmd;
+    return (struct cmd*)cmd;
+}
 
