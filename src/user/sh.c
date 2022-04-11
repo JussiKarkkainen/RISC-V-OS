@@ -1,11 +1,6 @@
 #include "user.h"
 #include <stdarg.h>
 
-#define O_RDONLY  0x000
-#define O_WRONLY  0x001
-#define O_RDWR    0x002
-#define O_CREATE  0x200
-#define O_TRUNC   0x400
 
 #define EXEC  1
 #define REDIR 2
@@ -14,6 +9,42 @@
 #define BACK  5
 
 #define MAXARGS 10
+
+struct cmd {
+    int type;
+};
+
+struct execcmd {
+    int type;
+    char *argv[MAXARGS];
+    char *eargv[MAXARGS];
+};
+
+struct redircmd {
+    int type;
+    struct cmd *cmd;
+    char *file;
+    char *efile;
+    int mode;
+    int fd;
+};
+
+struct pipecmd {
+    int type;
+    struct cmd *left;
+    struct cmd *right;
+};
+
+struct listcmd {
+    int type;
+    struct cmd *left;
+    struct cmd *right;
+};
+
+struct backcmd {
+    int type;
+    struct cmd *cmd;
+};
 
 int fork1(void);  // Fork but panics on failure.
 void panic(char *);
