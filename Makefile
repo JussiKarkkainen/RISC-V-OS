@@ -32,6 +32,22 @@ CFLAGS = -Wall -Wextra -Werror
 CFLAGS += -mcmodel=medany 
 CFLAGS += -nostdlib -ffreestanding -lgcc
 
+# Disable PIE when possible (for Ubuntu 16.10 toolchain)
+ifneq ($(shell $(CC) -dumpspecs 2>/dev/null | grep -e '[^f]no-pie'),)
+CFLAGS += -fno-pie -no-pie
+endif
+ifneq ($(shell $(CC) -dumpspecs 2>/dev/null | grep -e '[^f]nopie'),)
+CFLAGS += -fno-pie -nopie
+endif
+
+LD = riscv64-unknown-elf-ld
+LDFLAGS = -z max-page-size=4096
+
+$(KERNEL)/kern: $(OBJS) $(KERNEL)/Linker.ld $(USER)/initcode
+    $(LD) $(LDFLAGS) -T $(KERNEL)/kernel.ld -o $(KERNEL)/kernel $(OBJS)
+
+$(USER)/initcode: $(USER)/initcode.S
+    $(CC) $(CFLAGS) -march=rv32ima -mabi=ilp32 -nostdinc -I. -Ikernel -c $(USER)/initcode.S -o $(USER)/initcode.o
 
 
 ULIB = $(USER)/malloc.o $(USER)/ulibc.o $(USER)/printf.o $(USER)/usyscall.o
