@@ -28,7 +28,15 @@ OBJS = \
     $(KERNEL)/process.o \
     $(KERNEL)/syscall.o \
     $(KERNEL)/sysproc.o \
-
+    $(LIBCSTRING)/memcmp.o \
+    $(LIBCSTRING)/memcpy.o \
+    $(LIBCSTRING)/memmove.o \
+    $(LIBCSTRING)/memset.o \
+    $(LIBCSTRING)/strcpy.o \
+    $(LIBCSTRING)/strlen.o \
+    $(LIBCSTRING)/strcmp.o \
+    $(LIBCSTDIO)/kprintf.o \
+    $(LIBCSTDIO)/putchar.o
 
 CC = riscv64-unknown-elf-gcc
 CFLAGS = -Wall -Wextra
