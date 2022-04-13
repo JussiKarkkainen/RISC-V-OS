@@ -1,4 +1,5 @@
 
+#include "../kernel/syscallnum.h"
 .globl start
 
 start:

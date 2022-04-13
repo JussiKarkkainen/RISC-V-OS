@@ -1,5 +1,7 @@
 KERNEL=src/kernel
-USER=src/kernel
+USER=src/user
+LIBCSTRING=src/libc/string
+LIBCSTDIO=src/libc/stdio
 
 OBJS = \
     $(KERNEL)/boot.o \
@@ -25,10 +27,11 @@ OBJS = \
     $(KERNEL)/plic.o \
     $(KERNEL)/process.o \
     $(KERNEL)/syscall.o \
-    $(KERNEL)/sysproc.o
+    $(KERNEL)/sysproc.o \
+
 
 CC = riscv64-unknown-elf-gcc
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra
 CFLAGS += -mcmodel=medany 
 CFLAGS += -nostdlib -ffreestanding -lgcc
 
@@ -43,23 +46,24 @@ endif
 LD = riscv64-unknown-elf-ld
 LDFLAGS = -z max-page-size=4096
 
-$(KERNEL)/kern: $(OBJS) $(KERNEL)/Linker.ld $(USER)/initcode
-    $(LD) $(LDFLAGS) -T $(KERNEL)/kernel.ld -o $(KERNEL)/kernel $(OBJS)
+$(KERNEL)/kern: $(OBJS) $(KERNEL)/linker.ld $(USER)/initcode
+	$(LD) $(LDFLAGS) -T $(KERNEL)/linker.ld -o $(KERNEL)/kern $(OBJS)
 
 $(USER)/initcode: $(USER)/initcode.S
-    $(CC) $(CFLAGS) -march=rv32ima -mabi=ilp32 -nostdinc -I. -Ikernel -c $(USER)/initcode.S -o $(USER)/initcode.o
+	$(CC) $(CFLAGS) -march=rv32ima -mabi=ilp32 -nostdinc -I. -Ikernel -c $(USER)/initcode.S -o $(USER)/initcode.o
+	$(LD) $(LDFLAGS) -m elf32lriscv -N -e start -Ttext 0 -o $(USER)/initcode.out $(USER)/initcode.o 
 
 
 ULIB = $(USER)/malloc.o $(USER)/ulibc.o $(USER)/printf.o $(USER)/usyscall.o
 
 $(USER)/usyscall.S: $(USER)/usyscall.pl
-    perl $(USER)/usyscall.pl > $(USER)usyscall.S
+	perl $(USER)/usyscall.pl > $(USER)usyscall.S
 
 $(USER)/usyscall.o: $(USER)/usyscall.S
-    $(CC) $(CFLAGS) -c -o $(USER)/usyscall.o $(USER)/usyscall.S
+	$(CC) $(CFLAGS) -c -o $(USER)/usyscall.o $(USER)/usyscall.S
 
 makefs: src/makefs.c $(KERNEL)/filesys.h 
-    gcc -Werror -Wall -I. -o src/makefs src/makefs.c
+	gcc -Wall -I. -o src/makefs src/makefs.c
 
 
 UPROGS = \
@@ -74,7 +78,7 @@ UPROGS = \
     $(USER)/_wc
 
 fs.img: src/makefs README $(UPROGS)
-    src/makefs fs.img README $(UPROGS)
+	src/makefs fs.img README $(UPROGS)
 
 
 QEMU = qemu-system-riscv32
@@ -83,5 +87,5 @@ QEMUOPT += -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
 
 
 qemu: $(KERNEL)/kern fs.img
-    $(QEMU) $(QEMUOPT)
+	$(QEMU) $(QEMUOPT)
 
