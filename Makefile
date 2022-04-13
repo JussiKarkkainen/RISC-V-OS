@@ -36,6 +36,15 @@ CFLAGS += -nostdlib -ffreestanding -lgcc
 
 ULIB = $(USER)/malloc.o $(USER)/ulibc.o $(USER)/printf.o $(USER)/usyscall.o
 
+$(USER)/usyscall.S: $(USER)/usyscall.pl
+    perl $(USER)/usyscall.pl > $(USER)usyscall.S
+
+$(USER)/usyscall.o: $(USER)/usyscall.S
+    $(CC) $(CFLAGS) -c -o $(USER)/usyscall.o $(USER)/usyscall.S
+
+makefs: src/makefs.c $(KERNEL)/filesys.h 
+    gcc -Werror -Wall -I. -o src/makefs src/makefs.c
+
 
 UPROGS = \
     $(USER)/_cat\
@@ -48,8 +57,15 @@ UPROGS = \
     $(USER)/_sh\
     $(USER)/_wc
 
+fs.img: src/makefs README $(UPROGS)
+    src/makefs fs.img README $(UPROGS)
+
 
 QEMU = qemu-system-riscv32
 QEMUOPT = -machine virt -bios none -kernel $(KERNEL)/kern -m 128M -smp 4 -nographic
-QEMUOPT += 
+QEMUOPT += -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
+
+
+qemu: $(KERNEL)/kern fs.img
+    $(QEMU) $(QEMUOPT)
 
