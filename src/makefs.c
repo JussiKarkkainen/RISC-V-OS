@@ -1,4 +1,3 @@
-#include "kernel/filesys.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -6,6 +5,9 @@
 #include <fcntl.h>
 #include <assert.h>
 
+#define stat my_stat
+
+#include "kernel/filesys.h"
 
 #ifndef static_assert
 #define static_assert(a, b) do { switch (0) case 0: case (a): ; } while (0)

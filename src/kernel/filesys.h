@@ -23,6 +23,9 @@
 #define MAXARG 32
 #define FSMAGIC 0x10203040
 #define BLOCK_SIZE 1024
+#define FSSIZE 1000
+
+#define IBLOCK(i, sb) ((i) / INODE_PER_BLOCK + sb.inode_start)
 
 struct buffer {
     int valid;
