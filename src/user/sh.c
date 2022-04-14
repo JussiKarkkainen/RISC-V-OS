@@ -62,68 +62,68 @@ void runcmd(struct cmd *cmd) {
     }
 
     switch(cmd->type){
-    default:
-        panic("runcmd");
+        default:
+            panic("runcmd");
 
-    case EXEC:
-        ecmd = (struct execcmd*)cmd;
-        if (ecmd->argv[0] == 0) {
-            exit(1);
-        }
-        exec(ecmd->argv[0], ecmd->argv);
-        fprintf(2, "exec %s failed\n", ecmd->argv[0]);
-        break;
+        case EXEC:
+            ecmd = (struct execcmd*)cmd;
+            if (ecmd->argv[0] == 0) {
+                exit(1);
+            }
+            exec(ecmd->argv[0], ecmd->argv);
+            fprintf(2, "exec %s failed\n", ecmd->argv[0]);
+            break;
 
-    case REDIR:
-        rcmd = (struct redircmd*)cmd;
-        close(rcmd->fd);
-        if (open(rcmd->file, rcmd->mode) < 0) {
-            fprintf(2, "open %s failed\n", rcmd->file);
-            exit(1);
-        }
-        runcmd(rcmd->cmd);
-        break;
+        case REDIR:
+            rcmd = (struct redircmd*)cmd;
+            close(rcmd->fd);
+            if (open(rcmd->file, rcmd->mode) < 0) {
+                fprintf(2, "open %s failed\n", rcmd->file);
+                exit(1);
+            }
+            runcmd(rcmd->cmd);
+            break;
 
-    case LIST:
-        lcmd = (struct listcmd*)cmd;
-        if (fork1() == 0) {
-            runcmd(lcmd->left);
-        }
-        wait(0);
-        runcmd(lcmd->right);
-        break;
+        case LIST:
+            lcmd = (struct listcmd*)cmd;
+            if (fork1() == 0) {
+                runcmd(lcmd->left);
+            }
+            wait(0);
+            runcmd(lcmd->right);
+            break;
 
-    case PIPE:
-        pcmd = (struct pipecmd*)cmd;
-        if(pipe(p) < 0) {
-            panic("pipe, runcmd");
-        }
-        if (fork1() == 0) {
-            close(1);
-            dup(p[1]);
+        case PIPE:
+            pcmd = (struct pipecmd*)cmd;
+            if(pipe(p) < 0) {
+                panic("pipe, runcmd");
+            }
+            if (fork1() == 0) {
+                close(1);
+                dup(p[1]);
+                close(p[0]);
+                close(p[1]);
+                runcmd(pcmd->left);
+            }
+            if (fork1() == 0) {
+                close(0);
+                dup(p[0]);
+                close(p[0]);
+                close(p[1]);
+                runcmd(pcmd->right);
+            }
             close(p[0]);
             close(p[1]);
-            runcmd(pcmd->left);
-        }
-        if (fork1() == 0) {
-            close(0);
-            dup(p[0]);
-            close(p[0]);
-            close(p[1]);
-            runcmd(pcmd->right);
-        }
-        close(p[0]);
-        close(p[1]);
-        wait(0);
-        wait(0);
-        break;
+            wait(0);
+            wait(0);
+            break;
 
-    case BACK:
-        bcmd = (struct backcmd*)cmd;
-        if (fork1() == 0) {
-            runcmd(bcmd->cmd);
-        }
-        break;
+        case BACK:
+            bcmd = (struct backcmd*)cmd;
+            if (fork1() == 0) {
+                runcmd(bcmd->cmd);
+            }
+            break;
     }
     exit(0);
 }

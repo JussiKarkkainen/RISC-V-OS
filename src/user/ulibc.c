@@ -1,20 +1,14 @@
+#include <stddef.h>
 #include "user.h"
 
-char *strcpy(char *s, const char *t, unsigned int n) {
-    
-    char *ps;
+char *strcpy(char *s, const char *t) {
+    char *os;
 
-    ps = s;
-    if(n <= 0) {
-        return ps;
-    }
-    while(--n > 0 && (*s++ = *t++) != 0) {
+    os = s;
+    while ((*s++ = *t++) != 0)
         ;
-    }
-    *s = 0;
-    return ps;
+    return os; 
 }
-
 
 int strncmp(const char *a, const char *b, unsigned int n) {
     while (n && *a && (*a == *b)) {
@@ -30,7 +24,16 @@ int strncmp(const char *a, const char *b, unsigned int n) {
     }
 }
 
-void *memset(void *str, int c, size_t n) {
+unsigned int strlen(const char *s) {
+    int i;
+    
+    for (i = 0; s[i]; i++) {
+        ;
+    }
+    return i;
+}
+
+void *memset(void *str, int c, unsigned int n) {
     unsigned char* buffer = (unsigned char*)str;
     for (unsigned int i=0; i<n; i++) {
         buffer[i] = (unsigned char)c;
@@ -40,7 +43,7 @@ void *memset(void *str, int c, size_t n) {
 
 // Returns a pointer to the first occurrence of character in the string
 char *strchr(const char *c, char s) {
-    for (; *c, c++) {
+    for (; *c; c++) {
         if (*c == s) {
             return (char *)c;
         }
@@ -60,6 +63,7 @@ char *gets(char *buf, int max) {
         buf[i++] = c;
         if (c == '\n' || c == '\r') {
             break;
+        }
     }
     buf[i] = '\0';
     return buf;
@@ -110,7 +114,7 @@ void* memmove(void *vdst, const void *vsrc, int n) {
     return vdst;
 }
 
-int memcmp(const void *s1, const void *s2, uint n) {
+int memcmp(const void *s1, const void *s2, unsigned int n) {
     const char *p1 = s1, *p2 = s2;
     while (n-- > 0) {
         if (*p1 != *p2) {
@@ -122,7 +126,7 @@ int memcmp(const void *s1, const void *s2, uint n) {
     return 0;
 }
 
-void *memcpy(void *dst, const void *src, uint n) {
+void *memcpy(void *dst, const void *src, unsigned int n) {
     return memmove(dst, src, n);
 }
 

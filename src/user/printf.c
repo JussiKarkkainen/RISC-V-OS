@@ -4,7 +4,7 @@
 
 static char digits[] = "0123456789ABCDEF";
 
-static void putc(int fd) {
+static void putc(int fd, char c) {
     write(fd, &c, 1);
 }
 

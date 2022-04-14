@@ -8,7 +8,7 @@ typedef long Align;
 union header {
     struct {
         union header *ptr;
-        uint size;
+        unsigned int size;
     } s;
     Align x;
 };

@@ -89,11 +89,18 @@ UPROGS = \
     $(USER)/_wc
 
 fs.img: src/makefs README.md $(UPROGS)
-	src/makefs fs.img README $(UPROGS)
+	src/makefs fs.img README.md $(UPROGS)
 
+clean:
+	rm -f *.tex *.dvi *.idx *.aux *.log *.ind *.ilg \
+	*/*.o */*.d */*.asm */*.sym \
+	$(USER)/initcode $(USER)/initcode.out $(KERNEL)/kern fs.img \
+	src/makefs $U/usys.S \
+	$(UPROGS)
 
 QEMU = qemu-system-riscv32
 QEMUOPT = -machine virt -bios none -kernel $(KERNEL)/kern -m 128M -smp 4 -nographic
+QEMUOPT = -drive file=fs.img,if=none,format=raw,id=x0
 QEMUOPT += -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
 
 

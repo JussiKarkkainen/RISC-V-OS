@@ -1,4 +1,4 @@
-#include "user.c"
+#include "user.h"
 
 int main(int argc, char **argv) {
   
