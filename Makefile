@@ -34,7 +34,7 @@ OBJS = \
     $(LIBCSTRING)/memset.o \
     $(LIBCSTRING)/strcpy.o \
     $(LIBCSTRING)/strlen.o \
-    $(LIBCSTRING)/strcmp.o \
+    $(LIBCSTRING)/strncmp.o \
     $(LIBCSTDIO)/kprintf.o \
     $(LIBCSTDIO)/putchar.o
 
@@ -70,7 +70,7 @@ $(USER)/usyscall.S: $(USER)/usyscall.pl
 $(USER)/usyscall.o: $(USER)/usyscall.S
 	$(CC) $(CFLAGS) -c -o $(USER)/usyscall.o $(USER)/usyscall.S
 
-makefs: src/makefs.c $(KERNEL)/filesys.h 
+src/makefs: src/makefs.c $(KERNEL)/filesys.h 
 	gcc -Wall -I. -o src/makefs src/makefs.c
 
 
