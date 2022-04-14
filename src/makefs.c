@@ -12,12 +12,13 @@
 #endif
 
 #define NINODES 200
+#define ROOTINO  1
 
 // Disk layout:
 // [ boot block | sb block | log | inode blocks | free bit map | data blocks ]
 
 int nbitmap = FSSIZE/(BLOCK_SIZE*8) + 1;
-int ninodeblocks = NINODES / INODES_PER_BLOCK + 1;
+int ninodeblocks = NINODES / INODE_PER_BLOCK + 1;
 int nlog = LOGSIZE;
 int nmeta;    // Number of meta blocks (boot, sb, nlog, inode, bitmap)
 int nblocks;  // Number of data blocks
@@ -32,7 +33,7 @@ void wsect(unsigned nt, void*);
 void winode(unsigned int, struct disk_inode*);
 void rinode(unsigned int inum, struct disk_inode *ip);
 void rsect(unsigned int sec, void *buf);
-uint ialloc(unsigned short type);
+unsigned int ialloc(unsigned short type);
 void iappend(unsigned int inum, void *p, int n);
 void die(const char *);
 
@@ -41,7 +42,7 @@ struct superblock sb;
 
 unsigned int xint(unsigned int x) {
     unsigned int y;
-    unsigned char *a = (uchar*)&y;
+    unsigned char *a = (unsigned char*)&y;
     a[0] = x;
     a[1] = x >> 8;
     a[2] = x >> 16;
@@ -49,12 +50,20 @@ unsigned int xint(unsigned int x) {
     return y;
 }
 
+unsigned short xshort(unsigned short x) {
+    unsigned short y;
+    unsigned char *a = (unsigned char*)&y;
+    a[0] = x;
+    a[1] = x >> 8;
+    return y;
+}
+
 int main(int argc, char *argv[]) {
 
     int i, cc, fd;
     unsigned int rootino, inum, off;
-    struct dirent de;
-    char buf[BSIZE];
+    struct direntry de;
+    char buf[BLOCK_SIZE];
     struct disk_inode din;
 
     static_assert(sizeof(int) == 4, "Integers must be 4 bytes!");
@@ -102,12 +111,12 @@ int main(int argc, char *argv[]) {
     assert(rootino == ROOTINO);
 
     bzero(&de, sizeof(de));
-    de.inum = xshort(rootino);
+    de.inode_num = xshort(rootino);
     strcpy(de.name, ".");
     iappend(rootino, &de, sizeof(de));
 
     bzero(&de, sizeof(de));
-    de.inum = xshort(rootino);
+    de.inode_num = xshort(rootino);
     strcpy(de.name, "..");
     iappend(rootino, &de, sizeof(de));
 
@@ -137,8 +146,8 @@ int main(int argc, char *argv[]) {
         inum = ialloc(T_FILE);
 
         bzero(&de, sizeof(de));
-        de.inum = xshort(inum);
-        strncpy(de.name, shortname, DIRSIZ);
+        de.inode_num = xshort(inum);
+        strncpy(de.name, shortname, DIRSIZE);
         iappend(rootino, &de, sizeof(de));
 
         while ((cc = read(fd, buf, sizeof(buf))) > 0) {
@@ -151,7 +160,7 @@ int main(int argc, char *argv[]) {
     // fix size of root inode dir
     rinode(rootino, &din);
     off = xint(din.size);
-    off = ((off/BSIZE) + 1) * BSIZE;
+    off = ((off/BLOCK_SIZE) + 1) * BLOCK_SIZE;
     din.size = xint(off);
     winode(rootino, &din);
 
@@ -176,7 +185,7 @@ void winode(unsigned int inum, struct disk_inode *ip) {
 
     bn = IBLOCK(inum, sb);
     rsect(bn, buf);
-    dip = ((struct disk_Inode*)buf) + (inum % INODE_PER_BLOCK);
+    dip = ((struct disk_inode*)buf) + (inum % INODE_PER_BLOCK);
     *dip = *ip;
     wsect(bn, buf);
 }
@@ -207,7 +216,7 @@ unsigned int ialloc(unsigned short type) {
 
     bzero(&din, sizeof(din));
     din.type = xshort(type);
-    din.nlink = xshort(1);
+    din.num_link = xshort(1);
     din.size = xint(0);
     winode(inum, &din);
     return inum;
@@ -244,19 +253,19 @@ void iappend(unsigned int inum, void *xp, int n) {
         fbn = off / BLOCK_SIZE;
         assert(fbn < MAXFILE);
         if (fbn < NDIRECT) {
-            if(xint(din.addrs[fbn]) == 0) {
-                din.addrs[fbn] = xint(freeblock++);
+            if(xint(din.addresses[fbn]) == 0) {
+                din.addresses[fbn] = xint(freeblock++);
             }
-            x = xint(din.addrs[fbn]);
+            x = xint(din.addresses[fbn]);
         } 
         else {
-            if(xint(din.addrs[NDIRECT]) == 0) {
-                din.addrs[NDIRECT] = xint(freeblock++);
+            if(xint(din.addresses[NDIRECT]) == 0) {
+                din.addresses[NDIRECT] = xint(freeblock++);
             }
-            rsect(xint(din.addrs[NDIRECT]), (char*)indirect);
+            rsect(xint(din.addresses[NDIRECT]), (char*)indirect);
         if (indirect[fbn - NDIRECT] == 0) {
             indirect[fbn - NDIRECT] = xint(freeblock++);
-            wsect(xint(din.addrs[NDIRECT]), (char*)indirect);
+            wsect(xint(din.addresses[NDIRECT]), (char*)indirect);
         }
         x = xint(indirect[fbn-NDIRECT]);
         }
