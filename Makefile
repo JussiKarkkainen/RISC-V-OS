@@ -61,11 +61,13 @@ $(USER)/initcode: $(USER)/initcode.S
 	$(CC) $(CFLAGS) -march=rv32ima -mabi=ilp32 -nostdinc -I. -Ikernel -c $(USER)/initcode.S -o $(USER)/initcode.o
 	$(LD) $(LDFLAGS) -m elf32lriscv -N -e start -Ttext 0 -o $(USER)/initcode.out $(USER)/initcode.o 
 
-
 ULIB = $(USER)/malloc.o $(USER)/ulibc.o $(USER)/printf.o $(USER)/usyscall.o
 
+_%: %.o $(ULIB)
+	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
+
 $(USER)/usyscall.S: $(USER)/usyscall.pl
-	perl $(USER)/usyscall.pl > $(USER)usyscall.S
+	perl $(USER)/usyscall.pl > $(USER)/usyscall.S
 
 $(USER)/usyscall.o: $(USER)/usyscall.S
 	$(CC) $(CFLAGS) -c -o $(USER)/usyscall.o $(USER)/usyscall.S
@@ -73,6 +75,7 @@ $(USER)/usyscall.o: $(USER)/usyscall.S
 src/makefs: src/makefs.c $(KERNEL)/filesys.h 
 	gcc -Wall -I. -o src/makefs src/makefs.c
 
+.PRECIOUS: %.o
 
 UPROGS = \
     $(USER)/_cat\
@@ -85,7 +88,7 @@ UPROGS = \
     $(USER)/_sh\
     $(USER)/_wc
 
-fs.img: src/makefs README $(UPROGS)
+fs.img: src/makefs README.md $(UPROGS)
 	src/makefs fs.img README $(UPROGS)
 
 
