@@ -43,6 +43,9 @@ CFLAGS = -Wall -Wextra
 CFLAGS += -mcmodel=medany 
 CFLAGS += -nostdlib -ffreestanding -lgcc
 
+OBJCOPY = riscv64-unknown-elf-objcopy
+OBJDUMP = riscv64-unknown-elf-objdump
+
 # Disable PIE when possible (for Ubuntu 16.10 toolchain)
 ifneq ($(shell $(CC) -dumpspecs 2>/dev/null | grep -e '[^f]no-pie'),)
 CFLAGS += -fno-pie -no-pie
@@ -55,22 +58,23 @@ LD = riscv64-unknown-elf-ld
 LDFLAGS = -z max-page-size=4096
 
 $(KERNEL)/kern: $(OBJS) $(KERNEL)/linker.ld $(USER)/initcode
-	$(LD) $(LDFLAGS) -T $(KERNEL)/linker.ld -o $(KERNEL)/kern $(OBJS)
+	$(LD) $(LDFLAGS) -m elf32lriscv -T $(KERNEL)/linker.ld -o $(KERNEL)/kern $(OBJS)
+	$(OBJDUMP) -S $(KERNEL)/kern > $(KERNEL)/kernel.asm
 
 $(USER)/initcode: $(USER)/initcode.S
 	$(CC) $(CFLAGS) -march=rv32ima -mabi=ilp32 -nostdinc -I. -Ikernel -c $(USER)/initcode.S -o $(USER)/initcode.o
 	$(LD) $(LDFLAGS) -m elf32lriscv -N -e start -Ttext 0 -o $(USER)/initcode.out $(USER)/initcode.o 
-
+	$(OBJDUMP) -S $(USER)/initcode.out > $(USER)/initcode.asm 
 ULIB = $(USER)/malloc.o $(USER)/ulibc.o $(USER)/printf.o $(USER)/usyscall.o
 
 _%: %.o $(ULIB)
-	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
+	$(LD) $(LDFLAGS) -m elf32lriscv -N -e main -Ttext 0 -o $@ $^
 
 $(USER)/usyscall.S: $(USER)/usyscall.pl
 	perl $(USER)/usyscall.pl > $(USER)/usyscall.S
 
 $(USER)/usyscall.o: $(USER)/usyscall.S
-	$(CC) $(CFLAGS) -c -o $(USER)/usyscall.o $(USER)/usyscall.S
+	$(CC) $(CFLAGS) -march=rv32im -mabi=ilp32 -c -o $(USER)/usyscall.o $(USER)/usyscall.S
 
 src/makefs: src/makefs.c $(KERNEL)/filesys.h 
 	gcc -Wall -I. -o src/makefs src/makefs.c
@@ -99,8 +103,8 @@ clean:
 	$(UPROGS)
 
 QEMU = qemu-system-riscv32
-QEMUOPT = -machine virt -bios none -kernel $(KERNEL)/kern -m 128M -smp 4 -nographic
-QEMUOPT = -drive file=fs.img,if=none,format=raw,id=x0
+QEMUOPT = -machine virt -bios none -kernel $(KERNEL)/kern -m 128M -smp 3 -nographic
+QEMUOPT += -drive file=fs.img,if=none,format=raw,id=x0
 QEMUOPT += -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
 
 
