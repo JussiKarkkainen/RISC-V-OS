@@ -75,6 +75,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    printf("argc %d\n", argc);
     assert((BLOCK_SIZE % sizeof(struct disk_inode)) == 0);
     assert((BLOCK_SIZE % sizeof(struct direntry)) == 0);
 
@@ -125,13 +126,16 @@ int main(int argc, char *argv[]) {
     for (i = 2; i < argc; i++) {
         // get rid of "user/"
         char *shortname;
-        if (strncmp(argv[i], "user/", 5) == 0) {
-            shortname = argv[i] + 5;
+        if (strncmp(argv[i], "src/user/", 9) == 0) {
+            shortname = argv[i] + 9;
+            
+            printf("shortname, %c:\n", *shortname);
         }
         else {
             shortname = argv[i];
+            printf("shortname, %c:\n", *shortname);
         }
-    
+        printf("shortname: %p\n", index(shortname, '/')); 
         assert(index(shortname, '/') == 0);
 
         if ((fd = open(argv[i], 0)) < 0) {
@@ -171,7 +175,7 @@ int main(int argc, char *argv[]) {
     exit(0);
 }
 
-void wsect(uint sec, void *buf) {
+void wsect(unsigned int sec, void *buf) {
     if (lseek(fsfd, sec * BLOCK_SIZE, 0) != sec * BLOCK_SIZE) {
         die("lseek, makefs, wsect");
     }

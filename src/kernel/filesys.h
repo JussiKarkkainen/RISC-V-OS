@@ -8,10 +8,10 @@
 #define LOGSIZE 30
 #define MAXLOGOPS 10
 #define NUMINODE 50
-#define INODE_PER_BLOCK (BUFFER_SIZE / sizeof(struct disk_inode))
-#define BITMAP_PER_BLOCK (BUFFER_SIZE * 8)
+#define INODE_PER_BLOCK (BLOCK_SIZE / sizeof(struct disk_inode))
+#define BITMAP_PER_BLOCK (BLOCK_SIZE * 8)
 #define NDIRECT 12
-#define NINDIRECT (BUFFER_SIZE / sizeof(unsigned int))
+#define NINDIRECT (BLOCK_SIZE / sizeof(unsigned int))
 #define MAXFILE (NDIRECT + NINDIRECT)
 #define DIRSIZE 14
 #define DIR_TYPE 1
