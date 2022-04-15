@@ -42,6 +42,7 @@ CC = riscv64-unknown-elf-gcc
 CFLAGS = -Wall -Wextra
 CFLAGS += -mcmodel=medany 
 CFLAGS += -nostdlib -ffreestanding -lgcc
+CFLAGS += -march=rv32ima -mabi=ilp32
 
 OBJCOPY = riscv64-unknown-elf-objcopy
 OBJDUMP = riscv64-unknown-elf-objdump
@@ -56,25 +57,30 @@ endif
 
 LD = riscv64-unknown-elf-ld
 LDFLAGS = -z max-page-size=4096
+LDFLAGS += -m elf32lriscv
 
-$(KERNEL)/kern: $(OBJS) $(KERNEL)/linker.ld $(USER)/initcode
-	$(LD) $(LDFLAGS) -m elf32lriscv -T $(KERNEL)/linker.ld -o $(KERNEL)/kern $(OBJS)
+$(KERNEL)/kern: $(KERNEL)/objs $(KERNEL)/linker.ld $(USER)/initcode
+	$(LD) $(LDFLAGS) -T $(KERNEL)/linker.ld -o $(KERNEL)/kern $(KERNEL)/objs
 	$(OBJDUMP) -S $(KERNEL)/kern > $(KERNEL)/kernel.asm
 
+$(KERNEL)/objs: $(OBJS)
+	$(CC) $(CFLAGS) -c -o $(KERNEL)/objs
+
 $(USER)/initcode: $(USER)/initcode.S
-	$(CC) $(CFLAGS) -march=rv32ima -mabi=ilp32 -nostdinc -I. -Ikernel -c $(USER)/initcode.S -o $(USER)/initcode.o
-	$(LD) $(LDFLAGS) -m elf32lriscv -N -e start -Ttext 0 -o $(USER)/initcode.out $(USER)/initcode.o 
+	$(CC) $(CFLAGS) -nostdinc -I. -Ikernel -c $(USER)/initcode.S -o $(USER)/initcode.o
+	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o $(USER)/initcode.out $(USER)/initcode.o 
 	$(OBJDUMP) -S $(USER)/initcode.out > $(USER)/initcode.asm 
+
 ULIB = $(USER)/malloc.o $(USER)/ulibc.o $(USER)/printf.o $(USER)/usyscall.o
 
 _%: %.o $(ULIB)
-	$(LD) $(LDFLAGS) -m elf32lriscv -N -e main -Ttext 0 -o $@ $^
+	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
 
 $(USER)/usyscall.S: $(USER)/usyscall.pl
 	perl $(USER)/usyscall.pl > $(USER)/usyscall.S
 
 $(USER)/usyscall.o: $(USER)/usyscall.S
-	$(CC) $(CFLAGS) -march=rv32im -mabi=ilp32 -c -o $(USER)/usyscall.o $(USER)/usyscall.S
+	$(CC) $(CFLAGS) -c -o $(USER)/usyscall.o $(USER)/usyscall.S
 
 src/makefs: src/makefs.c $(KERNEL)/filesys.h 
 	gcc -Wall -I. -o src/makefs src/makefs.c
@@ -92,6 +98,22 @@ UPROGS = \
     $(USER)/_sh\
     $(USER)/_wc
 
+UOBJS = \
+    $(USER)/cat.o \
+    $(USER)/echo.o \
+    $(USER)/initcode.o \
+    $(USER)/init.o \
+    $(USER)/kill.o \
+    $(USER)/ln.o \
+    $(USER)/malloc.o \
+    $(USER)/mkdir.o \
+    $(USER)/printf.o \
+    $(USER)/rm.o \
+    $(USER)/sh.o \
+    $(USER)/ulibc.o \
+    $(USER)/usyscall.o \
+    $(USER)/wc.o
+    
 fs.img: src/makefs README.md $(UPROGS)
 	src/makefs fs.img README.md $(UPROGS)
 
@@ -99,8 +121,9 @@ clean:
 	rm -f *.tex *.dvi *.idx *.aux *.log *.ind *.ilg \
 	*/*.o */*.d */*.asm */*.sym \
 	$(USER)/initcode $(USER)/initcode.out $(KERNEL)/kern fs.img \
-	src/makefs $U/usys.S \
-	$(UPROGS)
+	src/makefs $(USER)/usyscall.S \
+	$(UPROGS) $(OBJS) $(UOBJS)
+
 
 QEMU = qemu-system-riscv32
 QEMUOPT = -machine virt -bios none -kernel $(KERNEL)/kern -m 128M -smp 3 -nographic
