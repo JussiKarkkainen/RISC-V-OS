@@ -75,7 +75,6 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    printf("argc %d\n", argc);
     assert((BLOCK_SIZE % sizeof(struct disk_inode)) == 0);
     assert((BLOCK_SIZE % sizeof(struct direntry)) == 0);
 
@@ -128,14 +127,10 @@ int main(int argc, char *argv[]) {
         char *shortname;
         if (strncmp(argv[i], "src/user/", 9) == 0) {
             shortname = argv[i] + 9;
-            
-            printf("shortname, %c:\n", *shortname);
         }
         else {
             shortname = argv[i];
-            printf("shortname, %c:\n", *shortname);
         }
-        printf("shortname: %p\n", index(shortname, '/')); 
         assert(index(shortname, '/') == 0);
 
         if ((fd = open(argv[i], 0)) < 0) {

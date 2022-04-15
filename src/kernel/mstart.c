@@ -46,12 +46,12 @@ void timer_init(void) {
 }
 
 void mstart(void) {
+    kprintf("jeekioe");
     // Clear the mstatus MPP bits and set them to supervisor mode
     uint32_t mstatus = get_mstatus();
     mstatus &= ~(3 << 11);
     mstatus |= (1 << 11);
     write_mstatus(mstatus);
-
     // Set mepc to point to enter(), so when we call mret, execution jumps there
     write_mepc((uint32_t)enter);
 

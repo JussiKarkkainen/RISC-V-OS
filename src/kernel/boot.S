@@ -2,8 +2,8 @@
 
 .section .text.init
 
-.globl _start
-_start:
+.globl _entry
+_entry:
 
 .option push
 .option norelax
