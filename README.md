@@ -20,7 +20,7 @@ This assumes that you have already installed [QEMU](https://www.qemu.org/downloa
 ```
 git clone https://github.com/JussiKarkkainen/RISC-V-OS.git
 cd RISC-V-OS 
-./boot.sh
+make qemu
 ```
 
 # Specification
