@@ -36,6 +36,17 @@ void map_kstack(uint32_t *pagetable) {
     }
 }
 
+void process_init(void) {
+    struct process *proc;
+    initlock(&pid_lock, "pid_lock");
+    initlock(&wait_lock, "wait_lock");
+
+    for (proc = p; proc < &p[MAXPROC]; proc++) {
+        initlock(&proc->lock, "proc");
+        proc->kernel_stack = (proc - p);
+    }
+}
+
 unsigned char initcode[] = {
     0x17, 0x05, 0x00, 0x00, 0x13, 0x05, 0x45, 0x02,
     0x97, 0x05, 0x00, 0x00, 0x93, 0x85, 0x35, 0x02,
@@ -328,7 +339,6 @@ void cpu_scheduler(void) {
         }
     }
 }
-
 
 void scheduler(void) {
     int intr_prev_state;

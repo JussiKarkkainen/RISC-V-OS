@@ -13,6 +13,7 @@
 #define MIE_MTIE (1 << 7)
 
 void enter();
+void timer_init();
 
 extern void tvec();
 
@@ -46,7 +47,6 @@ void timer_init(void) {
 }
 
 void mstart(void) {
-    kprintf("jeekioe");
     // Clear the mstatus MPP bits and set them to supervisor mode
     uint32_t mstatus = get_mstatus();
     mstatus &= ~(3 << 11);

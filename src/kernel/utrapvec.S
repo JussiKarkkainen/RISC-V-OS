@@ -1,5 +1,5 @@
 
-.section uvecsec
+
 .globl uvec
 uvec:
 .align 4

@@ -8,12 +8,12 @@
 #include "plic.h"
 #include "paging.h"
 
-extern void ktrapvec();
+void ktrapvec();
 
 int handle_device_intr(void) {
     // Check if external/device interrupt
     uint32_t scause = get_scause();
-    if (((scause & INTERRUPT_BIT)) && ((scause & EXT_INTERRUPT) == 9)) {  
+    if (((scause & 0x80000000)) && ((scause & EXT_INTERRUPT) == 9)) {  
         // Interrupt given by PLIC
         int intr_id = plic_read();
 
@@ -139,8 +139,8 @@ void ktrap(void) {
     uint32_t sstatus = get_sstatus();
     uint32_t scause = get_scause();
     uint32_t stval = get_stval();
-    int intr_result;
-
+    int intr_result = 2;
+    
     // Make sure interrupt comes from supervisor mode
     if ((sstatus & SSTATUS_SPP) == 0) {
         panic("trap not in supervisor mode");
@@ -155,7 +155,7 @@ void ktrap(void) {
     // an external interrupt, we call panic() and stop executing
     if ((intr_result = handle_device_intr()) == 2) {
         // Print out register info and panic
-        kprintf("scause: %x\n, sstatus: %x\n, stval: %x\n", scause, sstatus, stval);
+        kprintf("scause: %p\nsstatus: %p\nstval: %p\n", scause, sstatus, stval);
         panic("kernel interrupt");
     }
         

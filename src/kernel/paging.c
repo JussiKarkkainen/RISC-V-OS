@@ -7,6 +7,8 @@
 
 uint32_t *kpagetable;
 
+extern char uvec[];
+
 struct process process[MAXPROC];
 
 struct cpu cpu[MAXCPUS];
@@ -31,20 +33,13 @@ uint32_t *kpagemake(void) {
 
     kmap(kpage, PLIC, PLIC, PLICSIZE, PTE_R | PTE_W);
 
-    kmap(kpage, USERVEC, MAXVA-PGESIZE, PGESIZE, PTE_R | PTE_X);
+    kmap(kpage, KERNEL_BASE, KERNEL_BASE, TEXT_END-KERNEL_BASE, PTE_R | PTE_X);
 
-    kmap(kpage, HEAP_START, HEAP_START, HEAP_SIZE, PTE_R | PTE_W);
+//    kmap(kpage, TEXT_END, TEXT_END, MAXVA-TEXT_END, PTE_R | PTE_W);
+    
+    kmap(kpage, USERVEC, (uint32_t)uvec, PGESIZE, PTE_R | PTE_X);
 
-    kmap(kpage, TEXT_START, TEXT_START, TEXT_SIZE, PTE_R | PTE_X);
-
-    kmap(kpage, RODATA_START, RODATA_START, RODATA_SIZE, PTE_R | PTE_X);
-
-    kmap(kpage, DATA_START, DATA_START, DATA_SIZE, PTE_R | PTE_W);
-
-    kmap(kpage, BSS_START, BSS_START, BSS_SIZE, PTE_R | PTE_W);       
-//    kmap(kpage, KERNEL_STACK_START, KERNEL_STACK_START, KERNEL_STACK_SIZE, PTE_R | PTE_W);
-
-//    map_kstack(kpage);
+    map_kstack(kpage);
 
     return kpage;
 }

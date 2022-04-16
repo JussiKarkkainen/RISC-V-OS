@@ -4,12 +4,7 @@
 
 .globl _entry
 _entry:
-
-.option push
-.option norelax
-  la gp, global_pointer
-.option pop
-
+  
   la t5, bss_start        # Load bss_start and end addresses to tmp regs and clear bss
   la t6, bss_end          # bss_start and end are defined in linker script.
   bgeu t5, t6, bss_clear
