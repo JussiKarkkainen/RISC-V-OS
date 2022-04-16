@@ -3,19 +3,22 @@ USER=src/user
 LIBCSTRING=src/libc/string
 LIBCSTDIO=src/libc/stdio
 
-OBJS = \
+ASMOBJS = \
     $(KERNEL)/boot.o \
+    $(KERNEL)/ktrapvec.o \
+    $(KERNEL)/mem.o \
+    $(KERNEL)/transfer.o \
+    $(KERNEL)/tvec.o \
+    $(KERNEL)/utrapvec.o
+
+COBJS = \
     $(KERNEL)/disk.o \
     $(KERNEL)/kernel.o \
     $(KERNEL)/locks.o \
     $(KERNEL)/mstart.o \
     $(KERNEL)/pipes.o \
-    $(KERNEL)/transfer.o \
-    $(KERNEL)/tvec.o \
-    $(KERNEL)/utrapvec.o \
     $(KERNEL)/bufcache.o \
     $(KERNEL)/filesys.o \
-    $(KERNEL)/ktrapvec.o \
     $(KERNEL)/paging.o \
     $(KERNEL)/pmm.o \
     $(KERNEL)/sysfile.o \
@@ -23,7 +26,6 @@ OBJS = \
     $(KERNEL)/uart.o \
     $(KERNEL)/console.o \
     $(KERNEL)/file.o \
-    $(KERNEL)/mem.o \
     $(KERNEL)/plic.o \
     $(KERNEL)/process.o \
     $(KERNEL)/syscall.o \
@@ -37,6 +39,9 @@ OBJS = \
     $(LIBCSTRING)/strncmp.o \
     $(LIBCSTDIO)/kprintf.o \
     $(LIBCSTDIO)/putchar.o
+
+AS = riscv64-unknown-elf-as
+ASFLAGS = -march=rv32ima -mabi=ilp32
 
 CC = riscv64-unknown-elf-gcc
 CFLAGS = -Wall -Wextra
@@ -59,12 +64,9 @@ LD = riscv64-unknown-elf-ld
 LDFLAGS = -z max-page-size=4096
 LDFLAGS += -m elf32lriscv
 
-$(KERNEL)/kern: $(KERNEL)/objs $(KERNEL)/linker.ld $(USER)/initcode
-	$(LD) $(LDFLAGS) -T $(KERNEL)/linker.ld -o $(KERNEL)/kern $(KERNEL)/objs
+$(KERNEL)/kern: $(ASMOBJS) $(COBJS) $(KERNEL)/linker.ld $(USER)/initcode
+	$(LD) $(LDFLAGS) -T $(KERNEL)/linker.ld -o $(KERNEL)/kern $(COBJS) $(ASMOBJS)
 	$(OBJDUMP) -S $(KERNEL)/kern > $(KERNEL)/kernel.asm
-
-$(KERNEL)/objs: $(OBJS)
-	$(CC) $(CFLAGS) -c -o $(KERNEL)/objs
 
 $(USER)/initcode: $(USER)/initcode.S
 	$(CC) $(CFLAGS) -nostdinc -I. -Ikernel -c $(USER)/initcode.S -o $(USER)/initcode.o
@@ -122,7 +124,7 @@ clean:
 	*/*.o */*.d */*.asm */*.sym \
 	$(USER)/initcode $(USER)/initcode.out $(KERNEL)/kern fs.img \
 	src/makefs $(USER)/usyscall.S \
-	$(UPROGS) $(OBJS) $(UOBJS)
+	$(UPROGS) $(COBJS) $(UOBJS) $(ASMOBJS)
 
 
 QEMU = qemu-system-riscv32
