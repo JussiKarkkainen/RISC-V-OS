@@ -42,15 +42,15 @@ void disk_init(void) {
     uint32_t status_bits = 0;
 
     initlock(&disk.disk_lock, "disk");
-    kprintf("disk magic val: %p\n", *(base_addr + DISK_MAGIC_VAL));
-    kprintf("disk version: %p\n", *(base_addr + DISK_VERSION));
-    kprintf("disk deviceid %p\n", *(base_addr + DISK_DEVICEID));
-    kprintf("disk vendorid %p\n", *(base_addr + DISK_VENDORID));
+     
     if (*(base_addr + DISK_MAGIC_VAL) != 0x74726976 ||
         *(base_addr + DISK_VERSION) != 1 ||
         *(base_addr + DISK_DEVICEID) != 2 ||
         *(base_addr + DISK_VENDORID) != 0x554d4551) {
-        
+        /* 
+        kprintf("DISK_MAGIC_VAL %p\nDISK_VERSION %p\nDISK_DEVICEID %p\nDISK_VENDORID %p\n", *(base_addr + DISK_MAGIC_VAL), 
+                *(base_addr + DISK_VERSION), *(base_addr + DISK_DEVICEID), *(base_addr + DISK_VENDORID));
+*/
         panic("disk not found");
     }
 

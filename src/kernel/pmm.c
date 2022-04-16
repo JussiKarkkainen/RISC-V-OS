@@ -21,20 +21,16 @@ int page_align = 12;
 
 // Initializes the bitmap by clearing required area
 void pmm_init(void) {
-    kprintf("HEAP_SIZE %p\n", HEAP_SIZE);
     // Bitmap starts at HEAP_START
     uint32_t *start_addr = (uint32_t *)HEAP_START;
-    kprintf("start_addr %p\n", start_addr);
     
     // Calculate number of bits needed for bitmap  
     int bitmap_size = HEAP_SIZE / page_size;
-    kprintf("bitmap_size %x\n", bitmap_size);
     // Clear bits in bitmap
     memset(start_addr, 0, bitmap_size);
 
     // Find where allocations begin aligned to a 4K boundary
     alloc_start = align(HEAP_START + bitmap_size, page_align);
-    kprintf("alloc_start %p\n", alloc_start);
 }
 
 

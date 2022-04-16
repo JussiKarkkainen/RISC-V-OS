@@ -28,14 +28,14 @@ uint32_t *kpagemake(void) {
     uint32_t *kpage = zalloc(1);
     // Create a virtual memory map
     kmap(kpage, UART0, UART0, PGESIZE, PTE_R | PTE_W);
-
+    
     kmap(kpage, VIRTIO0, VIRTIO0, PGESIZE, PTE_R | PTE_W);
-
+    
     kmap(kpage, PLIC, PLIC, PLICSIZE, PTE_R | PTE_W);
-
+    
     kmap(kpage, KERNEL_BASE, KERNEL_BASE, TEXT_END-KERNEL_BASE, PTE_R | PTE_X);
-
-//    kmap(kpage, TEXT_END, TEXT_END, MAXVA-TEXT_END, PTE_R | PTE_W);
+    
+    kmap(kpage, TEXT_END, TEXT_END, MAXVA-TEXT_END, PTE_R | PTE_W);
     
     kmap(kpage, USERVEC, (uint32_t)uvec, PGESIZE, PTE_R | PTE_X);
 
@@ -106,7 +106,7 @@ int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, i
     uint32_t *pte;
     uint32_t last;
     uint32_t vir;
-
+    
     if (size == 0) {
         panic("kmap: size == 0!");
     }

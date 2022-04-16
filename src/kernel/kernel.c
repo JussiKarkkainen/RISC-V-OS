@@ -17,6 +17,7 @@ void enter(void) {
     
     if (which_cpu() == 0) {
         
+        console_init();     // Start console
         kprintf_init();
         kprintf("%s\n", "Booting OS");
 
@@ -31,11 +32,11 @@ void enter(void) {
         buffer_init();      // Initialize the buffer cache for filesystem
         inode_init();       // Initialize the inode table
         file_init();        // Initialize file table
-//        disk_init();        // Initialize virtio disk
+        disk_init();        // Initialize virtio disk
         init_user();
-        console_init();     // Start console
+        kprintf("heelo\n");
         __sync_synchronize();
-        started = 1;    
+//        started = 1;    
     }
     else {
         while (started == 0) {

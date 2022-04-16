@@ -21,7 +21,7 @@ void acquire_lock(struct spinlock *lock) {
 
     // Check if current cpu is holding the lock
     if (is_holding(lock)) {
-        panic("acquire_lock");
+        panic("acquire_lock, is_holding, locks.c");
     }
     
     // When cpu needs to acquire a lock, we need to check if some other
