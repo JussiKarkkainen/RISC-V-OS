@@ -34,9 +34,8 @@ void enter(void) {
         file_init();        // Initialize file table
         disk_init();        // Initialize virtio disk
         init_user();
-        kprintf("heelo\n");
         __sync_synchronize();
-//        started = 1;    
+        started = 1;    
     }
     else {
         while (started == 0) {

@@ -5,8 +5,9 @@
 #include "../libc/include/stdio.h"
 #include "../libc/include/string.h"
 
-volatile uint32_t *base_addr = (volatile uint32_t *)(VIRTIO0);
+#define R(r) ((volatile uint32_t *)(VIRTIO0 + (r)))
 
+volatile uint32_t *base_addr = (volatile uint32_t *)(VIRTIO0);
 
 struct disk {
 
@@ -42,28 +43,25 @@ void disk_init(void) {
     uint32_t status_bits = 0;
 
     initlock(&disk.disk_lock, "disk");
-     
-    if (*(base_addr + DISK_MAGIC_VAL) != 0x74726976 ||
-        *(base_addr + DISK_VERSION) != 1 ||
-        *(base_addr + DISK_DEVICEID) != 2 ||
-        *(base_addr + DISK_VENDORID) != 0x554d4551) {
-        /* 
-        kprintf("DISK_MAGIC_VAL %p\nDISK_VERSION %p\nDISK_DEVICEID %p\nDISK_VENDORID %p\n", *(base_addr + DISK_MAGIC_VAL), 
-                *(base_addr + DISK_VERSION), *(base_addr + DISK_DEVICEID), *(base_addr + DISK_VENDORID));
-*/
+
+    if(*R(DISK_MAGIC_VAL) != 0x74726976 ||
+       *R(DISK_VERSION) != 1 ||
+       *R(DISK_DEVICEID) != 2 ||
+       *R(DISK_VENDORID) != 0x554d4551){
+        
         panic("disk not found");
     }
-
+    
     // 1. Reset the device
-    *(base_addr + DISK_STATUS) = 0;
+    *R(DISK_STATUS) = 0;
 
     // 2. Set ACKNOWLEDGE status bit to status reg
     status_bits |= ACKNOWLEDGE_STATUS;
-    *(base_addr + DISK_STATUS) = status_bits;
+    *R(DISK_STATUS) = status_bits;
 
     // 3. Set DRIVER status bit to status reg
     status_bits |= DRIVER_STATUS;
-    *(base_addr + DISK_STATUS) |= status_bits;
+    *R(DISK_STATUS) |= status_bits;
 
     // 5. Negotiate the set of features and write what you'll accept to guest_features register
     uint32_t features = *(base_addr + DISK_HOST_FEATURES);
@@ -74,21 +72,21 @@ void disk_init(void) {
     features &= ~(1 << DISK_F_ANY_LAYOUT);
     features &= ~(1 << DISK_RING_F_EVENT_IDX);
     features &= ~(1 << DISK_RING_F_INDIRECT_DESC);
-    *(base_addr + DISK_HOST_FEATURES) = features;
+    *R(DISK_HOST_FEATURES) = features;
 
     // Set status bit to indicate we're ready
     status_bits |= DISK_FEATURES_OK;
-    *(base_addr + DISK_STATUS) = status_bits;
+    *R(DISK_STATUS) = status_bits;
 
     status_bits = DISK_DRIVER_OK;
-    *(base_addr + DISK_STATUS) = status_bits;
+    *R(DISK_STATUS) = status_bits;
 
     // Set pagesize
-    *(base_addr + DISK_GUEST_PAGE_SIZE) = PGESIZE;
+    *R(DISK_GUEST_PAGE_SIZE) = PGESIZE;
     
     // Initialize queue 0
-    *(base_addr + DISK_QUEUE_SEL) = 0;
-    uint32_t max = *(base_addr + DISK_QUEUE_NUM_MAX);
+    *R(DISK_QUEUE_SEL) = 0;
+    uint32_t max = *R(DISK_QUEUE_NUM_MAX);
     
     if (max == 0) {
         panic("no queue 0, disk");
@@ -97,17 +95,17 @@ void disk_init(void) {
         panic("queue too short, disk");
     }
 
-    *(base_addr + DISK_QUEUE_NUM) = NUM;   // Number of descriptors
+    *R(DISK_QUEUE_NUM) = NUM;   // Number of descriptors
     memset(disk.pages, 0, sizeof(disk.pages));
-    *(base_addr + DISK_QUEUE_PFN) = ((uint32_t)disk.pages >> 12);
-
+    *R(DISK_QUEUE_PFN) = ((uint32_t)disk.pages >> 12);
+    
     disk.desc = (struct disk_desc *) disk.pages;
     disk.avail = (struct disk_avail *)(disk.pages + NUM * sizeof(struct disk_desc));
     disk.used = (struct disk_used *) (disk.pages + PGESIZE);
 
 
     // descriptors start unused
-    for (int i=0; 1<8; i++) {
+    for (int i=0; i<8; i++) {
         disk.free[i] = 1;
     }
 }
@@ -117,7 +115,7 @@ void virtio_disk_intr(void) {
     acquire_lock(&disk.disk_lock);
 
     // Tell device we've seen the interrupt and it can send another one
-    *(base_addr + DISK_INTR_ACK) = *(base_addr + DISK_INTR_STATUS) & 0x3;
+    *R(DISK_INTR_ACK) = *R(DISK_INTR_STATUS) & 0x3;
 
     __sync_synchronize();
 

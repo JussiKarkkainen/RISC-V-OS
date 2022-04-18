@@ -17,10 +17,13 @@ PHDRS
 SECTIONS 
     {
           
-          .text : ALIGN(4K) {
+          .text : {
                   PROVIDE(text_start = .);
-                  . = ALIGN(0x1000);
                   *(.text.init) *(.text .text.*);
+                  . = ALIGN(0x1000);
+                  _uvec = .;
+                  *(uvecsec);
+                  . = ALIGN(0x1000);
                   PROVIDE(text_end = .);
           } >ram AT>ram :text
 

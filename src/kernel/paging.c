@@ -28,17 +28,18 @@ uint32_t *kpagemake(void) {
     uint32_t *kpage = zalloc(1);
     // Create a virtual memory map
     kmap(kpage, UART0, UART0, PGESIZE, PTE_R | PTE_W);
-    
+    kprintf("UART0 %p\nVIRTIO %p\nPLIC %p\nKERNEL_BASE %p\nTEXT_END %p\nUSERVEC %p\n", 
+            UART0, VIRTIO0, PLIC, KERNEL_BASE, TEXT_END, (uint32_t)uvec);
     kmap(kpage, VIRTIO0, VIRTIO0, PGESIZE, PTE_R | PTE_W);
     
     kmap(kpage, PLIC, PLIC, PLICSIZE, PTE_R | PTE_W);
     
     kmap(kpage, KERNEL_BASE, KERNEL_BASE, TEXT_END-KERNEL_BASE, PTE_R | PTE_X);
     
-    kmap(kpage, TEXT_END, TEXT_END, MAXVA-TEXT_END, PTE_R | PTE_W);
-    
+//    kmap(kpage, TEXT_END, TEXT_END, MAXVA-TEXT_END, PTE_R | PTE_W);
+     
     kmap(kpage, USERVEC, (uint32_t)uvec, PGESIZE, PTE_R | PTE_X);
-
+    
     map_kstack(kpage);
 
     return kpage;
