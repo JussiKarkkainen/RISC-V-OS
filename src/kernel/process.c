@@ -328,7 +328,6 @@ void cpu_scheduler(void) {
         for (proc = p; proc < &p[MAXPROC]; proc++) {
             acquire_lock(&proc->lock);
             if (proc->state == RUNNABLE) {
-                kprintf("proc %s\nproc->contextsp %p\n", proc->name, proc->context.sp); 
                 proc->state = RUNNING;
                 cpu->proc = proc;
                 
@@ -336,7 +335,6 @@ void cpu_scheduler(void) {
                 // which leads to cpu executing said process
                 
                 transfer(&cpu->context, &proc->context);
-                kprintf("why no return"); 
                 cpu->proc = 0;
             }
             release_lock(&proc->lock);

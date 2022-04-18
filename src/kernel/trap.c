@@ -156,7 +156,7 @@ void ktrap(void) {
     if ((intr_result = handle_device_intr()) == 2) {
         // Print out register info and panic
         kprintf("scause: %p\nsstatus: %p\nstval: %p\n", scause, sstatus, stval);
-        panic("kernel interrupt");
+        panic("kernel interrupt, ktrap");
     }
         
     if (intr_result == 1) {

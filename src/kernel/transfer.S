@@ -33,5 +33,5 @@ transfer:
     lw s9, 88(a1)
     lw s10, 96(a1)
     lw s11, 104(a1)
-   
-    ret  
+
+    ret
