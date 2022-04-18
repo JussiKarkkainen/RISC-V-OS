@@ -72,9 +72,8 @@ struct process {
     char name[16];    
 };
 
-// This os supports maximum 8 cpu cores, make cpu struct for all
+struct process p[MAXPROC];
 struct cpu cpus[MAXCPUS];
-struct process process[MAXPROC];
 
 struct trapframe {
     uint32_t kernel_satp;

@@ -8,12 +8,10 @@
 #include "filesys.h"
 #include "file.h"
 
-extern void transfer();
 extern void forkret(void);
+void transfer(struct context*, struct context*);
 
 struct process *initproc;
-
-struct process p[MAXPROC];
 
 struct spinlock pid_lock;
 
@@ -323,17 +321,22 @@ void cpu_scheduler(void) {
     struct process *proc;
     struct cpu *cpu = get_cpu_struct();
     cpu->proc = 0;
-    
+  
     while (1) {
         enable_intr();
-
+    
         for (proc = p; proc < &p[MAXPROC]; proc++) {
             acquire_lock(&proc->lock);
             if (proc->state == RUNNABLE) {
-                
+                kprintf("proc %s\nproc->contextsp %p\n", proc->name, proc->context.sp); 
                 proc->state = RUNNING;
+                cpu->proc = proc;
+                
+                // Transfer replaces the cpus pc register (along with other registers) with the processes pc, 
+                // which leads to cpu executing said process
+                
                 transfer(&cpu->context, &proc->context);
-
+                kprintf("why no return"); 
                 cpu->proc = 0;
             }
             release_lock(&proc->lock);
@@ -408,11 +411,11 @@ int kill(int process_id) {
     return -1;
 }
 
-void reparent(struct process *proc) {
+void reparent(struct process *pp) {
     struct process *proc;
     for (proc = p; proc < &p[MAXPROC]; proc++) {
-        if (p->parent == p) {
-            p->parent = initproc;
+        if (proc->parent == pp) {
+            proc->parent = initproc;
             wakeup(initproc);
         }
     }
