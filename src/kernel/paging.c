@@ -149,6 +149,7 @@ void upaging_init(uint32_t *pagetable, unsigned char *src, unsigned int size) {
     if (size >= PGESIZE) {
         panic("size >= PGESIZE, upaging_init()");
     }
+
     mem = zalloc(1);
     kmap(pagetable, 0, (uint32_t)mem, PGESIZE, PTE_W | PTE_R | PTE_X | PTE_U);
 

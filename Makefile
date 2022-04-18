@@ -71,6 +71,7 @@ $(KERNEL)/kern: $(ASMOBJS) $(COBJS) $(KERNEL)/linker.ld $(USER)/initcode
 $(USER)/initcode: $(USER)/initcode.S
 	$(CC) $(CFLAGS) -nostdinc -I. -Ikernel -c $(USER)/initcode.S -o $(USER)/initcode.o
 	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o $(USER)/initcode.out $(USER)/initcode.o 
+	$(OBJCOPY) -S -O binary $(USER)/initcode.out $(USER)/initcode
 	$(OBJDUMP) -S $(USER)/initcode.out > $(USER)/initcode.asm 
 
 ULIB = $(USER)/malloc.o $(USER)/ulibc.o $(USER)/printf.o $(USER)/usyscall.o

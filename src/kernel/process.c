@@ -47,6 +47,7 @@ void process_init(void) {
     }
 }
 
+// This is src/user/initcode.S
 unsigned char initcode[] = {
     0x17, 0x05, 0x00, 0x00, 0x13, 0x05, 0x45, 0x02,
     0x97, 0x05, 0x00, 0x00, 0x93, 0x85, 0x35, 0x02,
@@ -223,7 +224,7 @@ int wait(uint32_t addrs) {
     while (1) {
         // Scan through table looking for exited children.
         havekids = 0;
-        for (np = process; np < &process[MAXPROC]; np++) {
+        for (np = p; np < &p[MAXPROC]; np++) {
             if (np->parent == p) {
                 // make sure the child isn't still in exit() or swtch().
                 acquire_lock(&np->lock);
@@ -301,7 +302,7 @@ void freeproc(struct process *proc) {
 void wakeup(void *sleep_channel) {
     struct process *proc;
 
-    for (proc = process; proc < &process[MAXPROC]; proc++) {
+    for (proc = p; proc < &p[MAXPROC]; proc++) {
         if (proc != get_process_struct()) {
             acquire_lock(&proc->lock);
             if (proc->state == SLEEPING && proc->sleep_channel == sleep_channel) {
@@ -326,7 +327,7 @@ void cpu_scheduler(void) {
     while (1) {
         enable_intr();
 
-        for (proc = process; proc < &process[MAXPROC]; proc++) {
+        for (proc = p; proc < &p[MAXPROC]; proc++) {
             acquire_lock(&proc->lock);
             if (proc->state == RUNNABLE) {
                 
@@ -390,7 +391,7 @@ void sleep(void *sleep_channel, struct spinlock *lock) {
 int kill(int process_id) {
     
     struct process *proc;
-    for (proc = process; proc < &process[MAXPROC]; proc++) {
+    for (proc = p; proc < &p[MAXPROC]; proc++) {
         acquire_lock(&proc->lock);
         
         if (proc->process_id == process_id) {
@@ -408,8 +409,8 @@ int kill(int process_id) {
 }
 
 void reparent(struct process *proc) {
-    struct process *p;
-    for (p = proc; p < &process[MAXPROC]; p++) {
+    struct process *proc;
+    for (proc = p; proc < &p[MAXPROC]; proc++) {
         if (p->parent == p) {
             p->parent = initproc;
             wakeup(initproc);
