@@ -128,6 +128,10 @@ clean:
 	src/makefs $(USER)/usyscall.S \
 	$(UPROGS) $(COBJS) $(UOBJS) $(ASMOBJS)
 
+GDBPORT = $(shell expr `id -u` % 5000 + 25000)
+QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
+	then echo "-gdb tcp::$(GDBPORT)"; \
+	else echo "-s -p $(GDBPORT)"; fi)
 
 QEMU = qemu-system-riscv32
 QEMUOPT = -machine virt -bios none -kernel $(KERNEL)/kern -m 128M -smp 3 -nographic
@@ -137,4 +141,12 @@ QEMUOPT += -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
 
 qemu: $(KERNEL)/kern fs.img
 	$(QEMU) $(QEMUOPT)
+
+
+.gdbinit: .gdbinit.tmpl-riscv
+	sed "s/:1234/:$(GDBPORT)/" < $^ > $@
+
+qemu-gdb: $(KERNEL)/kern .gdbinit fs.img
+	@echo "*** Now run 'gdb' in another window." 1>&2
+	$(QEMU) $(QEMUOPTS) -S $(QEMUGDB)
 
