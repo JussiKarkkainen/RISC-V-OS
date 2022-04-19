@@ -2,8 +2,11 @@
 # Takes two context structs(old and new) as inputs,
 # saves current regs in old and loads from new
 
+
 .globl transfer
+.globl asmprintf
 transfer:
+    
     sw ra, 0(a0)
     sw sp, 8(a0)
     sw s0, 16(a0)
@@ -20,6 +23,7 @@ transfer:
     sw s11, 104(a0)
 
     lw ra, 0(a1)
+    call asmprintf
     lw sp, 8(a1)
     lw s0, 16(a1)
     lw s1, 24(a1)
