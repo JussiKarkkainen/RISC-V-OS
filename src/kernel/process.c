@@ -333,7 +333,7 @@ void cpu_scheduler(void) {
                 
                 // Transfer replaces the cpus pc register (along with other registers) with the processes pc, 
                 // which leads to cpu executing said process
-                kprintf("process->context.sp: %p\n", proc->context.sp);           
+                kprintf("process->name: %s\n", proc->name);           
                 transfer(&cpu->context, &proc->context);
                 cpu->proc = 0;
             }

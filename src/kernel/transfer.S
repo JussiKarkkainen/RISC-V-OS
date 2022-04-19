@@ -23,7 +23,6 @@ transfer:
     sw s11, 104(a0)
 
     lw ra, 0(a1)
-    call asmprintf
     lw sp, 8(a1)
     lw s0, 16(a1)
     lw s1, 24(a1)
