@@ -38,7 +38,8 @@ COBJS = \
     $(LIBCSTRING)/strlen.o \
     $(LIBCSTRING)/strncmp.o \
     $(LIBCSTDIO)/kprintf.o \
-    $(LIBCSTDIO)/putchar.o
+    $(LIBCSTDIO)/putchar.o \
+    $(LIBCSTDIO)/asmprint.o
 
 AS = riscv64-unknown-elf-as
 ASFLAGS = -march=rv32ima -mabi=ilp32
