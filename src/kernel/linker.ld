@@ -25,6 +25,7 @@ SECTIONS
                   *(uvecsec);
                   . = ALIGN(0x1000);
                   PROVIDE(text_end = .);
+
           } >ram AT>ram :text
 
           .rodata : ALIGN(4K) {

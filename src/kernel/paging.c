@@ -9,6 +9,8 @@ uint32_t *kpagetable;
 
 extern char uvec[];
 
+extern char text_end[];
+
 struct process process[MAXPROC];
 
 struct cpu cpu[MAXCPUS];
@@ -26,17 +28,20 @@ static inline void satp_write(uint32_t *kpage) {
 // create the kernel pagetable
 uint32_t *kpagemake(void) {
     uint32_t *kpage = zalloc(1);
+
     // Create a virtual memory map
     kmap(kpage, UART0, UART0, PGESIZE, PTE_R | PTE_W);
+    
     kprintf("UART0 %p\nVIRTIO %p\nPLIC %p\nKERNEL_BASE %p\nTEXT_END %p\nUSERVEC %p\n", 
-            UART0, VIRTIO0, PLIC, KERNEL_BASE, TEXT_END, (uint32_t)uvec);
+            UART0, VIRTIO0, PLIC, KERNEL_BASE, (uint32_t)text_end, (uint32_t)uvec);
+    
     kmap(kpage, VIRTIO0, VIRTIO0, PGESIZE, PTE_R | PTE_W);
     
     kmap(kpage, PLIC, PLIC, PLICSIZE, PTE_R | PTE_W);
     
-    kmap(kpage, KERNEL_BASE, KERNEL_BASE, TEXT_END-KERNEL_BASE, PTE_R | PTE_X);
+    kmap(kpage, KERNEL_BASE, KERNEL_BASE, (uint32_t)text_end-KERNEL_BASE, PTE_R | PTE_X);
     
-//    kmap(kpage, TEXT_END, TEXT_END, MAXVA-TEXT_END, PTE_R | PTE_W);
+    kmap(kpage, (uint32_t)text_end, (uint32_t)text_end, MAXVA-(uint32_t)text_end, PTE_R | PTE_W);
      
     kmap(kpage, USERVEC, (uint32_t)uvec, PGESIZE, PTE_R | PTE_X);
     
@@ -116,7 +121,7 @@ int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, i
 
     while(1) {
         
-        if ((pte = walk(kpage, vir, 1)) == 0) {        
+        if ((pte = walk(kpage, vir, 1)) == 0) { 
             return -1;
         }
         if (*pte & PTE_V) {
