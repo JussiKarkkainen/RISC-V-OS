@@ -1,13 +1,11 @@
 #include <stdint.h>
 #include "../libc/include/string.h"
-#include <stdbool.h>
 #include "paging.h"
 #include "../libc/include/stdio.h"
+#include "locks.h"
 
-/* 
-Implementation of a physical memory allocator. It uses a bitmap
-to keep track of size 4096 pages
-*/
+#define IS_SET(i) ((start_addr[i / 8] >> (i % 8)) & 0x1)
+#define SET_BIT(i) (start_addr[i / 8] = start_addr[i / 8] | (1 << (i % 8)))
 
 // Aligns memory to 4K page
 int align(int value, int align) {
@@ -19,8 +17,13 @@ int page_size = (1 << 12);    // 4096 kib
 uint32_t alloc_start;
 int page_align = 12;
 
+struct spinlock pmm_lock;
+
 // Initializes the bitmap by clearing required area
 void pmm_init(void) {
+    
+    initlock(&pmm_lock, "pmmlock");
+
     // Bitmap starts at HEAP_START
     uint32_t *start_addr = (uint32_t *)HEAP_START;
     
@@ -46,15 +49,31 @@ uint32_t *kalloc(int n) {
     // Search for contiguos blockof free memory of size "size"
     uint32_t *ptr = start_addr;
     
-    for (int i = 0; i < num_pages; i++) {
-        int found = false;
+    acquire_lock(&pmm_lock);
+
+    for (uint32_t i = 0; i < num_pages; i++) {
+        if (!IS_SET(i)) {
+            SET_BIT(i);
+            release_lock(&pmm_lock);
+            return (alloc_start + (i * page_size));
+        }
+    }
+    release_lock(&pmm_lock);
+    panic("no more memory, kalloc");
+    return -1;
+} 
+
+
+/*    
+    for (uint32_t i = 0; i < num_pages; i++) {
+        int found = 0;
 
         if (*(ptr + i) == 0) {
-            found = true;
+            found = 1;
             for (int j = i; j <= (i + n); j++) {
 
                 if (*(ptr + j) == 1) {
-                    found = false;
+                    found = 0;
                     break;
                 }
             }
@@ -70,7 +89,11 @@ uint32_t *kalloc(int n) {
         }
     }
     return 0;
-}
+*/
+
+
+
+
 
 // Zero allocates n amount of pages
 uint32_t *zalloc(int n) {
@@ -93,6 +116,7 @@ uint32_t *zalloc(int n) {
 
 // Free size n amount of pages
 void kfree(uint32_t *ptr, int n) {
+    acquire_lock(&pmm_lock);
     if (ptr != 0) {
         
         // Calculate where the corresponding bit is bitmap is
@@ -106,22 +130,35 @@ void kfree(uint32_t *ptr, int n) {
             } 
         }
     }
+    release_lock(&pmm_lock);
 }
 
 
 void test_alloc(void) {
     // Used to verify that allocations work as expected
-    uint32_t *a = kalloc(10);
-    uint32_t *o = zalloc(5);
-    kprintf("first ten pages %p\n", a); 
-    kprintf("next five pagse %p\n", o);
+        
+    uint32_t *a = kalloc(1);
+    uint32_t *o = kalloc(1);
+    uint32_t *s = kalloc(1);
+    kprintf("first page %p\n", a); 
+    kprintf("next page %p\n", o);
+    kprintf("third page %p\n", s);
+
     int num_pages = HEAP_SIZE / page_size;
+    kfree(s, 1);
+
+    
+    uint32_t *start_addr = (uint32_t *)HEAP_START;
+    kprintf("bitmap_start %p\n", *start_addr);
+
+
+
+
     uint32_t start = HEAP_START;
     uint32_t *p = (uint32_t *)start;
-    uint32_t d = *p;
-    kprintf("should be 1: %p\n", d);
+    kprintf("should be 1: %p\n", *p);
     kprintf("address of p + 1: %p\n", (p + 1));
-    kprintf("this should also be 1: %p\n\n\n", *(p + 15));
+    
     uint32_t end = start + num_pages;
     uint32_t allocation_start = alloc_start;
     uint32_t alloc_end = allocation_start + num_pages * page_size;
