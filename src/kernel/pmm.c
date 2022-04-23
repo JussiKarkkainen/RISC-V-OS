@@ -6,6 +6,7 @@
 
 #define IS_SET(i) ((start_addr[i / 8] >> (i % 8)) & 0x1)
 #define SET_BIT(i) (start_addr[i / 8] = start_addr[i / 8] | (1 << (i % 8)))
+#define CLEAR_BITS(i) (start_addr[i / 8] = start_addr[i / 8] & (~(1 << (i % 8))))
 
 // Aligns memory to 4K page
 int align(int value, int align) {
@@ -39,7 +40,7 @@ void pmm_init(void) {
 
 // Allocates n amount of pages, by setting bits in bitmap to 1, 
 // and returning pointer to start of allocated memory
-uint32_t *kalloc(int n) {
+uint32_t *kalloc(void) {
    
     int num_pages = HEAP_SIZE / page_size;
     uint32_t *start_addr = (uint32_t *)HEAP_START;
@@ -91,18 +92,13 @@ uint32_t *kalloc(int n) {
     return 0;
 */
 
+uint32_t *zalloc() {
 
-
-
-
-// Zero allocates n amount of pages
-uint32_t *zalloc(int n) {
-
-    uint32_t *addr = kalloc(n);
+    uint32_t *addr = kalloc();
 
     if (addr != 0) {
         uint32_t *ptr = addr;
-        int size = (page_size * n) / 8;
+        int size = (page_size) / 8;
         
         for (int i = 0; i <= size; i++) {
             *ptr = 0;
@@ -114,9 +110,23 @@ uint32_t *zalloc(int n) {
     return 0;
 }
 
+
 // Free size n amount of pages
-void kfree(uint32_t *ptr, int n) {
+void kfree(uint32_t *ptr) {
     acquire_lock(&pmm_lock);
+    
+    uint32_t *start_addr = (uint32_t *)HEAP_START;
+    int bitmap_size = HEAP_SIZE / page_size;
+    alloc_start = align(HEAP_START + bitmap_size, page_align);
+    
+    uint32_t i = (((uint32_t)ptr - (uint32_t)alloc_start) / 0x1000);
+    
+    CLEAR_BITS(i);   
+
+    release_lock(&pmm_lock);
+}
+
+/*    
     if (ptr != 0) {
         
         // Calculate where the corresponding bit is bitmap is
@@ -133,25 +143,29 @@ void kfree(uint32_t *ptr, int n) {
     release_lock(&pmm_lock);
 }
 
+*/
+
+
 
 void test_alloc(void) {
     // Used to verify that allocations work as expected
         
-    uint32_t *a = kalloc(1);
-    uint32_t *o = kalloc(1);
-    uint32_t *s = kalloc(1);
+    uint32_t *a = kalloc();
+    uint32_t *o = kalloc();
+    uint32_t *s = kalloc();
     kprintf("first page %p\n", a); 
     kprintf("next page %p\n", o);
     kprintf("third page %p\n", s);
-
+    
     int num_pages = HEAP_SIZE / page_size;
-    kfree(s, 1);
-
+    kfree(s);
+    kfree(o);
+    kfree(a);
     
     uint32_t *start_addr = (uint32_t *)HEAP_START;
     kprintf("bitmap_start %p\n", *start_addr);
 
-
+    kprintf("alloc_start %p\n", alloc_start);
 
 
     uint32_t start = HEAP_START;
