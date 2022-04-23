@@ -17,7 +17,7 @@ PHDRS
 SECTIONS 
     {
           
-          .text : {
+          .text : ALIGN(4K) {
                   PROVIDE(text_start = .);
                   *(.text.init) *(.text .text.*);
                   . = ALIGN(0x1000);

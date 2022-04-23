@@ -1,6 +1,7 @@
 .option norvc
 
 .section .text.init
+
 .globl _entry
 _entry:
   
