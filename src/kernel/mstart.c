@@ -12,23 +12,27 @@
 #define SIE_SSIE (1 << 1)
 #define MIE_MTIE (1 << 7)
 
+#define CLINT_MTIMECMP(hartid) (CLINT + 0x4000 + 8*(hartid))
+#define CLINT_MTIME (CLINT + 0xBFF8)
+
 void enter();
 void timer_init();
 
-extern void tvec();
+void tvec();
 
 __attribute__((aligned (16))) char stacks[4096 * MAXCPUS];
 
 uint32_t scratch[MAXCPUS][5];
 
 void timer_init(void) {
+    
     // Get the id of current hart
     uint32_t hart_id = get_mhartid();
+    
     // Ask clint for timer interrupt, clint is memory-mapped to 0x2000000.
     int interval = 1000000;
-    *(uint32_t*)(CLINT + CLINT_OFFSET + (8 * hart_id)) = *(uint32_t*)((CLINT + 0xBFF8) + interval);
-
-
+    *(uint32_t*)CLINT_MTIMECMP(hart_id) = *(uint32_t*)CLINT_MTIME + interval;
+    
     // prepare scratch register
     uint32_t *scratch_ptr = &scratch[hart_id][0];
     scratch_ptr[3] = (0x2000000 + 0x4000 + (8 * hart_id));
@@ -47,6 +51,7 @@ void timer_init(void) {
 }
 
 void mstart(void) {
+    
     // Clear the mstatus MPP bits and set them to supervisor mode
     uint32_t mstatus = get_mstatus();
     mstatus &= ~(3 << 11);
@@ -65,7 +70,6 @@ void mstart(void) {
     uint32_t sie = get_sie();
     write_sie(sie | SIE_SEIE | SIE_STIE | SIE_SSIE);
     
-
     // Configure physical memory protection
     write_pmpaddr0(0xffffffff);
     write_pmpcfg0(0xf);
