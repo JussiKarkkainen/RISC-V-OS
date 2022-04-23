@@ -29,9 +29,9 @@ extern uint32_t MEMORY_END, MEMORY_END, HEAP_START, TEXT_START, RODATA_START, DA
 
 // Functions from pmm.c
 void pmm_init(void);
-uint32_t *kalloc(int n);
-uint32_t *zalloc(int n);
-void kfree(uint32_t *ptr, int n);
+uint32_t *kalloc();
+uint32_t *zalloc();
+void kfree(uint32_t *ptr);
 
 
 // Functions from paging.c

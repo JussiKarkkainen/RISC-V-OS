@@ -13,7 +13,7 @@ int pipealloc(struct file **f0, struct file **f1) {
     if ((*f0 = file_alloc()) == 0 || (*f1 = file_alloc()) == 0) {
         goto bad;
     }
-    if ((pi = (struct pipe*)zalloc(1)) == 0) {
+    if ((pi = (struct pipe*)zalloc()) == 0) {
         goto bad;
     }
     pi->read_open = 1;
@@ -33,7 +33,7 @@ int pipealloc(struct file **f0, struct file **f1) {
 
     bad:
         if (pi) {
-            kfree((uint32_t *)pi, 1); 
+            kfree((uint32_t *)pi); 
         }
         if (*f0) {
             file_close(*f0);
@@ -87,7 +87,7 @@ void pipe_close(struct pipe *pi, int writable) {
     }
     if(pi->read_open == 0 && pi->write_open == 0) {
         release_lock(&pi->lock);
-        kfree((uint32_t *)pi, 1);
+        kfree((uint32_t *)pi);
     } 
     else {
         release_lock(&pi->lock);

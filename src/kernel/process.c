@@ -25,7 +25,7 @@ void map_kstack(uint32_t *pagetable) {
     struct process *proc;
 
     for (proc = p; proc < &p[MAXPROC]; proc++) {
-        uint32_t *phy_addr = kalloc(1);
+        uint32_t *phy_addr = kalloc();
         if (phy_addr == 0) {
             panic("map_kstack, phy_addr = 0, error with kalloc");
         }
@@ -125,7 +125,7 @@ struct process *alloc_process(void) {
         proc->process_id = alloc_pid();
         proc->state = USED;
 
-        if ((proc->trapframe = (struct trapframe *)zalloc(1)) == 0) {
+        if ((proc->trapframe = (struct trapframe *)zalloc()) == 0) {
             freeproc(proc);
             release_lock(&proc->lock);
             return 0;
@@ -278,7 +278,7 @@ void proc_freepagetable(uint32_t *pagetable, uint32_t size) {
 
 void freeproc(struct process *proc) {
     if(proc->trapframe) {
-        kfree((void*)proc->trapframe, 1);
+        kfree((void*)proc->trapframe);
     }
     proc->trapframe = 0;
     if(proc->pagetable) {

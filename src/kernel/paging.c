@@ -27,7 +27,7 @@ static inline void satp_write(uint32_t *kpage) {
 
 // create the kernel pagetable
 uint32_t *kpagemake(void) {
-    uint32_t *kpage = zalloc(1);
+    uint32_t *kpage = zalloc();
 
     // Create a virtual memory map
     kmap(kpage, UART0, UART0, PGESIZE, PTE_R | PTE_W);
@@ -76,7 +76,7 @@ uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc) {
         }
         // Turn phy_addr into pte
         else {
-            if (!alloc || ((pagetable = zalloc(1)) == 0)) {
+            if (!alloc || ((pagetable = zalloc()) == 0)) {
                 return 0;
             }
         *pte = (((uint32_t)pagetable >> 12) << 10) | PTE_V;
@@ -140,7 +140,7 @@ int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, i
 
 uint32_t *upaging_create(void) {
     uint32_t *pagetable;
-    pagetable = zalloc(1);
+    pagetable = zalloc();
     if (pagetable == 0) {
         panic("pagetable == 0, upaging_create");
     }
@@ -155,7 +155,7 @@ void upaging_init(uint32_t *pagetable, unsigned char *src, unsigned int size) {
         panic("size >= PGESIZE, upaging_init()");
     }
 
-    mem = zalloc(1);
+    mem = zalloc();
     kmap(pagetable, 0, (uint32_t)mem, PGESIZE, PTE_W | PTE_R | PTE_X | PTE_U);
 
     memmove(mem, src, size);
@@ -173,14 +173,14 @@ uint32_t uvmalloc(uint32_t *pagetable, uint32_t oldsize, uint32_t newsize) {
 
     oldsize = (((oldsize) + PGESIZE-1) & ~(PGESIZE-1));      // Round up to pagesize
     for (a = oldsize; a < newsize; a += PGESIZE) {
-        mem = zalloc(1);
+        mem = zalloc();
         if (mem == 0) {
             uvmdealloc(pagetable, a, oldsize);
             return 0;
         }
         memset(mem, 0, PGESIZE);
         if (kmap(pagetable, a, (uint32_t)mem, PGESIZE, PTE_W|PTE_X|PTE_R|PTE_U) != 0) {
-            kfree(mem, 1);
+            kfree(mem);
             uvmdealloc(pagetable, a, oldsize);
             return 0;
         }
@@ -232,12 +232,12 @@ int uvmcopy(uint32_t *old, uint32_t *new, uint32_t size) {
         }
         pa = (((*pte) >> 10) << 12);
         flags = ((*pte) & 0x3ff);
-        if ((mem = zalloc(1)) == 0) {
+        if ((mem = zalloc()) == 0) {
             goto err;
         }
         memmove(mem, (char*)pa, PGESIZE);
         if (kmap(new, i, PGESIZE, (uint32_t)mem, flags) != 0) {
-            kfree(mem, 1);
+            kfree(mem);
             goto err;
         }
     }
@@ -269,7 +269,7 @@ void uvmunmap(uint32_t *pagetable, uint32_t va, uint32_t num_pages, int free) {
         }
         if (free) {
             uint32_t pa = (((*pte) >> 10) << 12);
-            kfree((void*)pa, 1);
+            kfree((void*)pa);
         }
         *pte = 0;
     }
@@ -288,7 +288,7 @@ void freewalk(uint32_t *pagetable) {
             panic("freewalk, leaf"); 
         }
     }
-    kfree((void *)pagetable, 1);
+    kfree((void *)pagetable);
 }
 
 void uvmfree(uint32_t *pagetable, uint32_t size) {

@@ -234,7 +234,7 @@ uint32_t sys_exec(void) {
             argv[i] = 0;
             break;
         }
-        argv[i] = (char *)zalloc(1);
+        argv[i] = (char *)zalloc();
         if (argv[i] == 0) {
             goto bad;
         }
@@ -246,14 +246,14 @@ uint32_t sys_exec(void) {
     int ret = exec(path, argv);
 
     for(i = 0; i < (int)NUM_ELEM(argv) && argv[i] != 0; i++) {
-        kfree((uint32_t *)argv[i], 1);
+        kfree((uint32_t *)argv[i]);
     }
 
     return ret;
 
     bad:
         for (i = 0; i < (int)NUM_ELEM(argv) && argv[i] != 0; i++) {
-            kfree((uint32_t *)argv[i], 1);
+            kfree((uint32_t *)argv[i]);
         }
         return -1;
 }   
