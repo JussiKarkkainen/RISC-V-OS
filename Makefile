@@ -6,7 +6,6 @@ LIBCSTDIO=src/libc/stdio
 ASMOBJS = \
     $(KERNEL)/boot.o \
     $(KERNEL)/ktrapvec.o \
-    $(KERNEL)/mem.o \
     $(KERNEL)/transfer.o \
     $(KERNEL)/tvec.o \
     $(KERNEL)/utrapvec.o
@@ -65,8 +64,8 @@ LD = riscv64-unknown-elf-ld
 LDFLAGS = -z max-page-size=4096
 LDFLAGS += -m elf32lriscv
 
-$(KERNEL)/kern: $(ASMOBJS) $(COBJS) $(KERNEL)/linker.ld $(USER)/initcode
-	$(LD) $(LDFLAGS) -T $(KERNEL)/linker.ld -o $(KERNEL)/kern $(COBJS) $(ASMOBJS)
+$(KERNEL)/kern: $(ASMOBJS) $(COBJS) $(KERNEL)/kernel.ld $(USER)/initcode
+	$(LD) $(LDFLAGS) -T $(KERNEL)/kernel.ld -o $(KERNEL)/kern $(COBJS) $(ASMOBJS)
 	$(OBJDUMP) -S $(KERNEL)/kern > $(KERNEL)/kernel.asm
 
 $(USER)/initcode: $(USER)/initcode.S
