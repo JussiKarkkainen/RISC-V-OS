@@ -8,46 +8,42 @@
 #define SET_BIT(i) (start_addr[i / 8] = start_addr[i / 8] | (1 << (i % 8)))
 #define CLEAR_BITS(i) (start_addr[i / 8] = start_addr[i / 8] & (~(1 << (i % 8))))
 
+#define HEAP_SIZE (MAXVA - end_mem)
+
 // Aligns memory to 4K page
 int align(int value, int align) {
     int c = (1 << align) - 1;
     return (value + (~value & c));
 }
 
-int page_size = (1 << 12);    // 4096 kib
+int page_size = (1 << 12);    // 4096
 uint32_t alloc_start;
 int page_align = 12;
 
 struct spinlock pmm_lock;
 
-// Initializes the bitmap by clearing required area
 void pmm_init(void) {
     
     initlock(&pmm_lock, "pmmlock");
 
-    // Bitmap starts at HEAP_START
-    uint32_t *start_addr = (uint32_t *)HEAP_START;
+    // Bitmap starts at end 
+    uint32_t *start_addr = (uint32_t *)mem_end;
     
-    // Calculate number of bits needed for bitmap  
     int bitmap_size = HEAP_SIZE / page_size;
-    // Clear bits in bitmap
+    
     memset(start_addr, 0, bitmap_size);
 
-    // Find where allocations begin aligned to a 4K boundary
-    alloc_start = align(HEAP_START + bitmap_size, page_align);
+    alloc_start = align(end + bitmap_size, page_align);
 }
 
 
-// Allocates n amount of pages, by setting bits in bitmap to 1, 
-// and returning pointer to start of allocated memory
 uint32_t *kalloc(void) {
    
     int num_pages = HEAP_SIZE / page_size;
-    uint32_t *start_addr = (uint32_t *)HEAP_START;
+    uint32_t *start_addr = (uint32_t *)mem_end;
     int bitmap_size = HEAP_SIZE / page_size;
-    alloc_start = align(HEAP_START + bitmap_size, page_align);
+    alloc_start = align(mem_end + bitmap_size, page_align);
     
-    // Search for contiguos blockof free memory of size "size"
     uint32_t *ptr = start_addr;
     
     acquire_lock(&pmm_lock);
@@ -111,13 +107,12 @@ uint32_t *zalloc() {
 }
 
 
-// Free size n amount of pages
 void kfree(uint32_t *ptr) {
     acquire_lock(&pmm_lock);
     
-    uint32_t *start_addr = (uint32_t *)HEAP_START;
+    uint32_t *start_addr = (uint32_t *)mem_end;
     int bitmap_size = HEAP_SIZE / page_size;
-    alloc_start = align(HEAP_START + bitmap_size, page_align);
+    alloc_start = align(end + bitmap_size, page_align);
     
     uint32_t i = (((uint32_t)ptr - (uint32_t)alloc_start) / 0x1000);
     
@@ -146,9 +141,8 @@ void kfree(uint32_t *ptr) {
 */
 
 
-
+// Used to verify that allocations work as expected
 void test_alloc(void) {
-    // Used to verify that allocations work as expected
         
     uint32_t *a = kalloc();
     uint32_t *o = kalloc();
@@ -162,13 +156,13 @@ void test_alloc(void) {
     kfree(o);
     kfree(a);
     
-    uint32_t *start_addr = (uint32_t *)HEAP_START;
+    uint32_t *start_addr = (uint32_t *)mem_end;
     kprintf("bitmap_start %p\n", *start_addr);
 
     kprintf("alloc_start %p\n", alloc_start);
 
 
-    uint32_t start = HEAP_START;
+    uint32_t start = end; 
     uint32_t *p = (uint32_t *)start;
     kprintf("should be 1: %p\n", *p);
     kprintf("address of p + 1: %p\n", (p + 1));
@@ -184,14 +178,14 @@ void test_alloc(void) {
     while ((uint32_t)p < end) {
         if (*(p) == 1) {
             int beg = start;
-            uint32_t memaddr = alloc_start + (beg - HEAP_START) + PGESIZE;
+            uint32_t memaddr = alloc_start + (beg - mem_end) + PGESIZE;
             kprintf("%p -> ", memaddr);
             
             while(1) { 
                 i += 1;
                 if ((*(p + 1)) == 0) {
                     uint32_t end = start;
-                    memaddr = alloc_start + (end - HEAP_START) * PGESIZE + PGESIZE - 1;
+                    memaddr = alloc_start + (end - mem_end) * PGESIZE + PGESIZE - 1;
                     kprintf("%p : %x pages\n", memaddr, (end - beg + 1));
                     break;
                 }
