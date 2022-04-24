@@ -336,6 +336,7 @@ void cpu_scheduler(void) {
                 // which leads to cpu executing said process
                 kprintf("process->name: %s\n", proc->name);           
                 kprintf("process->pagetable %p\n", proc->context.ra);
+                kprintf("cpu->context.sp %p\n", proc->context.sp);
                 transfer(&cpu->context, &proc->context);
                 cpu->proc = 0;
             }
