@@ -1,10 +1,8 @@
-.option norvc
+.section .text
+.global _start
+_start:
 
-.section .text.init
-
-.globl _entry
-_entry:
-  
+/* 
   la t5, bss_start        # Load bss_start and end addresses to tmp regs and clear bss
   la t6, bss_end          # bss_start and end are defined in linker script.
   bgeu t5, t6, bss_clear
@@ -17,6 +15,8 @@ bss_clear:
 
 
 stack_setup:
+*/
+
   la sp, stacks           # Setup stack by loading stack_top address, to sp
   li a0, 1024*4
   csrr a1, mhartid

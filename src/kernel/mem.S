@@ -1,5 +1,9 @@
 .section .rodata
 
+.globl MEM_END
+MEM_END: .word mem_end
+
+/*
 .globl MEMORY_END
 MEMORY_END: .word memory_end
 
@@ -53,3 +57,4 @@ KERNEL_STACK_END: .word stack_end
 
 .globl KERNEL_STACK_SIZE
 KERNEL_STACK_SIZE: .word kernel_stack_size
+*/
