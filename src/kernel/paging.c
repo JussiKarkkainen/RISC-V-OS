@@ -27,13 +27,13 @@ static inline void satp_write(uint32_t *kpage) {
 
 // create the kernel pagetable
 uint32_t *kpagemake(void) {
-    uint32_t *kpage = zalloc();
+    uint32_t *kpage = kalloc();
 
     // Create a virtual memory map
     kmap(kpage, UART0, UART0, PGESIZE, PTE_R | PTE_W);
     
-    kprintf("UART0 %p\nVIRTIO %p\nPLIC %p\nKERNEL_BASE %p\nTEXT_END %p\nUSERVEC %p\n", 
-            UART0, VIRTIO0, PLIC, KERNEL_BASE, (uint32_t)text_end, (uint32_t)uvec);
+    kprintf("UART0 %p\nVIRTIO %p\nPLIC %p\nKERNEL_BASE %p\nTEXT_END %p\nUSERVEC %p\nMAXVA %p\n", 
+            UART0, VIRTIO0, PLIC, KERNEL_BASE, (uint32_t)text_end, (uint32_t)uvec, MAXVA);
     
     kmap(kpage, VIRTIO0, VIRTIO0, PGESIZE, PTE_R | PTE_W);
     
@@ -41,7 +41,7 @@ uint32_t *kpagemake(void) {
     
     kmap(kpage, KERNEL_BASE, KERNEL_BASE, (uint32_t)text_end-KERNEL_BASE, PTE_R | PTE_X);
     
-//    kmap(kpage, (uint32_t)text_end, (uint32_t)text_end, MAXVA-(uint32_t)text_end, PTE_R | PTE_W);
+    kmap(kpage, (uint32_t)text_end, (uint32_t)text_end, MAXVA-(uint32_t)text_end, PTE_R | PTE_W);
      
     kmap(kpage, USERVEC, (uint32_t)uvec, PGESIZE, PTE_R | PTE_X);
     
@@ -61,12 +61,15 @@ void init_paging(void) {
     flush_tlb();
 }
 
+// Finds the PTE for a virtual address
 uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc) {
-    
-    if (vir_addr >= (uint32_t)MAXVA) {
+   /* 
+    if (vir_addr >= (uint32_t)MAXVIRADDR) {
         panic("vir_addr out of range");
     }
+    */
     for (int i = 2; i > 0; i--) {
+
         uint32_t *pte = &pagetable[((vir_addr >> (PGEOFFSET + (10 * i))) & VPNMASK)];
         
         // Turn pte into phy_addr
@@ -76,15 +79,15 @@ uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc) {
         }
         // Turn phy_addr into pte
         else {
-            if (!alloc || ((pagetable = zalloc()) == 0)) {
+            if (!alloc || ((pagetable = kalloc()) == 0)) {
                 return 0;
             }
-        *pte = (((uint32_t)pagetable >> 12) << 10) | PTE_V;
+            *pte = (((uint32_t)pagetable >> 12) << 10) | PTE_V;
         }
     }
     return &pagetable[((vir_addr >> (PGEOFFSET + (10 * 0))) & VPNMASK)];
 }   
- 
+
 uint32_t fetch_pa_addr(uint32_t *pagetable, uint32_t va) {
     uint32_t *pte;
     uint32_t pa;
@@ -107,6 +110,7 @@ uint32_t fetch_pa_addr(uint32_t *pagetable, uint32_t va) {
     return pa;
 }
 
+// Install PTEs for new mappings
 int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int permissions) {
 
     uint32_t *pte;
@@ -118,7 +122,7 @@ int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, i
     }
     last = ((vir_addr + size - 1) & ~(PGESIZE - 1));
     vir = (vir_addr & ~(PGESIZE - 1));
-
+    
     while(1) {
         
         if ((pte = walk(kpage, vir, 1)) == 0) { 

@@ -19,7 +19,9 @@ extern uint32_t MEM_END;
 #define PGEOFFSET 12
 #define VPNMASK 0x3ff
 #define PGESIZE (1 << 12)
-#define MAXVA (KERNEL_BASE + 128*1024*1024)
+#define KERNEL_BASE 0x80000000
+#define MAXVA (KERNEL_BASE + 128*1024*1024) // 0x88000000
+//#define MAXVIRADDR (1 << (10 + 10 + 12 - 1))
 #define USERVEC (MAXVA - PGESIZE)
 #define UART0 0x10000000
 #define VIRTIO0 0x10001000
@@ -27,7 +29,6 @@ extern uint32_t MEM_END;
 #define CLINT_OFFSET 0x4000
 #define PLIC 0x0C000000
 #define PLICSIZE 0x400000
-#define KERNEL_BASE 0x80000000
 #define TRAPFRAME (USERVEC - PGESIZE)
 
 // Functions from pmm.c
