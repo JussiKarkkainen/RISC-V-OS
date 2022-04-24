@@ -41,7 +41,7 @@ uint32_t *kpagemake(void) {
     
     kmap(kpage, KERNEL_BASE, KERNEL_BASE, (uint32_t)text_end-KERNEL_BASE, PTE_R | PTE_X);
     
-    kmap(kpage, (uint32_t)text_end, (uint32_t)text_end, MAXVA-(uint32_t)text_end, PTE_R | PTE_W);
+//    kmap(kpage, (uint32_t)text_end, (uint32_t)text_end, MAXVA-(uint32_t)text_end, PTE_R | PTE_W);
      
     kmap(kpage, USERVEC, (uint32_t)uvec, PGESIZE, PTE_R | PTE_X);
     

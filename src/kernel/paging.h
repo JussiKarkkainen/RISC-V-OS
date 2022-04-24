@@ -3,10 +3,13 @@
 
 #include <stdint.h>
 
-
+/*
 extern uint32_t MEMORY_END, MEMORY_END, HEAP_START, TEXT_START, RODATA_START, DATA_START,
                 BSS_START, BSS_SIZE, KERNEL_STACK_START, HEAP_SIZE, TEXT_SIZE,
                 RODATA_SIZE, DATA_SIZE, KERNEL_STACK_SIZE;
+*/
+
+extern uint32_t mem_end;
 
 #define PTE_V (1 << 0)
 #define PTE_R (1 << 1)
