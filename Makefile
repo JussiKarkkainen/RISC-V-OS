@@ -3,42 +3,41 @@ USER=src/user
 LIBCSTRING=src/libc/string
 LIBCSTDIO=src/libc/stdio
 
-ASMOBJS = \
+OBJS = \
     $(KERNEL)/boot.o \
-    $(KERNEL)/ktrapvec.o \
-    $(KERNEL)/transfer.o \
-    $(KERNEL)/tvec.o \
-    $(KERNEL)/utrapvec.o
-
-COBJS = \
-    $(KERNEL)/disk.o \
-    $(KERNEL)/kernel.o \
-    $(KERNEL)/locks.o \
     $(KERNEL)/mstart.o \
+    $(KERNEL)/console.o \
+    $(LIBCSTDIO)/kprintf.o \
+    $(KERNEL)/uart.o \
+    $(KERNEL)/pmm.o \
+    $(KERNEL)/locks.o \
+    $(LIBCSTRING)/memset.o \
+    $(LIBCSTRING)/memcmp.o \
+    $(LIBCSTRING)/memcpy.o \
+    $(LIBCSTRING)/memmove.o \
+    $(LIBCSTRING)/strcpy.o \
+    $(LIBCSTRING)/strlen.o \
+    $(LIBCSTRING)/strncmp.o \
+    $(KERNEL)/kernel.o \
+    $(KERNEL)/disk.o \
     $(KERNEL)/pipes.o \
     $(KERNEL)/bufcache.o \
     $(KERNEL)/filesys.o \
     $(KERNEL)/paging.o \
-    $(KERNEL)/pmm.o \
     $(KERNEL)/sysfile.o \
     $(KERNEL)/trap.o \
-    $(KERNEL)/uart.o \
-    $(KERNEL)/console.o \
+    $(KERNEL)/ktrapvec.o \
+    $(KERNEL)/tvec.o \
     $(KERNEL)/file.o \
     $(KERNEL)/plic.o \
+    $(KERNEL)/utrapvec.o \
+    $(KERNEL)/transfer.o \
     $(KERNEL)/process.o \
     $(KERNEL)/syscall.o \
     $(KERNEL)/sysproc.o \
-    $(LIBCSTRING)/memcmp.o \
-    $(LIBCSTRING)/memcpy.o \
-    $(LIBCSTRING)/memmove.o \
-    $(LIBCSTRING)/memset.o \
-    $(LIBCSTRING)/strcpy.o \
-    $(LIBCSTRING)/strlen.o \
-    $(LIBCSTRING)/strncmp.o \
-    $(LIBCSTDIO)/kprintf.o \
     $(LIBCSTDIO)/putchar.o \
-    $(LIBCSTDIO)/asmprint.o
+    $(LIBCSTDIO)/asmprint.o \
+    $(KERNEL)/mem.o
 
 AS = riscv64-unknown-elf-as
 ASFLAGS = -march=rv32ima -mabi=ilp32
@@ -64,8 +63,8 @@ LD = riscv64-unknown-elf-ld
 LDFLAGS = -z max-page-size=4096
 LDFLAGS += -m elf32lriscv
 
-$(KERNEL)/kern: $(ASMOBJS) $(COBJS) $(KERNEL)/kernel.ld $(USER)/initcode
-	$(LD) $(LDFLAGS) -T $(KERNEL)/kernel.ld -o $(KERNEL)/kern $(COBJS) $(ASMOBJS)
+$(KERNEL)/kern: $(OBJS) $(KERNEL)/kernel.ld $(USER)/initcode
+	$(LD) $(LDFLAGS) -T $(KERNEL)/kernel.ld -o $(KERNEL)/kern $(OBJS)
 	$(OBJDUMP) -S $(KERNEL)/kern > $(KERNEL)/kernel.asm
 
 $(USER)/initcode: $(USER)/initcode.S
@@ -125,7 +124,7 @@ clean:
 	*/*.o */*.d */*.asm */*.sym \
 	$(USER)/initcode $(USER)/initcode.out $(KERNEL)/kern fs.img \
 	src/makefs $(USER)/usyscall.S \
-	$(UPROGS) $(COBJS) $(UOBJS) $(ASMOBJS)
+	$(UPROGS) $(OBJS) $(UOBJS) 
 
 GDBPORT = $(shell expr `id -u` % 5000 + 25000)
 QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
