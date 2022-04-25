@@ -42,6 +42,12 @@ OBJS = \
 AS = riscv64-unknown-elf-as
 ASFLAGS = -march=rv32ima -mabi=ilp32
 
+CXX = riscv64-unknown-elf-gcc
+CXXFLAGS = -Wall -Wextra
+CXXFLAGS += -mcmodel=medany
+CXXFLAGS += -nostdlib -ffreestanding -lgcc
+CXXFLAGS += -march=rv32ima -mabi=ilp32
+
 CC = riscv64-unknown-elf-gcc
 CFLAGS = -Wall -Wextra
 CFLAGS += -mcmodel=medany 
