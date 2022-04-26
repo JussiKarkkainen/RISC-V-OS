@@ -51,7 +51,7 @@ void uart_putc(int c);
 int uart_getc(void);
 
 // Console init function
-int console_init(void);
+void console_init(void);
 void console_putc(int c);
 int console_write(int user_src, uint32_t src, int n);
 int console_read(int user_dst, uint32_t dst, int n);

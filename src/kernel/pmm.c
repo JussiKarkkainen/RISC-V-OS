@@ -40,12 +40,10 @@ void pmm_init(void) {
 
 uint32_t *kalloc(void) {
    
-    int num_pages = HEAP_SIZE / page_size;
+    uint32_t num_pages = HEAP_SIZE / page_size;
     uint32_t *start_addr = (uint32_t *)MEM_END;
     int bitmap_size = HEAP_SIZE / page_size;
     alloc_start = align(MEM_END + bitmap_size, page_align);
-    
-    uint32_t *ptr = start_addr;
     
     acquire_lock(&pmm_lock);
 
@@ -53,7 +51,7 @@ uint32_t *kalloc(void) {
         if (!IS_SET(i)) {
             SET_BIT(i);
             release_lock(&pmm_lock);
-            return (alloc_start + (i * page_size));
+            return (uint32_t *)(alloc_start + (i * page_size));
         }
     }
     release_lock(&pmm_lock);

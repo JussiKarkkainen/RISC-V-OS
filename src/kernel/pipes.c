@@ -61,17 +61,17 @@ int pipewrite(struct pipe *p, int n, uint32_t addr) {
         }
         else {
             char ch;
-            if (copyto(proc->pagetable, &ch, addr + 1, 1) == -1) {
+            if (copyto(proc->pagetable, &ch, addr + i, 1) == -1) {
                 break;
+            }
             p->data[p->num_write++ % PIPESIZE] = ch;
             i++;
-            }
         }
-        wakeup(&p->num_read);
-        release_lock(&p->lock);
+    }
+    wakeup(&p->num_read);
+    release_lock(&p->lock);
 
-        return i;
-    }   
+    return i;   
 }
 
 void pipe_close(struct pipe *pi, int writable) {

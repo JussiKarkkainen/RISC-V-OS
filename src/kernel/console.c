@@ -139,7 +139,7 @@ void console_intr(int c) {
     release_lock(&console.lock);
 }
 
-int console_init(void) {
+void console_init(void) {
 
     initlock(&console.lock, "console lock");
 

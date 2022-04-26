@@ -11,10 +11,6 @@ extern char uvec[];
 
 extern char text_end[];
 
-struct process process[MAXPROC];
-
-struct cpu cpu[MAXCPUS];
-
 static inline void flush_tlb(void) {
     asm volatile("sfence.vma zero, zero");
 }
@@ -28,6 +24,7 @@ static inline void satp_write(uint32_t *kpage) {
 // create the kernel pagetable
 uint32_t *kpagemake(void) {
     uint32_t *kpage = kalloc();
+    memset(kpage, 0, PGESIZE);
 
     // Create a virtual memory map
     kmap(kpage, UART0, UART0, PGESIZE, PTE_R | PTE_W);
@@ -144,10 +141,11 @@ int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, i
 
 uint32_t *upaging_create(void) {
     uint32_t *pagetable;
-    pagetable = zalloc();
+    pagetable = kalloc();
     if (pagetable == 0) {
-        panic("pagetable == 0, upaging_create");
+        return 0;
     }
+    memset(pagetable, 0, PGESIZE);
     return pagetable;
 }
 
@@ -159,7 +157,8 @@ void upaging_init(uint32_t *pagetable, unsigned char *src, unsigned int size) {
         panic("size >= PGESIZE, upaging_init()");
     }
 
-    mem = zalloc();
+    mem = kalloc();
+    memset(mem, 0, PGESIZE);
     kmap(pagetable, 0, (uint32_t)mem, PGESIZE, PTE_W | PTE_R | PTE_X | PTE_U);
 
     memmove(mem, src, size);
@@ -177,7 +176,7 @@ uint32_t uvmalloc(uint32_t *pagetable, uint32_t oldsize, uint32_t newsize) {
 
     oldsize = (((oldsize) + PGESIZE-1) & ~(PGESIZE-1));      // Round up to pagesize
     for (a = oldsize; a < newsize; a += PGESIZE) {
-        mem = zalloc();
+        mem = kalloc();
         if (mem == 0) {
             uvmdealloc(pagetable, a, oldsize);
             return 0;

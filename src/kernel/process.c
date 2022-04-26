@@ -129,7 +129,7 @@ struct process *alloc_process(void) {
         proc->process_id = alloc_pid();
         proc->state = USED;
 
-        if ((proc->trapframe = (struct trapframe *)zalloc()) == 0) {
+        if ((proc->trapframe = (struct trapframe *)kalloc()) == 0) {
             freeproc(proc);
             release_lock(&proc->lock);
             return 0;
