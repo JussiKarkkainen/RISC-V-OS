@@ -21,9 +21,8 @@ extern uint32_t MEM_END;
 #define PGESIZE (1 << 12)
 #define KERNEL_BASE 0x80000000
 #define MAXVA 0x86400000
-//#define MAXVA (KERNEL_BASE + 128*1024*1024) // 0x88000000
 //#define MAXVIRADDR (1 << (10 + 10 + 12 - 1))
-#define USERVEC (0x88000000 - PGESIZE)
+#define USERVEC (0xffffffff - PGESIZE)
 #define UART0 0x10000000
 #define VIRTIO0 0x10001000
 #define CLINT 0x02000000

@@ -11,7 +11,7 @@
 
 // This should be executed in supervisor mode, boot.S should first call 
 // start() for setup before tranfering control to enter().
-volatile static int started = 0;
+static volatile int started = 0;
 
 void enter(void) {  
     

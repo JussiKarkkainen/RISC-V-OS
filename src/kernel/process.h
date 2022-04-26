@@ -72,8 +72,6 @@ struct process {
     char name[16];    
 };
 
-struct process p[MAXPROC];
-struct cpu cpus[MAXCPUS];
 
 struct trapframe {
     uint32_t kernel_satp;

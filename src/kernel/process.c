@@ -8,6 +8,8 @@
 #include "filesys.h"
 #include "file.h"
 
+struct process p[MAXPROC];
+struct cpu cpus[MAXCPUS];
 
 extern void forkret(void);
 void transfer(struct context*, struct context*);
@@ -22,6 +24,7 @@ extern char uvec[];
 
 int nextpid = 1;
 
+// Map each processes kernel stack
 void map_kstack(uint32_t *pagetable) {
     struct process *proc;
 
@@ -42,7 +45,7 @@ void process_init(void) {
 
     for (proc = p; proc < &p[MAXPROC]; proc++) {
         initlock(&proc->lock, "proc");
-        proc->kernel_stack = (proc - p);
+        proc->kernel_stack = (USERVEC - ((int)(proc - p) + 1) * 2 * PGESIZE);;
     }
 }
 
@@ -322,7 +325,7 @@ void cpu_scheduler(void) {
     struct process *proc;
     struct cpu *cpu = get_cpu_struct();
     cpu->proc = 0;
-  
+    
     while (1) {
         enable_intr();
     
@@ -334,9 +337,8 @@ void cpu_scheduler(void) {
                 
                 // Transfer replaces the cpus pc register (along with other registers) with the processes pc, 
                 // which leads to cpu executing said process
-                kprintf("process->name: %s\n", proc->name);           
-                kprintf("process->pagetable %p\n", proc->context.ra);
-                kprintf("cpu->context.sp %p\n", proc->context.sp);
+                kprintf("process->context.ra %p\n", proc->context.ra);
+                kprintf("cpu->context.ra %p\n", cpu->context.sp);
                 transfer(&cpu->context, &proc->context);
                 cpu->proc = 0;
             }
