@@ -189,7 +189,7 @@ free_chain(int i)
 
 void disk_read_write(struct buffer *buf, int write) {
     
-    uint32_t sector = buf->blockno * (BUFFER_SIZE / 512);
+    uint64_t sector = buf->blockno * (BUFFER_SIZE / 512);
     acquire_lock(&disk.disk_lock);
 
     int idx[3];

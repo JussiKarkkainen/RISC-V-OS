@@ -59,7 +59,7 @@ struct disk_used_elem {
 struct disk_block_req {
     uint32_t type;
     uint32_t reserved;
-    uint32_t sector;
+    uint64_t sector;
 };
 
 struct disk_avail {

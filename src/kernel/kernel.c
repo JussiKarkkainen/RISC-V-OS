@@ -35,7 +35,7 @@ void enter(void) {
         disk_init();        // Initialize virtio disk
         init_user();
         __sync_synchronize();
-//      started = 1;    
+//        started = 1;
     }
     else {
         while (started == 0) {

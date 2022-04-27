@@ -20,9 +20,9 @@ extern uint32_t MEM_END;
 #define VPNMASK 0x3ff
 #define PGESIZE (1 << 12)
 #define KERNEL_BASE 0x80000000
-#define MAXVA 0x86400000
-//#define MAXVIRADDR (1 << (10 + 10 + 12 - 1))
-#define USERVEC (0xffffffff - PGESIZE)
+#define MAXVA 0xffffffff
+#define PHYSTOP 0x88000000
+#define USERVEC (MAXVA - PGESIZE + 1)
 #define UART0 0x10000000
 #define VIRTIO0 0x10001000
 #define CLINT 0x02000000

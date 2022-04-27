@@ -18,7 +18,6 @@
 struct context {
     uint32_t ra;
     uint32_t sp;
-
     uint32_t s0;
     uint32_t s1;
     uint32_t s2;
@@ -72,6 +71,7 @@ struct process {
     char name[16];    
 };
 
+extern struct cpu cpus[MAXCPUS];
 
 struct trapframe {
     uint32_t kernel_satp;

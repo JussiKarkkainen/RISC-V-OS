@@ -38,7 +38,7 @@ uint32_t *kpagemake(void) {
     
     kmap(kpage, KERNEL_BASE, KERNEL_BASE, (uint32_t)text_end-KERNEL_BASE, PTE_R | PTE_X);
     
-    kmap(kpage, (uint32_t)text_end, (uint32_t)text_end, MAXVA-(uint32_t)text_end, PTE_R | PTE_W);
+    kmap(kpage, (uint32_t)text_end, (uint32_t)text_end, PHYSTOP-(uint32_t)text_end, PTE_R | PTE_W);
      
     kmap(kpage, USERVEC, (uint32_t)uvec, PGESIZE, PTE_R | PTE_X);
     
@@ -60,12 +60,12 @@ void init_paging(void) {
 
 // Finds the PTE for a virtual address
 uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc) {
-   /* 
-    if (vir_addr >= (uint32_t)MAXVIRADDR) {
+    
+    if (vir_addr >= MAXVA) {
         panic("vir_addr out of range");
     }
-    */
-    for (int i = 2; i > 0; i--) {
+    
+    for (int i = 1; i > 0; i--) {
 
         uint32_t *pte = &pagetable[((vir_addr >> (PGEOFFSET + (10 * i))) & VPNMASK)];
         
