@@ -31,7 +31,7 @@ OBJS = \
     $(KERNEL)/file.o \
     $(KERNEL)/plic.o \
     $(KERNEL)/utrapvec.o \
-    $(KERNEL)/transfer.o \
+    $(KERNEL)/transfer32.o \
     $(KERNEL)/process.o \
     $(KERNEL)/syscall.o \
     $(KERNEL)/sysproc.o \
