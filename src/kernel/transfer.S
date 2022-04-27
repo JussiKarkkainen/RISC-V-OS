@@ -25,7 +25,6 @@ transfer:
     lw ra, 0(a1)
     lw sp, 8(a1)
     lw s0, 16(a1)
-    call asmprintf
     lw s1, 24(a1)
     lw s2, 32(a1)
     lw s3, 40(a1)
