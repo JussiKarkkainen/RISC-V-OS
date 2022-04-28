@@ -31,7 +31,7 @@ void timer_init(void) {
     
     // Ask clint for timer interrupt, clint is memory-mapped to 0x2000000.
     int interval = 1000000;
-    *(uint32_t*)CLINT_MTIMECMP(hart_id) = *(uint32_t*)CLINT_MTIME + interval;
+    *(uint32_t*)CLINT_MTIMECMP(hart_id) = *(uint64_t*)CLINT_MTIME + interval;
     
     // prepare scratch register
     uint32_t *scratch_ptr = &scratch[hart_id][0];

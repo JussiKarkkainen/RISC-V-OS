@@ -28,12 +28,14 @@ uint32_t *kpagemake(void) {
 
     // Create a virtual memory map
     kmap(kpage, UART0, UART0, PGESIZE, PTE_R | PTE_W);
-    
+   /* 
     kprintf("UART0 %p\nVIRTIO %p\nPLIC %p\nKERNEL_BASE %p\nTEXT_END %p\nUSERVEC %p\nMAXVA %p\n", 
             UART0, VIRTIO0, PLIC, KERNEL_BASE, (uint32_t)text_end, (uint32_t)uvec, MAXVA);
-    
+    */
     kmap(kpage, VIRTIO0, VIRTIO0, PGESIZE, PTE_R | PTE_W);
     
+    kmap(kpage, CLINT, CLINT, 0x10000, PTE_R | PTE_W);
+
     kmap(kpage, PLIC, PLIC, PLICSIZE, PTE_R | PTE_W);
     
     kmap(kpage, KERNEL_BASE, KERNEL_BASE, (uint32_t)text_end-KERNEL_BASE, PTE_R | PTE_X);
