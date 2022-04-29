@@ -66,7 +66,7 @@ void init_user(void) {
     struct process *proc;
     proc = alloc_process();
     initproc = proc;
-    
+    kprintf("proc->pagetable %p\n", proc->pagetable); 
     upaging_init(proc->pagetable, initcode, sizeof(initcode)); 
     proc->mem_size = PGESIZE;
     
@@ -141,9 +141,10 @@ struct process *alloc_process(void) {
             return 0;
         }
         memset(&proc->context, 0, sizeof(proc->context));
+        kprintf("forkret %p\n", (uint32_t)forkret);
+        kprintf("sp %p\n", (uint32_t)proc->kernel_stack + PGESIZE);
         proc->context.ra = (uint32_t)forkret;
         proc->context.sp = (uint32_t)proc->kernel_stack + PGESIZE;
-
         return proc;
 }   
 
@@ -263,7 +264,7 @@ int wait(uint32_t addrs) {
 
 void forkret(void) {
     
-    int first = 1;
+    static int first = 1;
     release_lock(&get_process_struct()->lock);
 
     if (first) {
@@ -336,10 +337,11 @@ void cpu_scheduler(void) {
                 
                 // Transfer replaces the cpus pc register (along with other registers) with the processes pc, 
                 // which leads to cpu executing said process
-                kprintf("proc->context.sp %p\nra %p\ns0 %p\ns1 %p\ns2 %p\ns3 %p\ns4 %p\ns5 %p\ns6 %p\ns7 %p\ns8 %p\ns9 %p\ns10 %p\ns11 %p\n", 
+                kprintf("sp %p\nra %p\ns0 %p\ns1 %p\ns2 %p\ns3 %p\ns4 %p\ns5 %p\ns6 %p\ns7 %p\ns8 %p\ns9 %p\ns10 %p\ns11 %p\n", 
                          proc->context.sp, proc->context.ra, proc->context.s0, proc->context.s1, proc->context.s2, proc->context.s3, 
                          proc->context.s4, proc->context.s5, proc->context.s6, proc->context.s7, proc->context.s8, proc->context.s9, 
                          proc->context.s10, proc->context.s11);
+       
                 transfer(&cpu->context, &proc->context);
                 kprintf("cpu->proc->name %s\n", cpu->proc->name);           
                 cpu->proc = 0;
