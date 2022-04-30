@@ -1,9 +1,9 @@
 .section .rodata
-
+/*
 .globl MEM_END
 MEM_END: .word mem_end
 
-/*
+
 .globl MEMORY_END
 MEMORY_END: .word memory_end
 

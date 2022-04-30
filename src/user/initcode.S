@@ -16,7 +16,7 @@ exit:
 init:
     .string "/init\0"
 
-.p2align 2
+.p2align 5
 
 argv:
     .long init

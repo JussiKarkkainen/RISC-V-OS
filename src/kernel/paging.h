@@ -9,7 +9,7 @@ extern uint32_t MEMORY_END, MEMORY_END, HEAP_START, TEXT_START, RODATA_START, DA
                 RODATA_SIZE, DATA_SIZE, KERNEL_STACK_SIZE;
 */
 
-extern uint32_t MEM_END;
+extern char mem_end[];
 
 #define PTE_V (1 << 0)
 #define PTE_R (1 << 1)
@@ -33,9 +33,9 @@ extern uint32_t MEM_END;
 
 // Functions from pmm.c
 void pmm_init(void);
-uint32_t *kalloc(void);
-uint32_t *zalloc(void);
-void kfree(uint32_t *ptr);
+void *kalloc(void);
+//uint32_t *zalloc(void);
+void kfree(void *ptr);
 void test_alloc(void);
 
 // Functions from paging.c

@@ -237,7 +237,7 @@ int uvmcopy(uint32_t *old, uint32_t *new, uint32_t size) {
         }
         pa = (((*pte) >> 10) << 12);
         flags = ((*pte) & 0x3ff);
-        if ((mem = zalloc()) == 0) {
+        if ((mem = kalloc()) == 0) {
             goto err;
         }
         memmove(mem, (char*)pa, PGESIZE);

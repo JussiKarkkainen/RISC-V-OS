@@ -13,7 +13,7 @@ int pipealloc(struct file **f0, struct file **f1) {
     if ((*f0 = file_alloc()) == 0 || (*f1 = file_alloc()) == 0) {
         goto bad;
     }
-    if ((pi = (struct pipe*)zalloc()) == 0) {
+    if ((pi = (struct pipe*)kalloc()) == 0) {
         goto bad;
     }
     pi->read_open = 1;

@@ -234,7 +234,7 @@ uint32_t sys_exec(void) {
             argv[i] = 0;
             break;
         }
-        argv[i] = (char *)zalloc();
+        argv[i] = (char *)kalloc();
         if (argv[i] == 0) {
             goto bad;
         }

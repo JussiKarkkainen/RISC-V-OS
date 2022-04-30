@@ -334,14 +334,16 @@ void cpu_scheduler(void) {
             if (proc->state == RUNNABLE) {
                 proc->state = RUNNING;
                 cpu->proc = proc;
-                
+     /*           
                 // Transfer replaces the cpus pc register (along with other registers) with the processes pc, 
                 // which leads to cpu executing said process
                 kprintf("sp %p\nra %p\ns0 %p\ns1 %p\ns2 %p\ns3 %p\ns4 %p\ns5 %p\ns6 %p\ns7 %p\ns8 %p\ns9 %p\ns10 %p\ns11 %p\n", 
                          proc->context.sp, proc->context.ra, proc->context.s0, proc->context.s1, proc->context.s2, proc->context.s3, 
                          proc->context.s4, proc->context.s5, proc->context.s6, proc->context.s7, proc->context.s8, proc->context.s9, 
                          proc->context.s10, proc->context.s11);
-       
+                
+                procdump();
+*/
                 transfer(&cpu->context, &proc->context);
                 kprintf("cpu->proc->name %s\n", cpu->proc->name);           
                 cpu->proc = 0;
@@ -520,7 +522,7 @@ void procdump(void) {
     [UNUSED]    "unused",
     [SLEEPING]  "sleep ",
     [RUNNABLE]  "runble",
-    [RUNNING]   "run   ",
+    [RUNNING]   "running   ",
     [ZOMBIE]    "zombie"
     };
 
