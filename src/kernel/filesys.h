@@ -80,7 +80,8 @@ struct direntry {
 
 // Functions from bufcache.c
 void buffer_init(void);
-struct buffer *buffer_read(int dev, int blockno);
+struct buffer *buffer_get(unsigned int dev, unsigned int blockno);
+struct buffer *buffer_read(unsigned int dev, unsigned int blockno);
 void buffer_write(struct buffer *buf);
 void buffer_release(struct buffer *buf);
 void dec_buf_refcount(struct buffer *buf);

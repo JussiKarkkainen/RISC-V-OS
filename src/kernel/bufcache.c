@@ -29,7 +29,7 @@ void buffer_init(void) {
     struct buffer *buf;
 
     // Initialize lock
-    initlock(&buffer_cache.lock, "buffer_cache lock");
+    initlock(&buffer_cache.lock, "buffer_cache");
 
     // Create a linked list of buffers
     buffer_cache.list_head.prev = &buffer_cache.list_head;
@@ -47,45 +47,53 @@ void buffer_init(void) {
 
 
 // Read from disk
-struct buffer *buffer_read(int dev, int blockno) {
+struct buffer *buffer_get(unsigned int dev, unsigned int blockno) {
 
     struct buffer *buf;
     acquire_lock(&buffer_cache.lock);
-    int is_cached = 0;
     
     // Check if buffer is cached
     for (buf = buffer_cache.list_head.next; buf != &buffer_cache.list_head; buf = buf->next) {
-        if (((int)buf->dev == dev) && (buf->blockno == blockno)) {
+        if ((buf->dev == dev) && (buf->blockno == blockno)) {
             buf->refcount++;
             release_lock(&buffer_cache.lock);
             acquire_sleeplock(&buf->lock);
-            is_cached = 1;
+            return buf;
         }
     }
     
     // Buffer isn't cached, recycle least recently used buffer
-    if (!is_cached) {
-        for (buf = buffer_cache.list_head.prev; buf != &buffer_cache.list_head; buf = buf->prev) {
-            if (buf->refcount == 0) {
-                buf->valid = 0;
-                buf->dev = dev;
-                buf->blockno = blockno;
-                buf->refcount = 0;
-                release_lock(&buffer_cache.lock);
-                acquire_sleeplock(&buf->lock);
-            }
+    for (buf = buffer_cache.list_head.prev; buf != &buffer_cache.list_head; buf = buf->prev) {
+        if (buf->refcount == 0) {
+            buf->valid = 0;
+            buf->dev = dev;
+            buf->blockno = blockno;
+            buf->refcount = 1;
+            release_lock(&buffer_cache.lock);
+            acquire_sleeplock(&buf->lock);
+            return buf;
         }
     }
+    panic("buffer_get, no buffers");
+}
 
+struct buffer *buffer_read(unsigned int dev, unsigned int blockno) {
+    struct buffer *buf;
+
+    buf = buffer_get(dev, blockno);
     if (!buf->valid) {
         disk_read_write(buf, 0);
         buf->valid = 1;
     }
-    return buf; 
+    return buf;
 }
+
 
 // Write to disk
 void buffer_write(struct buffer *buf) {
+    if (!is_holding_sleeplock) {
+        panic("buffer_write");
+    }
     disk_read_write(buf, 1);
 }
 

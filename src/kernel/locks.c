@@ -45,6 +45,7 @@ void release_lock(struct spinlock *lock) {
     // If current cpu doesn't have the lock, panic
     int current_holdr = (lock->locked && (lock->cpu = get_cpu_struct()));
     if (!current_holdr) {
+        kprintf("lock %s\n", lock->name);
         panic("release_lock, not current holder");
     }
     
