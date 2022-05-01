@@ -66,13 +66,12 @@ void init_user(void) {
     struct process *proc;
     proc = alloc_process();
     initproc = proc;
-    kprintf("proc->pagetable %p\n", proc->pagetable); 
+    
     upaging_init(proc->pagetable, initcode, sizeof(initcode)); 
     proc->mem_size = PGESIZE;
     
     proc->trapframe->saved_pc = 0;
     proc->trapframe->kernel_sp = PGESIZE;
-
     strcpy(proc->name, "initcode", sizeof(proc->name));
     proc->cwd = name_inode("/");
 
@@ -141,8 +140,6 @@ struct process *alloc_process(void) {
             return 0;
         }
         memset(&proc->context, 0, sizeof(proc->context));
-        kprintf("forkret %p\n", (uint32_t)forkret);
-        kprintf("sp %p\n", (uint32_t)proc->kernel_stack + PGESIZE);
         proc->context.ra = (uint32_t)forkret;
         proc->context.sp = (uint32_t)proc->kernel_stack + PGESIZE;
         return proc;
@@ -334,6 +331,7 @@ void cpu_scheduler(void) {
             if (proc->state == RUNNABLE) {
                 proc->state = RUNNING;
                 cpu->proc = proc;
+     
      /*           
                 // Transfer replaces the cpus pc register (along with other registers) with the processes pc, 
                 // which leads to cpu executing said process
@@ -356,7 +354,7 @@ void cpu_scheduler(void) {
 void scheduler(void) {
     int intr_prev_state;
     struct process *proc = get_process_struct();
-    kprintf("name %s\n", get_cpu_struct()->proc->lock.name);
+    kprintf("name %d\n", get_cpu_struct()->depth_lock_intr_disable);
     if (!is_holding(&proc->lock)) {
         panic("scheduler, is_holding");
     }
@@ -392,7 +390,8 @@ void sleep(void *sleep_channel, struct spinlock *lock) {
     // Put process to sleep
     proc->sleep_channel = sleep_channel;
     proc->state = SLEEPING;
-    kprintf("lock %s\n", lock->name); 
+    
+    kprintf("lockis %s\n", lock->name); 
     scheduler();
 
     proc->sleep_channel = 0;
@@ -513,6 +512,7 @@ struct process *get_process_struct(void) {
     lock_intr_disable();
     struct cpu *c = get_cpu_struct();
     struct process *p = c->proc;
+    lock_intr_enable();
     return p;
 }
 

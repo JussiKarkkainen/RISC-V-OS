@@ -43,9 +43,7 @@ void acquire_lock(struct spinlock *lock) {
 
 void release_lock(struct spinlock *lock) {
     // If current cpu doesn't have the lock, panic
-    int current_holdr = (lock->locked && (lock->cpu = get_cpu_struct()));
-    if (!current_holdr) {
-        kprintf("lock %s\n", lock->name);
+    if (!is_holding(lock)) {
         panic("release_lock, not current holder");
     }
     
@@ -56,7 +54,7 @@ void release_lock(struct spinlock *lock) {
     // Same as lock->locked = 0, except its atomic 
     __sync_lock_release(&lock->locked);
 
-    lock_intr_disable();
+    lock_intr_enable();
 }
 
 int is_holding(struct spinlock *lock) {
