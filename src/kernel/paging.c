@@ -109,13 +109,13 @@ uint32_t fetch_pa_addr(uint32_t *pagetable, uint32_t va) {
     return pa;
 }
 
-uint32_t fetch_kpa(uint32_t pa) {
+uint32_t fetch_kpa(uint32_t va) {
     
-    uint32_t off = va %PGESIZE;
-    uint32_t *pte:
+    uint32_t off = va % PGESIZE;
+    uint32_t *pte;
     uint32_t pa;
 
-    pte = walk(kpage, va, 0);
+    pte = walk(kpagetable, va, 0);
     if (pte == 0) {
         panic("pte = 0, fetch_kpa");
     }

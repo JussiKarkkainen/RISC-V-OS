@@ -48,7 +48,7 @@ void buffer_init(void) {
 
 // Read from disk
 struct buffer *buffer_get(unsigned int dev, unsigned int blockno) {
-
+    
     struct buffer *buf;
     acquire_lock(&buffer_cache.lock);
     

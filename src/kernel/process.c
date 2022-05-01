@@ -356,7 +356,7 @@ void cpu_scheduler(void) {
 void scheduler(void) {
     int intr_prev_state;
     struct process *proc = get_process_struct();
-
+    kprintf("name %s\n", get_cpu_struct()->proc->lock.name);
     if (!is_holding(&proc->lock)) {
         panic("scheduler, is_holding");
     }
@@ -372,7 +372,7 @@ void scheduler(void) {
 
     intr_prev_state = get_cpu_struct()->intr_prev_state;
     transfer(&proc->context, &get_cpu_struct()->context);
-    get_cpu_struct()->depth_lock_intr_disable = intr_prev_state;
+    get_cpu_struct()->intr_prev_state = intr_prev_state;
 }
 
 void yield_process(void) {
@@ -392,7 +392,7 @@ void sleep(void *sleep_channel, struct spinlock *lock) {
     // Put process to sleep
     proc->sleep_channel = sleep_channel;
     proc->state = SLEEPING;
-
+    kprintf("lock %s\n", lock->name); 
     scheduler();
 
     proc->sleep_channel = 0;

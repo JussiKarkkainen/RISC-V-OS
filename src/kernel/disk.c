@@ -13,21 +13,22 @@ struct disk {
 
     char pages[2 * PGESIZE];
 
+    struct spinlock disk_lock;
+    
+    struct disk_block_req ops[NUM];
+    struct disk_avail *avail;
+    struct disk_used *used;
+    struct disk_desc *desc;
+    
     char free[8];
     uint16_t used_idx;
-    struct spinlock disk_lock;
 
     struct {
         struct buffer *b;
         char status;
     }info[NUM];
-    
-    struct disk_desc *desc;
-    struct disk_block_req ops[NUM];
-    struct disk_avail *avail;
-    struct disk_used *used;
-}__attribute__((aligned (PGESIZE))) disk;
 
+}__attribute__((aligned (PGESIZE))) disk;
 
 // Configuring the device:
 // 1. Reset the device
@@ -188,7 +189,7 @@ free_chain(int i)
 }
 
 void disk_read_write(struct buffer *buf, int write) {
-    
+   
     uint64_t sector = buf->blockno * (BUFFER_SIZE / 512);
     acquire_lock(&disk.disk_lock);
 
@@ -202,7 +203,10 @@ void disk_read_write(struct buffer *buf, int write) {
 
     // Format descriptors
     struct disk_block_req *buf0 = &disk.ops[idx[0]];
-    
+
+
+//    struct disk_block_req buf0;
+
     if (write) {
         buf0->type = DISK_BLOCK_WRITE;
     }
@@ -211,6 +215,13 @@ void disk_read_write(struct buffer *buf, int write) {
     
     buf0->reserved = 0;
     buf0->sector = sector;
+/*
+    disk.desc[idx[0]].addr = fetch_kpa((uint32_t)&buf0);
+    disk.desc[idx[0]].len = sizeof(buf0);
+    disk.desc[idx[0]].flags = DESC_NEXT;
+    disk.desc[idx[0]].next = idx[1];
+
+*/
 
     disk.desc[idx[0]].addr = (uint32_t) buf0;
     disk.desc[idx[0]].len = sizeof(struct disk_block_req);
@@ -219,6 +230,8 @@ void disk_read_write(struct buffer *buf, int write) {
 
     disk.desc[idx[1]].addr = (uint32_t) buf->data;
     disk.desc[idx[1]].len = BLOCK_SIZE;
+
+
     if(write) {
         disk.desc[idx[1]].flags = 0; // device reads b->data
     }
@@ -228,8 +241,8 @@ void disk_read_write(struct buffer *buf, int write) {
     disk.desc[idx[1]].flags |= DESC_NEXT;
     disk.desc[idx[1]].next = idx[2];
 
-    disk.info[idx[0]].status = 0xff; // device writes 0 on success
-    disk.desc[idx[2]].addr = (uint32_t) &disk.info[idx[0]].status;
+    disk.info[idx[0]].status = 0; // device writes 0 on success
+    disk.desc[idx[2]].addr = (uint32_t) &disk.info[idx[0]].status & 0xffffffff;
     disk.desc[idx[2]].len = 1;
     disk.desc[idx[2]].flags = DESC_WRITE; // device writes the status
     disk.desc[idx[2]].next = 0; 
@@ -247,10 +260,11 @@ void disk_read_write(struct buffer *buf, int write) {
 
     __sync_synchronize();
 
-    *(base_addr + DISK_QUEUE_NOTIFY) = 0; // value is queue number
+    *R(DISK_QUEUE_NOTIFY) = 0; // value is queue number
 
     // Wait for virtio_disk_intr() to say request has finished.
     while(buf->disk == 1) {
+        kprintf("sleep\n");
         sleep(buf, &disk.disk_lock);
     }
 

@@ -94,6 +94,16 @@ int is_holding_sleeplock(struct sleeplock *lock) {
     return i;
 }
 
+void lock_intr_disable(void) {
+    int intr_state = get_intr();
+    disable_intr();
+
+    if (get_cpu_struct()->depth_lock_intr_disable == 0) {
+        get_cpu_struct()->intr_prev_state = intr_state;
+    }
+    get_cpu_struct()->depth_lock_intr_disable += 1;
+}
+
 // Functions for matched interrupt enabling and disabling
 void lock_intr_enable(void) {
     struct cpu *c = get_cpu_struct();
@@ -107,14 +117,4 @@ void lock_intr_enable(void) {
     if ((c->depth_lock_intr_disable == 0) && (c->intr_prev_state)) {
         enable_intr();
     }
-}
-
-void lock_intr_disable(void) {
-    int intr_state = get_intr();
-    disable_intr();
-
-    if (get_cpu_struct()->depth_lock_intr_disable == 0) {
-        get_cpu_struct()->intr_prev_state = intr_state;
-    }
-    get_cpu_struct()->depth_lock_intr_disable += 1;
 }

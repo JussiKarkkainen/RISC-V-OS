@@ -40,7 +40,7 @@
 #define VRING_DESC_F_NEXT 1
 
 #define NUM 8
-#define BUFFER_SIZE 512
+#define BUFFER_SIZE 1024
 #define NUMBUF 30
 
 #define DISK_BLOCK_WRITE 1
