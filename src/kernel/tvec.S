@@ -14,6 +14,7 @@ tvec:
     lw a1, 16(a0)
     lw a2, 20(a0)
     lw a3, 0(a1)
+    lw a4, 4(a1)
     add a3, a3, a2
     sltu a2, a3, a2
     add a4, a4, a2

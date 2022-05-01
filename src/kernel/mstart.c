@@ -22,7 +22,7 @@ void tvec();
 
 __attribute__((aligned (16))) char stacks[4096 * MAXCPUS];
 
-uint32_t scratch[MAXCPUS][5];
+uint32_t scratch[MAXCPUS * 32];
 
 void timer_init(void) {
     
@@ -30,13 +30,13 @@ void timer_init(void) {
     uint32_t hart_id = get_mhartid();
     
     // Ask clint for timer interrupt, clint is memory-mapped to 0x2000000.
-    int interval = 1000000;
-    *(uint32_t*)CLINT_MTIMECMP(hart_id) = *(uint32_t*)CLINT_MTIME + interval;
+    uint32_t interval = 1000000;
+    *(uint64_t*)CLINT_MTIMECMP(hart_id) = *(uint64_t*)CLINT_MTIME + interval;
     
     // prepare scratch register
-    uint32_t *scratch_ptr = &scratch[hart_id][0];
-    scratch_ptr[3] = (0x2000000 + 0x4000 + (8 * hart_id));
-    scratch_ptr[4] = interval;
+    uint32_t *scratch_ptr = &scratch[32 * hart_id];
+    scratch_ptr[4] = CLINT_MTIMECMP(hart_id);
+    scratch_ptr[5] = interval;
     write_mscratch((uint32_t)scratch_ptr);
 
 
