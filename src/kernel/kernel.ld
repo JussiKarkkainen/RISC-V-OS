@@ -35,9 +35,11 @@ SECTIONS
 
   .bss : {
     . = ALIGN(16);
+    PROVIDE(bss_start = .);
     *(.sbss .sbss.*) /* do not need to distinguish this from .bss */
     . = ALIGN(16);
     *(.bss .bss.*)
+    PROVIDE(bss_end = .);
   }
 
   PROVIDE(mem_end = .);
