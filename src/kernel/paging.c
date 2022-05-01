@@ -109,6 +109,23 @@ uint32_t fetch_pa_addr(uint32_t *pagetable, uint32_t va) {
     return pa;
 }
 
+uint32_t fetch_kpa(uint32_t pa) {
+    
+    uint32_t off = va %PGESIZE;
+    uint32_t *pte:
+    uint32_t pa;
+
+    pte = walk(kpage, va, 0);
+    if (pte == 0) {
+        panic("pte = 0, fetch_kpa");
+    }
+    if ((*pte && PTE_V) == 0) {
+        panic("PTE_V == 0, fetch_kpa");
+    }
+    pa = ((*pte << 10) << 12);
+    return pa + off;
+}
+
 // Install PTEs for new mappings
 int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int permissions) {
 
