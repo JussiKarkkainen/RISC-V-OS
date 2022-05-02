@@ -238,7 +238,7 @@ void uvmclear(uint32_t *pagetable, uint32_t va) {
     *pte &= ~PTE_U;
 }
 
-int uvmcopy(uint32_t *old, uint32_t *new, uint32_t size) {
+int uvmcopy(uint32_t *old, uint32_t *new_addr, uint32_t size) {
 
     uint32_t *pte;
     uint32_t pa, i;
@@ -258,7 +258,7 @@ int uvmcopy(uint32_t *old, uint32_t *new, uint32_t size) {
             goto err;
         }
         memmove(mem, (char*)pa, PGESIZE);
-        if (kmap(new, i, PGESIZE, (uint32_t)mem, flags) != 0) {
+        if (kmap(new_addr, i, PGESIZE, (uint32_t)mem, flags) != 0) {
             kfree(mem);
             goto err;
         }
@@ -266,7 +266,7 @@ int uvmcopy(uint32_t *old, uint32_t *new, uint32_t size) {
     return 0;
 
     err:
-        uvmunmap(new, 0, i / PGESIZE, 1);
+        uvmunmap(new_addr, 0, i / PGESIZE, 1);
         return -1;
 }
 

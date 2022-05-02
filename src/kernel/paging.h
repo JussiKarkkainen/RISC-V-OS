@@ -57,6 +57,6 @@ void uvmclear(uint32_t *pagetable, uint32_t va);
 void uvmunmap(uint32_t *pagetable, uint32_t va, uint32_t num_pages, int free);
 void uvmfree(uint32_t *pagetable, uint32_t size);
 void freewalk(uint32_t *pagetable);
-int uvmcopy(uint32_t *old, uint32_t *new, uint32_t size);
+int uvmcopy(uint32_t *old, uint32_t *new_addr, uint32_t size);
 
 #endif

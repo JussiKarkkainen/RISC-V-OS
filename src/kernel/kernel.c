@@ -8,7 +8,7 @@
 #include "file.h"
 #include "syscall.h"
 #include "disk.h"
-#include "../net/virtio-net.hh"
+#include "../net/virtio-net.h"
 
 
 // This should be executed in supervisor mode, boot.S should first call 
@@ -23,6 +23,7 @@ void enter(void) {
         kprintf_init();
         kprintf("%s\n", "Booting OS");
 
+//        virtio_net_init();  // Initialize virtio net driver
         pmm_init();         // Initialize physical memory manager
         kpage_init();       // Initilaize kernel pagetable
         init_paging();      // Initialize paging
@@ -35,8 +36,7 @@ void enter(void) {
         inode_init();       // Initialize the inode table
         file_init();        // Initialize file table
         disk_init();        // Initialize virtio disk
-        virtio_net_init()   // Initialize virtio net driver
-        init_user();
+//        init_user();
         __sync_synchronize();
 //        started = 1;
     }

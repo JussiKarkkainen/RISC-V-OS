@@ -30,16 +30,6 @@ struct disk {
 
 }__attribute__((aligned (PGESIZE))) disk;
 
-// Configuring the device:
-// 1. Reset the device
-// 2. Set ACKNOWLEDGE status bit to status reg
-// 3. Set DRIVER status bit to status reg
-// 4. Read device features from host_features register
-// 5. Negotiate the set of features and write what you'll accept to guest_features register
-// 6. Set the FEATURES_OK status bit to the status register
-// 7. Re-read the status register to confirm that the device accepted your features
-// 8. Perform device-specific setup
-// 9. Set the DRIVER_OK status bit to the status register.
 void disk_init(void) {
     uint32_t status_bits = 0;
 
@@ -65,7 +55,7 @@ void disk_init(void) {
     *R(DISK_STATUS) |= status_bits;
 
     // 5. Negotiate the set of features and write what you'll accept to guest_features register
-    uint32_t features = *(base_addr + DISK_HOST_FEATURES);
+    uint32_t features = *R(DISK_HOST_FEATURES);
     features &= ~(1 << DISK_BLK_F_RO);
     features &= ~(1 << DISK_BLK_F_SCSI);
     features &= ~(1 << DISK_BLK_F_CONFIG_WCE);
