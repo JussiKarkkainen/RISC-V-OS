@@ -2,6 +2,7 @@ KERNEL=src/kernel
 USER=src/user
 LIBCSTRING=src/libc/string
 LIBCSTDIO=src/libc/stdio
+NET=src/net
 
 OBJS = \
     $(KERNEL)/boot.o \
@@ -37,11 +38,12 @@ OBJS = \
     $(KERNEL)/sysproc.o \
     $(LIBCSTDIO)/putchar.o \
     $(LIBCSTDIO)/asmprint.o \
+    $(NET)/virtio-net.o
 
 AS = riscv64-unknown-elf-as
 ASFLAGS = -march=rv32ima -mabi=ilp32
 
-CXX = riscv64-unknown-elf-gcc
+CXX = riscv64-unknown-elf-g++
 CXXFLAGS = -Wall -Wextra
 CXXFLAGS += -mcmodel=medany
 CXXFLAGS += -nostdlib -ffreestanding -lgcc
@@ -68,8 +70,8 @@ LD = riscv64-unknown-elf-ld
 LDFLAGS = -z max-page-size=4096
 LDFLAGS += -m elf32lriscv
 
-$(KERNEL)/kern: $(OBJS) $(KERNEL)/kernel.ld $(USER)/initcode
-	$(LD) $(LDFLAGS) -T $(KERNEL)/kernel.ld -o $(KERNEL)/kern $(OBJS)
+$(KERNEL)/kern: $(OBJS) $(NOBJS) $(KERNEL)/kernel.ld $(USER)/initcode
+	$(LD) $(LDFLAGS) -T $(KERNEL)/kernel.ld -o $(KERNEL)/kern $(OBJS) $(NOBJS)
 	$(OBJDUMP) -S $(KERNEL)/kern > $(KERNEL)/kernel.asm
 
 $(USER)/initcode: $(USER)/initcode.S
@@ -140,7 +142,7 @@ QEMU = qemu-system-riscv32
 QEMUOPT = -machine virt -bios none -kernel $(KERNEL)/kern -m 128M -smp 3 -nographic
 QEMUOPT += -drive file=fs.img,if=none,format=raw,id=x0
 QEMUOPT += -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
-
+QEMUOPT += -netdev user,id=network0 -device virtio-net-pci,netdev=network0
 
 qemu: $(KERNEL)/kern fs.img
 	$(QEMU) $(QEMUOPT)
