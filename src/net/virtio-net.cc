@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "../kernel/locks.h"
 #include "../kernel/paging.h"
+#include "virtio-net.hh"
 
 class Virtio_net_driver {
     

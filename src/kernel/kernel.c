@@ -8,6 +8,8 @@
 #include "file.h"
 #include "syscall.h"
 #include "disk.h"
+#include "../net/virtio-net.hh"
+
 
 // This should be executed in supervisor mode, boot.S should first call 
 // start() for setup before tranfering control to enter().
@@ -33,6 +35,7 @@ void enter(void) {
         inode_init();       // Initialize the inode table
         file_init();        // Initialize file table
         disk_init();        // Initialize virtio disk
+        virtio_net_init()   // Initialize virtio net driver
         init_user();
         __sync_synchronize();
 //        started = 1;
