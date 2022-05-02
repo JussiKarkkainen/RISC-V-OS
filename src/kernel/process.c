@@ -343,7 +343,7 @@ void cpu_scheduler(void) {
                 procdump();
 */
                 transfer(&cpu->context, &proc->context);
-                kprintf("cpu->proc->name %s\n", cpu->proc->name);           
+                kprintf("cpu1->proc->name %s\n", cpu->proc->name);           
                 cpu->proc = 0;
             }
             release_lock(&proc->lock);
