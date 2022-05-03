@@ -143,6 +143,7 @@ QEMUOPT = -machine virt -bios none -kernel $(KERNEL)/kern -m 128M -smp 3 -nograp
 QEMUOPT += -drive file=fs.img,if=none,format=raw,id=x0
 QEMUOPT += -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
 QEMUOPT += -netdev user,id=network0 -device virtio-net-pci,netdev=network0
+# QEMUOPT += -machine dumpdtb=/tmp/dump.dtb
 
 qemu: $(KERNEL)/kern fs.img
 	$(QEMU) $(QEMUOPT)
