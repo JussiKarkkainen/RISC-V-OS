@@ -7,6 +7,7 @@
 
 #define MAXBUS 256
 #define MAXDEV 32
+#define SET_COMMAND_REG_MMIO 0xfffe
 
 struct pcie_ecam {
     uint16_t vendor_id;
@@ -76,6 +77,11 @@ struct pcie_ecam {
         } common;
     };
 };
+
+struct pcie_ecam *get_ecam_header(uint8_t bus, uint8_t device, 
+                                  uint8_t function, uint16_t reg);
+struct pcie_ecam *get_pcie_virtio_net(void);
+void configure_pcie_bridge(struct pcie_ecam *ecam_head, uint16_t bus);
 
 
 #endif

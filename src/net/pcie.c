@@ -29,7 +29,27 @@ struct pcie_ecam *get_pcie_virtio_net(void) {
 
 
 
+void configure_pcie_bridge(struct pcie_ecam *ecam_head, uint16_t bus) {
 
+    //struct pcie_ecam *ecam_head = get_pcie_virtio_net();
+    
+    // Set bit 1 of command reg so we can configure the devices MMIO address
+    ecam_head->command_reg = (ecam_command_reg & SET_COMMAND_REG_MMIO);
+
+    uint8_t subordinate = 1;
+    uint32_t memory_base = 0x40000000 | ((uint32_t)subordinate << 20);
+    uint32_t memory_limit = memory base + ((1 << 20) - 1);
+
+    ecam_head->type1.memory_base = memory_base >> 16;
+    ecam_head->type1.memory_limit = memory_limit >> 16;
+    ecam_head->type1.prefetch_memory_base = memory_base >> 16;
+    ecam_head->type1.prefetch_memory_limit = memory_limit >> 16;
+    ecam_head->type1.primary_bus_no = bus;
+    ecam_head->type1.secondary_bus_no = subordinate;
+    ecam_head->type1.subordinate_bus_no = subordinate;
+    
+    subordinate += 1;
+}
 
 
 
