@@ -24,12 +24,15 @@ struct Virtio_net {
 
 uint32_t get_bar(int bar_num) {
 
-    uint32_t bar_base = pcie_config_regs->BAR0;
+    uint32_t *bar_base = pci_config_regs->BAR0;
     return *(bar_base + (bar_num * 4));
 
 }
 void virtio_net_init(void) {
-   
+    pci_config_regs->BAR3 = 0xffffffff;
+    kprintf("a %p\n", (pci_config_regs->BAR3));
+    uint32_t a = get_bar(0);
+    kprintf("bar0 %p\n", a);
     initlock(&net.net_lock, "net_lock");
 
 
