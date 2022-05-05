@@ -51,6 +51,39 @@ void configure_pcie_bridge(struct pcie_ecam *ecam_head, uint16_t bus) {
     subordinate += 1;
 }
 
+void configure_pcie_capes(struct pcie_ecam *ecam_head, uint8_t bus, uint8_t device) {
+
+    struct capability {
+        uint8_t id;
+        uint8_t next;
+    };
+    
+    // bit 4 of status_reg needs to be 1 if device has capabilities
+    // If this bit is 0, then there are no capabilities and capes_pointer is invalid
+    if ((ecam_head->status_reg & (1 << 4)) != 0) {
+        unsigned char *capes_next = ecam_head->common.capes_pointer;
+        while (capes_next != 0) {
+            uint32_t cap_addr = (uint32_t)get_ecam_header(bus, device, 0, 0) + capes_next;
+            struct capability cap = (struct capability *)cap_addr;
+
+            switch (cap->id) {
+                case 0x09:
+                {
+
+                }
+                break;
+                case 0x10:
+                {
+                }
+                break;
+                default:
+                    kprintf("unknown capability ID");
+                break,
+            }
+            capes_next = cap->next;
+        }
+    }
+}
 
 
 
