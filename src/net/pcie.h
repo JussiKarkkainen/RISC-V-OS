@@ -1,9 +1,12 @@
 #ifndef PCIE_H
 #define PCIE_H
 
+#include <stdint.h>
 
 #define VIRT_PCIE_ECAM 0x30000000
 
+#define MAXBUS 256
+#define MAXDEV 32
 
 struct pcie_ecam {
     uint16_t vendor_id;

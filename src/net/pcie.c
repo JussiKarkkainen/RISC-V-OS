@@ -11,7 +11,21 @@ struct pcie_ecam *get_ecam_header(uint8_t bus, uint8_t device,
                                      function << 12 | reg << 2);
 }
 
+struct pcie_ecam *get_pcie_virtio_net(void) {
 
+    int bus, device;
+
+    for (bus = 0; bus < MAXBUS; bus++) {
+        for (device = 0; device < MAXDEV; device++) {
+            
+            struct pcie_ecam_header *ecam_head = get_ecam_header(bus, device, 0, 0);
+
+            if (ecam_head->vendor_id == 0xffff) {
+                continue;
+            }
+            if (ecam_head->vendor_id == 0x1af4 && ecam_head->device_id == 0x1000) {
+                return ecam_head;
+}
 
 
 
