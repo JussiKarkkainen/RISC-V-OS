@@ -7,8 +7,6 @@
 
 #define R(r) ((volatile uint32_t *)(VIRTIO0 + (r)))
 
-volatile uint32_t *base_addr = (volatile uint32_t *)(VIRTIO0);
-
 struct disk {
 
     char pages[2 * PGESIZE];
