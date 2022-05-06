@@ -3,11 +3,34 @@
 
 #include <stdint.h>
 
-#define VIRT_PCIE_ECAM 0x30000000
+#define PCIE_ECAM_BASE 0x30000000
 
 #define MAXBUS 256
 #define MAXDEV 32
 #define SET_COMMAND_REG_MMIO 0xfffe
+
+// Common configuration
+#define VIRTIO_PCI_CAP_COMMON_CFG 1
+// Notifications
+#define VIRTIO_PCI_CAP_NOTIFY_CFG 2
+// ISR Status
+#define VIRTIO_PCI_CAP_ISR_CFG 3
+// Device specific configuration
+#define VIRTIO_PCI_CAP_DEVICE_CFG 4
+// PCI configuration access
+#define VIRTIO_PCI_CAP_PCI_CFG 5
+
+
+struct virtio_pci_cap {
+    uint8_t cap_vndr;   
+    uint8_t cap_next;   
+    uint8_t cap_len;    
+    uint8_t cfg_type;   
+    uint8_t bar;         // Which BAR to find it
+    uint8_t padding[3]; 
+    uint32_t offset;    
+    uint32_t length;    
+};
 
 struct pcie_ecam {
     uint16_t vendor_id;
@@ -83,6 +106,6 @@ struct pcie_ecam *get_pcie_virtio_net(void);
 void configure_pcie_bridge(struct pcie_ecam *ecam_head, uint16_t bus);
 void configure_pcie_capes(struct pcie_ecam *ecam_head, uint8_t bus, uint8_t device);
 void configure_pcie_bar(struct pcie_ecam *ecam_head);
-void configure_pcie(void);
+void pcie_init(void);
 
 #endif
