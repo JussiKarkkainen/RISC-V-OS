@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include "pcie.h"
-
-#define PCIE_ECAM_BASE 0x30000000
+#include "virtio-net.h"
+#include "../lib/include/stdio.h"
 
 
 struct pcie_ecam *get_ecam_header(uint8_t bus, uint8_t device, 
@@ -71,7 +71,6 @@ void configure_pcie_capes(struct pcie_ecam *ecam_head, uint8_t bus, uint8_t devi
             switch (cap->id) {
                 case 0x09:
                 {
-
                 }
                 break;
                 case 0x10:
@@ -80,7 +79,7 @@ void configure_pcie_capes(struct pcie_ecam *ecam_head, uint8_t bus, uint8_t devi
                 break;
                 default:
                     kprintf("unknown capability ID");
-                break,
+                break;
             }
             capes_next = cap->next;
         }
@@ -104,14 +103,17 @@ void configure_pcie_bar(struct pcie_ecam *ecam_head) {
             continue;
         }
     
-    uint32_t bar = ecam_head->bar[i];
-    uint32_t size = -(bar & ~0xf);      // mask off last four bits
+        uint32_t bar = ecam_head->bar[i];
+        uint32_t size = -(bar & ~0xf);      // mask off last four bits
     
-
+        // virtio board has pcie mmio space between 0x40000000 -> 0x4fffffff
+        // Determening the size isn't really needed since we only have one device to place
+        // in 0x40000000
+        ecam_head->bar[i] = 0x40000000;     
     }
 }
 
-void configure_pcie(void) {
+void pcie_init(void) {
     
     struct pcie_ecam *ecam_head = get_pcie_virtio_net(); 
     configure_pcie_bridge(ecam_head, 0); 
@@ -119,8 +121,3 @@ void configure_pcie(void) {
     configure_pcie_bar(ecam_head)
 }
     
-    
-
-
-
-
