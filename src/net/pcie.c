@@ -85,7 +85,14 @@ void configure_pcie_capes(struct pcie_ecam *ecam_head, uint8_t bus, uint8_t devi
     }
 }
 
+void configure_pcie_bar(struct pcie_ecam *ecam_head) {
+    // write all 1s to bars to determine their needed size
+    uint32_t bar0, bar1, bar2, bar3, bar4, bar5, bar6;   
 
+    for (int i = 0; 1 <= 6; i++) {
+        ecam_head->bar[i] = 0xffffffff;
+    }
+    
 
 
 
