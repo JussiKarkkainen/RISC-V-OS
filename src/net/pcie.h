@@ -78,10 +78,11 @@ struct pcie_ecam {
     };
 };
 
-struct pcie_ecam *get_ecam_header(uint8_t bus, uint8_t device, 
-                                  uint8_t function, uint16_t reg);
+struct pcie_ecam *get_ecam_header(uint8_t bus, uint8_t device, uint8_t function, uint16_t reg);
 struct pcie_ecam *get_pcie_virtio_net(void);
 void configure_pcie_bridge(struct pcie_ecam *ecam_head, uint16_t bus);
 void configure_pcie_capes(struct pcie_ecam *ecam_head, uint8_t bus, uint8_t device);
+void configure_pcie_bar(struct pcie_ecam *ecam_head);
+void configure_pcie(void);
 
 #endif

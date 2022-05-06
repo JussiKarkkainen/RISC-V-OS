@@ -25,8 +25,10 @@ struct pcie_ecam *get_pcie_virtio_net(void) {
             }
             if (ecam_head->vendor_id == 0x1af4 && ecam_head->device_id == 0x1000) {
                 return ecam_head;
+            }
+        }
+    }
 }
-
 
 
 void configure_pcie_bridge(struct pcie_ecam *ecam_head, uint16_t bus) {
@@ -87,13 +89,37 @@ void configure_pcie_capes(struct pcie_ecam *ecam_head, uint8_t bus, uint8_t devi
 
 void configure_pcie_bar(struct pcie_ecam *ecam_head) {
     // write all 1s to bars to determine their needed size
-    uint32_t bar0, bar1, bar2, bar3, bar4, bar5, bar6;   
+    int i;
 
-    for (int i = 0; 1 <= 6; i++) {
+    for (i = 0; i <= 6; i++) {
+        if ((ecam_head->bar[i] & 0x1) == 1) {
+            kprintf("I/O bar, not useful, bar[%d]\n", i);
+            continue;
+        }
+        
         ecam_head->bar[i] = 0xffffffff;
-    }
+        
+        if (ecam_head->bar[i] == 0) {
+            kprintf("Bar[%d] is invalid, returns 0", i);
+            continue;
+        }
+    
+    uint32_t bar = ecam_head->bar[i];
+    uint32_t size = -(bar & ~0xf);      // mask off last four bits
     
 
+    }
+}
+
+void configure_pcie(void) {
+    
+    struct pcie_ecam *ecam_head = get_pcie_virtio_net(); 
+    configure_pcie_bridge(ecam_head, 0); 
+    configure_pcie_capes(ecam_head, 0, 3);
+    configure_pcie_bar(ecam_head)
+}
+    
+    
 
 
 
