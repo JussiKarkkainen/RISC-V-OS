@@ -17,7 +17,6 @@ void virtio_net_init(void) {
     initlock(&net.net_lock, "net_lock");
 
 
-
 }
 
 
