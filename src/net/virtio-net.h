@@ -11,7 +11,7 @@
 #define VIRTIO_PCI_CAP_DEVICE_CFG 4     // Device specific configuration
 #define VIRTIO_PCI_CAP_PCI_CFG 5        // PCI configuration access
 
-
+// https://docs.oasis-open.org/virtio/virtio/v1.1/virtio-v1.1.pdf
 struct virtio_pci_cap {
     uint8_t cap_vndr;   
     uint8_t cap_next;   
@@ -21,6 +21,28 @@ struct virtio_pci_cap {
     uint8_t padding[3]; 
     uint32_t offset;    
     uint32_t length;    
+};
+
+struct virtio_pci_common_cfg {
+    uint32_t device_feature_select; /* read-write */
+    uint32_t device_feature; /* read-only for driver */
+    uint32_t driver_feature_select; /* read-write */
+    uint32_t driver_feature; /* read-write */
+    uint16_t msix_config; /* read-write */
+    uint16_t num_queues; /* read-only for driver */
+    uint8_t device_status; /* read-write */
+    uint8_t config_generation; /* read-only for driver */
+    
+    /* About a specific virtqueue. */
+    
+    uint16_t queue_select; /* read-write */
+    uint16_t queue_size; /* read-write */
+    uint16_t queue_msix_vector; /* read-write */
+    uint16_t queue_enable; /* read-write */
+    uint16_t queue_notify_off; /* read-only for driver */
+    uint64_t queue_desc; /* read-write */
+    uint64_t queue_driver; /* read-write */
+    uint64_t queue_device; /* read-write */
 };
 
 
