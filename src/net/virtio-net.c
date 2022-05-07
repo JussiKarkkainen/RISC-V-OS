@@ -16,6 +16,21 @@ void virtio_net_init(void) {
     
     initlock(&net.net_lock, "net_lock");
 
+    struct virtio_net_device *net_device = (struct virtio_net_device *)PCIE_MMIO_BASE;
+
+    // Device initialization described in virtio specification
+    net_device->common_cfg->device_status = VIRTIO_DEV_RESET;
+    net_device->common_cfg->device_status = VIRTIO_DEV_STATUS_ACKNOWLEDGE;
+    net_device->common_cfg->device_status = VIRTIO_DEV_STATUS_DRIVER;
+
+    // Read features
+    net_device->common_cfg->queue_select = 0;
+    uint16_t queue_size = net_device->common_cfg->queue_size;
+
+
+
+    
+
 
 }
 

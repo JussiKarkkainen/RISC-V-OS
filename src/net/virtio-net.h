@@ -44,12 +44,19 @@ struct virtio_pci_common_cfg {
     uint64_t queue_driver; /* read-write */
     uint64_t queue_device; /* read-write */
 };
+
 struct virtio_net_config {
     uint8_t mac[6];
     uint16_t status;                    // Little endian
     uint16_t max_virtqueue_pairs;       // little endian
     uint16_t mtu;                       // Exists if VIRTIO_NET_F_MTU is set, little endian
 };
+
+struct virtio_net_device {
+    struct virtio_pci_common_cfg *common_cfg;
+    struct virtio_net_config *net_config;
+};
+
 
 void virtio_net_init(void);
 
