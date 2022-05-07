@@ -11,6 +11,12 @@
 #define VIRTIO_PCI_CAP_DEVICE_CFG 4     // Device specific configuration
 #define VIRTIO_PCI_CAP_PCI_CFG 5        // PCI configuration access
 
+
+#define VIRTIO_DEV_RESET 0
+#define VIRTIO_DEV_STATUS_ACKNOWLEDGE 1
+#define VIRTIO_DEV_STATUS_DRIVER 2
+
+
 // https://docs.oasis-open.org/virtio/virtio/v1.1/virtio-v1.1.pdf
 struct virtio_pci_cap {
     uint8_t cap_vndr;   
