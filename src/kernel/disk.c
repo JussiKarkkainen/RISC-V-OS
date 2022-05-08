@@ -52,7 +52,7 @@ void disk_init(void) {
     status_bits |= DRIVER_STATUS;
     *R(DISK_STATUS) |= status_bits;
 
-    // 5. Negotiate the set of features and write what you'll accept to guest_features register
+    // 4. Negotiate the set of features and write what you'll accept to host_features register
     uint32_t features = *R(DISK_HOST_FEATURES);
     features &= ~(1 << DISK_BLK_F_RO);
     features &= ~(1 << DISK_BLK_F_SCSI);

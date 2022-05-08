@@ -24,7 +24,6 @@ void enter(void) {
         console_init();     // Start console
         kprintf_init();
         kprintf("%s\n", "Booting OS");
-        pcie_init();   
         virtio_net_init();              // Initialize virtio-net driver
         pmm_init();                     // Initialize physical memory manager
         kpage_init();                   // Initilaize kernel pagetable
