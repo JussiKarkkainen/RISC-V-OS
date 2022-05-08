@@ -15,7 +15,9 @@
 #define VIRTIO_DEV_RESET 0
 #define VIRTIO_DEV_STATUS_ACKNOWLEDGE 1
 #define VIRTIO_DEV_STATUS_DRIVER 2
+#define VIRTIO_DEV_STATUS_FEATURES_OK 8
 
+#define VIRTIO_NET_CSUM 0
 
 // https://docs.oasis-open.org/virtio/virtio/v1.1/virtio-v1.1.pdf
 struct virtio_pci_cap {

@@ -21,12 +21,18 @@ void virtio_net_init(void) {
     // Device initialization described in virtio specification
     net_device->common_cfg->device_status = VIRTIO_DEV_RESET;
     net_device->common_cfg->device_status = VIRTIO_DEV_STATUS_ACKNOWLEDGE;
-    net_device->common_cfg->device_status = VIRTIO_DEV_STATUS_DRIVER;
+    net_device->common_cfg->device_status |= VIRTIO_DEV_STATUS_DRIVER;
+    
+    uint32_t features = net_device->common_cfg->device_status;
+    features &= ~(1 << VIRTIO_NET_CSUM);
+    net_device->common_cfg->device_status = features;
+    
+    net_device->common_cfg->device_status |= VIRTIO_DEV_STATUS_FEATURES_OK;
 
-    // Read features
+    // Setupt queue 0 (receiveq1) and 1 (transmitq1)
     net_device->common_cfg->queue_select = 0;
     uint16_t queue_size = net_device->common_cfg->queue_size;
-
+    
 
 
     
