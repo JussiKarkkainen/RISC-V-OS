@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define PCIE_MMIO_BASE 0x400000000
+#define PCIE_MMIO_BASE 0x40000000
 
 #define VIRTIO_PCI_CAP_COMMON_CFG 1     // Common configuration
 #define VIRTIO_PCI_CAP_NOTIFY_CFG 2     // Notifications
@@ -53,6 +53,11 @@ struct virtio_pci_common_cfg {
     uint64_t queue_device; /* read-write */
 };
 
+struct virtio_pci_notify_cap {
+    struct virtio_pci_cap cap;
+    uint32_t notify_off_multiplier; /* Multiplier for queue_notify_off. */
+};
+
 struct virtio_net_config {
     uint8_t mac[6];
     uint16_t status;                    // Little endian
@@ -61,8 +66,8 @@ struct virtio_net_config {
 };
 
 struct virtio_net_device {
-    struct virtio_pci_common_cfg *common_cfg;
-    struct virtio_net_config *net_config;
+    struct virtio_pci_common_cfg common_cfg;
+    struct virtio_net_config net_config;
 };
 
 
