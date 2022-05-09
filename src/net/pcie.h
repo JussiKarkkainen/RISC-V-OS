@@ -7,7 +7,7 @@
 
 #define MAXBUS 256
 #define MAXDEV 32
-#define SET_COMMAND_REG_MMIO 0xfffe
+#define SET_COMMAND_REG_MMIO (1 << 1)
 
 
 struct pcie_ecam {
