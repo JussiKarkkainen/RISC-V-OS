@@ -17,7 +17,7 @@
 #define VIRTIO_DEV_STATUS_DRIVER 2
 #define VIRTIO_DEV_STATUS_FEATURES_OK 8
 
-#define VIRTIO_NET_CSUM 0
+#define VIRTIO_NET_F_CSUM 0
 
 // https://docs.oasis-open.org/virtio/virtio/v1.1/virtio-v1.1.pdf
 struct virtio_pci_cap {
@@ -65,11 +65,23 @@ struct virtio_net_config {
     uint16_t mtu;                       // Exists if VIRTIO_NET_F_MTU is set, little endian
 };
 
-struct virtio_net_device {
-    struct virtio_pci_common_cfg common_cfg;
-    struct virtio_net_config net_config;
+struct virtio_net_hdr {
+    #define VIRTIO_NET_HDR_F_NEEDS_CSUM 1
+    #define VIRTIO_NET_HDR_F_DATA_VALID 2
+    #define VIRTIO_NET_HDR_F_RSC_INFO 4
+    u8 flags;
+    #define VIRTIO_NET_HDR_GSO_NONE 0
+    #define VIRTIO_NET_HDR_GSO_TCPV4 1
+    #define VIRTIO_NET_HDR_GSO_UDP 3
+    #define VIRTIO_NET_HDR_GSO_TCPV6 4
+    #define VIRTIO_NET_HDR_GSO_ECN 0x80
+    u8 gso_type;
+    le16 hdr_len;
+    le16 gso_size;
+    le16 csum_start;
+    le16 csum_offset;
+    le16 num_buffers;
 };
-
 
 void virtio_net_init(void);
 
