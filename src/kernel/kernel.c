@@ -15,8 +15,6 @@
 // start() for setup before tranfering control to enter().
 static volatile int started = 0;
 
-uint32_t *base_addr = (volatile uint32_t*)0x30008000;
-
 void enter(void) {  
     
     if (which_cpu() == 0) {
