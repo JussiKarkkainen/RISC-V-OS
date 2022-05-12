@@ -2,6 +2,7 @@
 #define NET_H
 
 #include <stdint.h>
+#include "../kernel/disk.h"
 
 #define PCIE_MMIO_BASE 0x40000000
 
@@ -82,10 +83,20 @@ struct virtio_net_hdr {
     uint16_t csum_offset;
     uint16_t num_buffers;
 };
+struct virtq {
+    // The actual descriptors (16 bytes each)
+    struct virtq_desc desc[ Queue Size ];
+    // A ring of available descriptor heads with free-running index.
+    struct virtq_avail avail;
+    // Padding to the next Queue Align boundary.
+    uint8_t pad[Padding];
+    // A ring of used descriptor heads with free-running index.
+    struct virtq_used used;
+};
 
 void virtio_net_init(void);
 
-int virtio_net_send();
+int virtionet_send_packet(uint32_t *payload, unsigned int size);
 int virtio_net_recv();
 
 #endif

@@ -47,7 +47,7 @@ void virtio_net_init(void) {
 }
 
 
-int virtio_net_send(int payload_size) {
+int virtionet_send_packet(uint32_t *payload, unsigned int size) {
     
     int size = size + sizeof(virtio_net_hdr);
 
@@ -55,15 +55,17 @@ int virtio_net_send(int payload_size) {
         kprintf("packet size is too big %p\n", size);
         return 0;
     }
+
+    char buffer[size + sizeof(virtio_net_header)];
     
-    virtio_net_header net_hdr;
+    virtio_net_header net_hdr = &buffer;
     net_hdr.flags = VIRTIO_NET_HDR_F_NEEDS_CSUM;
-    net_hdr.gso_type = 0;
+    net_hdr.gso_type = VIRTIO_NET_HDR_GSO_NONE;
     net_header.csum_start = 0;
     net_header.csum_offset = size;
 
-
-
+    memcpy(buffer[sizeof(virtio_net_header)], payload, size);
+    virtio_send_buffer(buffer, size + sizeof(net_header));
 
 }
 
