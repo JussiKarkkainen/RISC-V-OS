@@ -38,12 +38,13 @@ void virtio_net_init(void) {
     kprintf("device_status %p\n", device_status);
 
     // Setupt queue 0 (receiveq1) and 1 (transmitq1)
-    net_common_cfg->queue_select = 0;
-    uint16_t queue_size = net_common_cfg->queue_size;
-    kprintf("queue_size %p\n", queue_size);
-    
-     
-
+    for (int i = 0; i <= 2; i++) {
+        net_common_cfg->queue_select = i;
+        uint16_t queue_size = net_common_cfg->que_size;
+        uint32_t gueue_addr = kalloc(gueue_size);                           // Check which version of kalloc is used
+        memset(gueue_addr, 0, queue_size);
+        net_common_cfg->queue_addr = ALIGN4K((gueue_addr / PGESIZE));       // Find where queue_addr is located
+    }
 }
 
 
@@ -71,4 +72,7 @@ int virtionet_send_packet(uint32_t *payload, unsigned int size) {
 
 
 int virtio_net_recv() {
+
+
+
 }

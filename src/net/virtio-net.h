@@ -83,9 +83,10 @@ struct virtio_net_hdr {
     uint16_t csum_offset;
     uint16_t num_buffers;
 };
+
 struct virtq {
     // The actual descriptors (16 bytes each)
-    struct virtq_desc desc[ Queue Size ];
+    struct virtq_desc desc[Queue_Size];
     // A ring of available descriptor heads with free-running index.
     struct virtq_avail avail;
     // Padding to the next Queue Align boundary.
