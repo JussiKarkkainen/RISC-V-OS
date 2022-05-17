@@ -11,6 +11,12 @@
 struct Virtio_net {
         
     struct spinlock net_lock;
+    
+    struct net_avail *avail;
+    struct net_used *used;
+    struct disk_desc *desc;
+    
+    char free[8];
 
 }__attribute__((aligned (PGESIZE))) net;
 
@@ -40,11 +46,18 @@ void virtio_net_init(void) {
     // Setupt queue 0 (receiveq1) and 1 (transmitq1)
     for (int i = 0; i <= 2; i++) {
         net_common_cfg->queue_select = i;
-        uint16_t queue_size = net_common_cfg->que_size;
+        uint16_t queue_size = net_common_cfg->queue_size;
         uint32_t gueue_addr = kalloc(gueue_size);                           // Check which version of kalloc is used
         memset(gueue_addr, 0, queue_size);
-        net_common_cfg->queue_addr = ALIGN4K((gueue_addr / PGESIZE));       // Find where queue_addr is located
+        net_common_cfg->queue_addr = (gueue_addr / PGESIZE);       // Find where queue_addr is located
     }
+    
+
+    disk.desc = (struct disk_desc *) net.pages;
+    disk.avail = (struct disk_avail *)(net.pages + 8 * sizeof(struct disk_desc));
+    disk.used = (struct disk_used *) (net.pages + PGESIZE);
+
+
 }
 
 
