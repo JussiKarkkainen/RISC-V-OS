@@ -50,16 +50,43 @@ void virtio_net_init(void) {
         uint32_t gueue_addr = kalloc(gueue_size);                           // Check which version of kalloc is used
         memset(gueue_addr, 0, queue_size);
         net_common_cfg->queue_addr = (gueue_addr / PGESIZE);       // Find where queue_addr is located
-    }
-    
+        net_common_cfg->gueue_enable = 1;
 
-    disk.desc = (struct disk_desc *) net.pages;
-    disk.avail = (struct disk_avail *)(net.pages + 8 * sizeof(struct disk_desc));
-    disk.used = (struct disk_used *) (net.pages + PGESIZE);
+        // Descriptor table
+        virt = (uint64_t)kalloc(16 * qsize);
+        vq.desc = (struct VirtqDescriptor *)virt;
+        priv->common_cfg->queue_desc = mmu_translate(kernel_mmu_table, virt);
+        
+        // Driver ring (aka available ring)
+        virt = (uint64_t)kalloc(6 + 2 * qsize);
+        vq.driver = (struct VirtqAvail *)virt;
+        priv->common_cfg->queue_driver = mmu_translate(kernel_mmu_table, virt);
+        
+        // Device ring (aka used ring)
+        virt = (uint64_t)kalloc(6 + 8 * qsize);
+        vq.device = (struct VirtqUsed *)virt;
+        priv->common_cfg->queue_device = mmu_translate(kernel_mmu_table, virt);
+        
+        // Enable the queue (AFTER setting it up!)
+        priv->common_cfg->queue_enable = 1;
+        
+        // Make the device LIVE
+        priv->common_cfg->device_status |= VIRTIO_DEV_STATUS_DRIVER_OK;
+    } 
+
 
 
 }
 
+int alloc_desc(void) {
+    for (int i = 0; i < NUM; i++) {
+        if (net.free[i]) {
+            net.free[i] = 0;
+            return i;
+        }
+    }
+    return -1;
+}
 
 int virtionet_send_packet(uint32_t *payload, unsigned int size) {
     

@@ -99,5 +99,6 @@ void virtio_net_init(void);
 
 int virtionet_send_packet(uint32_t *payload, unsigned int size);
 int virtio_net_recv();
+void alloc_desc(void);
 
 #endif
