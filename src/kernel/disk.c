@@ -221,10 +221,10 @@ void disk_read_write(struct buffer *buf, int write) {
 
 
     if(write) {
-        disk.desc[idx[1]].flags = 0; // device reads b->data
+        disk.desc[idx[1]].flags = 1; // device reads b->data
     }
     else {
-        disk.desc[idx[1]].flags = DESC_WRITE; // device writes b->data
+        disk.desc[idx[1]].flags = 0; // device writes b->data
     }
     disk.desc[idx[1]].flags |= DESC_NEXT;
     disk.desc[idx[1]].next = idx[2];
