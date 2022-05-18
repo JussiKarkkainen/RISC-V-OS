@@ -57,33 +57,6 @@ void *kalloc(void) {
 } 
 
 
-/*    
-    for (uint32_t i = 0; i < num_pages; i++) {
-        int found = 0;
-
-        if (*(ptr + i) == 0) {
-            found = 1;
-            for (int j = i; j <= (i + n); j++) {
-
-                if (*(ptr + j) == 1) {
-                    found = 0;
-                    break;
-                }
-            }
-        }
-
-        // If found is true, we have a contiguos area to allocate
-        if (found) {
-            for (int k = i; k <= (i + n - 1); k++) {
-                *(ptr + k) = 1;
-            }
-            uint32_t *ret_addr = (uint32_t *)(alloc_start + page_size * i);
-            return ret_addr;
-        }
-    }
-    return 0;
-*/
-
 uint32_t *zalloc(void) {
 
     uint32_t *addr = kalloc();
@@ -116,25 +89,6 @@ void kfree(void *ptr) {
 
     release_lock(&pmm_lock);
 }
-
-/*    
-    if (ptr != 0) {
-        
-        // Calculate where the corresponding bit is bitmap is
-        uint32_t *addr = (uint32_t *)(HEAP_START + (int)(ptr - alloc_start) / page_size);
-
-        if (addr >= (uint32_t *)HEAP_START && addr < (uint32_t *)(HEAP_SIZE + HEAP_SIZE)) {
-            for (int i = 0; i <= n; i++) {
-                *addr = 0; 
-                addr++;
-                
-            } 
-        }
-    }
-    release_lock(&pmm_lock);
-}
-
-*/
 
 
 // Used to verify that allocations work as expected
