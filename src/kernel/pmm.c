@@ -35,7 +35,7 @@ void pmm_init(void) {
 }
 
 
-void *kalloc(void) {
+void *kalloc(int size) {
    
     uint32_t num_pages = HEAP_SIZE / page_size;
     uint32_t *start_addr = (uint32_t *)PGROUNDUP((uint32_t)mem_end);
@@ -45,11 +45,31 @@ void *kalloc(void) {
     acquire_lock(&pmm_lock);
 
     for (uint32_t i = 0; i < num_pages; i++) {
-        if (!IS_SET(i)) {
-            SET_BIT(i);
-            release_lock(&pmm_lock);
-            return (uint32_t *)(alloc_start + (i * page_size));
-        }
+        if (size < PGESIZE) {
+            if (!IS_SET(i)) {
+                SET_BIT(i);
+                release_lock(&pmm_lock);
+                return (uint32_t *)(alloc_start + (i * page_size));
+            }
+        else {
+            int num_pages = size / page_size;       // Make sure this rounds up
+            if (!IS_SET(i)) {
+                int j;
+                int found = 1; 
+                for (j = i; j < (i + num_pages); j++) {
+                    if (IS_SET(j)) {
+                        found = 0;
+                        break;
+                    }
+                }
+                if (found) {
+                    for (int u = i; u < num_pages; u++) {
+                        SET_BIT(u);
+                    }
+                    release_lock(&pmm_lock);
+                    return (uint32_t *)(alloc_start + (i * page_size);
+                }
+                
     }
     release_lock(&pmm_lock);
     panic("no more memory, kalloc");
