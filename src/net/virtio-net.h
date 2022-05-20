@@ -84,6 +84,30 @@ struct virtio_net_hdr {
     uint16_t num_buffers;
 };
 
+struct virtio_desc {
+    uint32_t addr;
+    uint32_t len;
+    uint16_t flags;
+    uint16_t next;
+}
+
+struct disk_avail {
+    uint16_t flags;
+    uint16_t idx;
+    uint16_t ring[];
+};
+
+struct virtio_used_item {
+    uint32_t id;
+    uint32_t len;
+};
+
+struct virtio_used {
+    uint16_t flags;
+    uint16_t index;
+    struct virtio_used_item ring[];
+};
+
 struct virtq {
     // The actual descriptors (16 bytes each)
     struct virtq_desc desc[Queue_Size];
