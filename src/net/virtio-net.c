@@ -50,30 +50,28 @@ void virtio_net_init(void) {
         uint32_t gueue_addr = kalloc(gueue_size);                           // Check which version of kalloc is used
         memset(gueue_addr, 0, queue_size);
         net_common_cfg->queue_addr = (gueue_addr / PGESIZE);       // Find where queue_addr is located
-        net_common_cfg->gueue_enable = 1;
-
+        
         // Descriptor table
-        virt = (uint64_t)kalloc(16 * qsize);
-        vq.desc = (struct VirtqDescriptor *)virt;
-        priv->common_cfg->queue_desc = mmu_translate(kernel_mmu_table, virt);
+        virt = (uint32_t)kalloc(16 * queue_size);
+        vq.desc = (struct virt_desc *)virt;
+        net_common_cfg->queue_desc = virt;
         
         // Driver ring (aka available ring)
-        virt = (uint64_t)kalloc(6 + 2 * qsize);
-        vq.driver = (struct VirtqAvail *)virt;
-        priv->common_cfg->queue_driver = mmu_translate(kernel_mmu_table, virt);
+        virt = (uint32_t)kalloc(6 + 2 * queue_size);
+        vq.driver = (struct virt_avail *)virt;
+        net_common_cfg->queue_driver = virt;
         
         // Device ring (aka used ring)
-        virt = (uint64_t)kalloc(6 + 8 * qsize);
-        vq.device = (struct VirtqUsed *)virt;
-        priv->common_cfg->queue_device = mmu_translate(kernel_mmu_table, virt);
+        virt = (uint32_t)kalloc(6 + 8 * queue_size);
+        vq.device = (struct virt_used *)virt;
+        net_common_cfg->queue_device = virt;
         
         // Enable the queue (AFTER setting it up!)
-        priv->common_cfg->queue_enable = 1;
-        
-        // Make the device LIVE
-        priv->common_cfg->device_status |= VIRTIO_DEV_STATUS_DRIVER_OK;
+        net_common_cfg->queue_enable = 1;
     } 
 
+    // Make the device LIVE
+    net_common_cfg->device_status |= VIRTIO_DEV_STATUS_DRIVER_OK;
 
 
 }
