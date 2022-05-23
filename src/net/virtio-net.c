@@ -43,6 +43,11 @@ void virtio_net_init(void) {
     uint32_t device_status = net_common_cfg->device_status;
     kprintf("device_status %p\n", device_status);
 
+    // 0 = receiveq, 1 = transmitq
+    init_queue(0);
+    init_queue(1);
+    
+
     // Setupt queue 0 (receiveq1) and 1 (transmitq1)
     for (int i = 0; i <= 2; i++) {
         net_common_cfg->queue_select = i;
@@ -72,9 +77,23 @@ void virtio_net_init(void) {
 
     // Make the device LIVE
     net_common_cfg->device_status |= VIRTIO_DEV_STATUS_DRIVER_OK;
+}
 
+
+void init_queue(int index) {
+
+    uint32_t queue_size = net_common_cfg->queue_size;
+    
+
+    uint32_t *buf = kalloc(sizeof_buffers + sizeof_queueavail + sizeof_queueused);
+    uint32_t buf_page = buf >> 12;
+
+    struct virtq *vq = (struct virtq *)buf;
+
+    
 
 }
+
 
 int alloc_desc(void) {
     for (int i = 0; i < NUM; i++) {
@@ -84,6 +103,9 @@ int alloc_desc(void) {
         }
     }
     return -1;
+}
+
+void virtio_send_buffer(char buffer, int size) {
 }
 
 int virtionet_send_packet(uint32_t *payload, unsigned int size) {
