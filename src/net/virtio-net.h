@@ -84,12 +84,20 @@ struct virtio_net_hdr {
     uint16_t num_buffers;
 };
 
+struct queue_buffer {
+    uint32_t addr;
+    uint32_t length;
+    uint16_t flags;
+    uint16_t next;
+};
+
+
 struct virtio_desc {
     uint32_t addr;
     uint32_t len;
     uint16_t flags;
     uint16_t next;
-}
+};
 
 struct disk_avail {
     uint16_t flags;
@@ -109,18 +117,13 @@ struct virtio_used {
 };
 
 struct virtq {
-    // The actual descriptors (16 bytes each)
-    struct virtq_desc desc[Queue_Size];
-    // A ring of available descriptor heads with free-running index.
-    struct virtq_avail avail;
-    // Padding to the next Queue Align boundary.
-    uint8_t pad[Padding];
-    // A ring of used descriptor heads with free-running index.
-    struct virtq_used used;
+    struct queue_buffer *buffers;
+    struct virtio_avail *avail;
+    struct virtio_used *used;
 };
 
 void virtio_net_init(void);
-
+void virtio_send_buffer(char *buffer, int size);
 int virtionet_send_packet(uint32_t *payload, unsigned int size);
 int virtio_net_recv();
 void alloc_desc(void);
