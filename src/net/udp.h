@@ -1,7 +1,7 @@
 #ifndef UDP_H
 #define UDP_H
 
-
+#include <stdint.h>
 
 struct udp_header {
     uint16_t src_port;
