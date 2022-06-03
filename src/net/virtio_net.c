@@ -6,13 +6,13 @@
 #include "../libc/include/stdio.h"
 #include <stdint.h>
 
+    
+struct virtio_pci_common_cfg *net_common_cfg = (struct virtio_net_device *)PCIE_MMIO_BASE;
 
 void virtio_net_init(void) {
 
     initlock(&net.net_lock, "net_lock");
     pcie_init();
-
-    struct virtio_pci_common_cfg *net_common_cfg = (struct virtio_net_device *)PCIE_MMIO_BASE;
 
     // Reset device
     net_common_cfg->device_status = VIRTIO_DEV_RESET;
@@ -47,6 +47,23 @@ void virtio_net_init(void) {
 
 void init_queue(int index) {
 
+    net_common_cfg->queue_select = index;
+    uint32_t queue_size = net_common_cfg->queue_size;
+    
+    // Descriptor table
+    uint32_t *desc = kalloc(16 * queue_size);
+    net_common_cfg->queue_desc = desc;
+
+    // Driver/available ring
+    uint32_t *driver = kalloc(6 + 2 *queue_size);
+    net_common_cfg->queue_driver = driver;
+
+    // Device/used ring
+    uint32_t *device = kalloc(6 + 8 * queue_size);
+    net_common_cfg->queue_device = device;
+    
+    // Enable queue
+    net_common_cfg->queue_enable = 1;
 }
 
 
