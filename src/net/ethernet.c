@@ -29,14 +29,19 @@ void ethernet_receive_frame(uint8_t *data, uint32_t len) {
     struct ethernet_hdr eth_hdr;
     memcpy(&eth_hdr, data, len);
     eth_hdr.ethertype = ntohs(eth_hdr.ethertype);
+    int data_len = len - sizeof(ethernet_hdr);
 
     switch (eth_hdr.ethertype) {
         case ETHERTYPE_ARP:
-            arp_receive_packet();
+            arp_receive_packet(data, data_len);
             break;
         
-        case ETHERTYPE IPV4:
-            ipv4_receive_packet();
+        case ETHERTYPE_IPV4:
+            ipv4_receive_packet(data, data_len);
+            break;
+        
+        case ETHERTYPE_IPV6:
+            ipv6_receive_packet(data, data_len);
             break;
 
         default:
@@ -45,10 +50,4 @@ void ethernet_receive_frame(uint8_t *data, uint32_t len) {
 
     kfree(data);
 }
-
-
-
-
-
-
 
