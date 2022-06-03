@@ -24,6 +24,7 @@ void virtio_net_init(void) {
     // Read feature bits and nd write the subset of feature bits understood by the OS and driver to the device. 
     uint32_t features = net_common_cfg->device_feature;
     features &= ~(1 << VIRTIO_NET_F_CSUM);
+    features &= ~(1 << VIRTIO_NET_F_MAC);
     net_common_cfg->device_feature_select = features;
     
     // Set the FEATURES_OK status bit. 
@@ -67,12 +68,26 @@ void init_queue(int index) {
 }
 
 
-
-void virtio_send_buffer(char *buffer, int size) {
-}
-
-
 int virtio_net_send_packet(uint32_t *payload, unsigned int size) {
+    
+    int size = size + sizeof(virtio_net_hdr);
+
+    if (size > 1526) {
+        kprintf("packet size is too big %p\n", size);
+        return 0;
+    }
+
+    char buffer[size + sizeof(virtio_net_header)];
+    
+    struct virtio_net_header net_hdr = &buffer;
+    net_hdr.flags = VIRTIO_NET_HDR_F_NEEDS_CSUM;
+    net_hdr.gso_type = VIRTIO_NET_HDR_GSO_NONE;
+    net_header.csum_start = 0;
+    net_header.csum_offset = size;
+
+    memcpy(buffer[sizeof(virtio_net_header)], payload, size);
+    virtio_send_buffer(buffer, size + sizeof(net_header));
+
 }
 
 int virtio_net_recv(void) {
