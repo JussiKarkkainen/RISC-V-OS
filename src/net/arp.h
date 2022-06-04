@@ -3,6 +3,10 @@
 
 #include "stdint.h"
 
+#define ARP_REQUEST 1
+#define ARP_REPLY 2
+#define ATHERTYPE_ARP 0x0806
+
 struct arp_packet {
     uint16_t hardware_type;
     uint16_t protocol_type;
