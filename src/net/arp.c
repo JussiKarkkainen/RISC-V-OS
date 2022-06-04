@@ -55,7 +55,7 @@ void arp_request(uint8_t ip_addr[4]) {
 }
 
 // Send arp reply
-void arp_reply(struct arp_packet *reply) {
+void arp_reply(struct arp_packet *request) {
 
     struct arp_packet arp_reply;
     arp_reply.hardware_type = htons(reply->hardware_type);
@@ -63,6 +63,13 @@ void arp_reply(struct arp_packet *reply) {
     arp_reply.protocol_type = htons(reply->protocol_type);
     arp_reply.protocol_size = 4;
     arp_reply.opcode = htons(ARP_REPLY);
+
+    arp_reply.src_mac = get_mac_addr();
+    arp_reply.src_ip = ip_addr;
+    memcpy(arp_reply.dst_mac, request->src_mac, 6);
+    memcpy(arp_reply.dst_ip, request->src_ip, 4); 
+
+    uint8_t packet_len = sizeof(struct arp_packet);
 
     ethernet_send_frame(reply->src_mac, packet, packet_len, ETHERTYPE_ARP); 
 
