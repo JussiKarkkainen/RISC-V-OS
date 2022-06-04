@@ -1,6 +1,9 @@
 #include "arp.h"
 #include "ipv4.h"
+#include "ethernet.h"
+#include "../libc/include/string.h"
 #include <arpa/inet.h>
+#include <stddef.h>
 
 
 static uint8_t last_arp_mac_addr[6] = {0};
@@ -39,7 +42,16 @@ void arp_request(uint8_t ip_addr[4]) {
     arp_request.hardware_type = 
     arp_request.protocol_type = htons(ETHERTYPE_IPV4);
     arp_request.hardware_size
+   
+    uint8_t packet_len = sizeof(struct ap_packet);
     
+    arp_request.src_mac = get_mac_addr(); 
+    arp_packet.src_ip = ip_addr;
+    memcpy(arp_request.dst_mac, broadcast_mac, 6);
+    memcpy(arp_request.dst_ip, ip_addr, 4);
+
+    ethernet_send_frame(broadcast_mac, arp_request, packet_len, ETHERTYPE_ARP);
+
 }
 
 // Send arp reply
