@@ -5,8 +5,9 @@
 #include "../kernel/disk.h"
 #include "../libc/include/stdio.h"
 #include <stdint.h>
+#include <stddef.h>
+   
 
-    
 struct virtio_pci_common_cfg *net_common_cfg = (struct virtio_net_device *)PCIE_MMIO_BASE;
 
 void virtio_net_init(void) {
@@ -43,8 +44,6 @@ void virtio_net_init(void) {
     net_common_cfg->device_status |= VIRTIO_DEV_STATUS_DRIVER_OK;
 
 }
-
-
 
 void init_queue(int index) {
 
@@ -93,4 +92,19 @@ int virtio_net_send_packet(uint32_t *payload, unsigned int size) {
 int virtio_net_recv(void) {
 }
 
+
+uint8_t *get_mac_addr(void) {
+    uint8_t mac_addr[6];
+    
+    struct virtio_net_config net_config;
+    mac_addr[0] = net_config[0];
+    mac_addr[1] = net_config[1];
+    mac_addr[2] = net_config[2];
+    mac_addr[3] = net_config[3];
+    mac_addr[4] = net_config[4];
+    mac_addr[5] = net_config[5];
+    mac_addr[6] = net_config[6];
+    
+    return mac_addr;
+}
 
