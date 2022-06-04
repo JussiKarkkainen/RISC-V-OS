@@ -3,7 +3,7 @@
 
 #define ETHERTYPE_IPV4 0x0800
 
-struct ip4hdr {
+struct ipv4hdr {
     uint8_t version : 4;
     uint8_t ihl : 4;
     uint8_t tos;
