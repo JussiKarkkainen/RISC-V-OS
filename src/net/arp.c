@@ -1,5 +1,9 @@
 #include "arp.h"
+#include "ipv4.h"
 #include <arpa/inet.h>
+
+
+static uint8_t last_arp_mac_addr[6] = {0};
 
 
 void arp_receive_packet(uint8_t *data, uint32_t len) {
@@ -12,9 +16,12 @@ void arp_receive_packet(uint8_t *data, uint32_t len) {
 
     switch (arp_packet.opcode) {
         case ARP_REQUEST:
+            // Respond to arp request
+            arp_reply(&arp_packet);
             break;
 
         case ARP_REPLY:
+            memcpy(arp_reply_mac_addr, arp_packet.src_mac, 6); 
             break;
 
         default:
@@ -23,20 +30,28 @@ void arp_receive_packet(uint8_t *data, uint32_t len) {
     }
 }
 
+// Send arp request
+void arp_request(uint8_t ip_addr[4]) {
+    
+    uint8_t broadcast_mac[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
-void arp_request_() {
+    struct arp_packet arp_request;
+    arp_request.hardware_type = 
+    arp_request.protocol_type = htons(ETHERTYPE_IPV4);
+    arp_request.hardware_size
+    
 }
 
-
-void arp_reply(struct arp_packet *request) {
+// Send arp reply
+void arp_reply(struct arp_packet *reply) {
 
     struct arp_packet arp_reply;
-    arp_reply.hardware_type = htons(request->hardware_type);
+    arp_reply.hardware_type = htons(reply->hardware_type);
     arp_reply.hardware_size = 6;
-    arp_reply.protocol_type = htons(request->protocol_type);
+    arp_reply.protocol_type = htons(reply->protocol_type);
     arp_reply.protocol_size = 4;
     arp_reply.opcode = htons(ARP_REPLY);
 
-    ethernet_send_frame(request->src_mac, packet, packet_len, ETHERTYPE_ARP); 
+    ethernet_send_frame(reply->src_mac, packet, packet_len, ETHERTYPE_ARP); 
 
 }

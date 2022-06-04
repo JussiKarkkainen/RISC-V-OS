@@ -1,4 +1,6 @@
 #include "ethernet.h"
+#include "arp.h"
+#include "ipv4.h"
 #include "../libc/include/string.h"
 #include "../libc/include/stdio.h"
 #include <stdint.h>

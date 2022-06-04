@@ -1,6 +1,7 @@
 #ifndef IPV4_H
 #define IPV4_H
 
+#define ETHERTYPE_IPV4 0x0800
 
 struct ip4hdr {
     uint8_t version : 4;
