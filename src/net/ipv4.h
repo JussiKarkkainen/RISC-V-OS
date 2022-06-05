@@ -14,10 +14,10 @@ struct ipv4hdr {
     uint16_t flags : 3;
     uint16_t frag_offset : 13;
     uint8_t ttl;
-    uint8_t proto;
+    uint8_t protocol;
     uint16_t csum;
-    uint32_t saddr;
-    uint32_t daddr;
+    uint32_t srcaddr;
+    uint32_t dstaddr;
 } __attribute__((packed));
 
 
