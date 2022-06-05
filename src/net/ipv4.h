@@ -2,6 +2,8 @@
 #define IPV4_H
 
 #define ETHERTYPE_IPV4 0x0800
+#define PROTOCOL_TYPE_UDP 17
+#define PROTOCOL_TYPE_TCP 6
 
 struct ipv4hdr {
     uint8_t version : 4;
