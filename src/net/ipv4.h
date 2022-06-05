@@ -4,6 +4,8 @@
 #define ETHERTYPE_IPV4 0x0800
 #define PROTOCOL_TYPE_UDP 17
 #define PROTOCOL_TYPE_TCP 6
+#define IPV4_VERSION 4
+#define IPV4_TTL 64
 
 struct ipv4hdr {
     uint8_t version : 4;
@@ -16,8 +18,8 @@ struct ipv4hdr {
     uint8_t ttl;
     uint8_t protocol;
     uint16_t csum;
-    uint32_t srcaddr;
-    uint32_t dstaddr;
+    uint32_t src_addr;
+    uint32_t dst_addr;
 } __attribute__((packed));
 
 uint16_t ipv4_checksum(void *addr, int size);
