@@ -19,5 +19,6 @@ struct arp_packet {
     uint8_t dst_ip[4];
 } __attribute__((packed));
 
+void arp_receive_packet(uint8_t *data, uint32_t len);
 
 #endif

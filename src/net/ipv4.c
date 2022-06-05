@@ -1,8 +1,9 @@
 #include "ipv4.h"
 #include "arp.h"
-#include <stded.h>
+#include "../libc/include/stdio.h"
+#include "../libc/include/string.h"
+#include <stdef.h>
 #include <arpa/inet.h>
-
 
 uint16_t ipv4_checksum(void *addr, int size) {
 
@@ -27,6 +28,17 @@ uint16_t ipv4_checksum(void *addr, int size) {
 
 
 void ipv4_send_packet(uint8_t *dst_ip_addr, uint8_t *data, int len) {
+
+    int packet_len = sizeof(ipv4hdr) + len;
+    struct ipv4hdr ipv4_header;
+    
+
+    uint32_t *packet = kalloc(packet_len);
+    memcpy(packet, &ipv4_header, sizeof(ipv4hdr));
+    memcpy(packet + sizeof(ipv4hdr), data, len);
+
+    ethernet_send_frame(dst_mac_addr, packet, packet_len, ETHERTYPE_IPV4);
+    kfree(packet); 
 }
 
 
