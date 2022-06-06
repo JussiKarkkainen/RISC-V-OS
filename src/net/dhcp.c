@@ -1,10 +1,30 @@
 #include "dhcp.h"
+#include "udp.h"
+#include "../libc/include/string.h"
+#include "../libc/include/stdio.h"
+#include <stddef.h>
+#include <arpa/inet.h>
 
+static uint32_t xid = 1;
 
 void dhcp_discover() {
+    
+    xid++;
 
+    struct dhcp_header dhcp_header;
+    dhcp_header.op = DHCP_DISCOVER;
+    dhcp_header.hlen = DHCP_HLEN;
+    dhcp_header.hops = 0;
+    dhcp_header.xid = htonl(xid);
+    dhcp_header.magic_cookie = htonl(DHCP_MAGIC_COOKIE);
+    dhcp_header.options = {DHCP_MESSAGE_TYPE, 0x01, DHCP_DISCOVER, 0xff};
 
-    udp_send_packet();
+    uint8_t *packet = kalloc(sizeof(struct dhcp_header));
+    memcpy(packet, &dhcp_header, sizeof(struct dhcp_header));
+
+    udp_send_packet(DHCP_CLIENT_PORT, packet, sizeof(struct dhcp_header);
+
+    kfree(packet);
 }
 
 

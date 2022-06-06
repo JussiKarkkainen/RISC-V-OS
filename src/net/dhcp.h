@@ -3,7 +3,9 @@
 
 #define DHCP_MAGIC_COOKIE 0x63825363
 #define DHCP_DISCOVER 0x01
-#define DHCP_OFFER    0x02
+#define DHCP_OFFER 0x02
+#define DHCP_HLEN 0x6
+#define DHCP_MESSAGE_TYPE 0x35
 
 struct dhcp_header {
     uint8_t op;
@@ -21,6 +23,7 @@ struct dhcp_header {
     uint8_t sname[64];
     uint8_t boot_file_name[128];
     uint8_t magic_cookie[4];
+    uint8_t options[1024];
 } __attribute__((packed));
 
 

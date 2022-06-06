@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+#define DHCP_SERVER_PORT 67
+#define DHCP_CLIENT_PORT 68
+
 struct udp_header {
     uint16_t src_port;
     uint16_t dst_port;
