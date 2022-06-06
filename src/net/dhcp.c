@@ -37,10 +37,16 @@ void dhcp_request(uint8_t request_ip) {
 
 
 
-void dhcp_receive_packet(dhcp_header *packet) {
+void dhcp_receive_packet(struct dhcp_header *packet) {
     
     struct dhcp_header dhcp_header;
     memcpy(&dhcp_header, packet, sizeof(dhcp_packet));
+    dhcp_header.xid = ntohl(dhcp_header.xid);
+
+    if (dhcp_header.xid != xid) {
+        kprintf("Transaction id doesn't match: dhcp_header.xid: %d should be: %d\n", dhcp_header.xid, xid);
+        return;
+    }
 
     switch (dhcp_header.op) {
         case: DHCP_OFFER_OP
