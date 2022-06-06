@@ -94,7 +94,6 @@ void init_queue(int index) {
 
 }
 
-
 int alloc_desc(void) {
     for (int i = 0; i < NUM; i++) {
         if (net.free[i]) {
@@ -119,7 +118,7 @@ int virtionet_send_packet(uint32_t *payload, unsigned int size) {
 
     char buffer[size + sizeof(virtio_net_header)];
     
-    virtio_net_header net_hdr = &buffer;
+    struct virtio_net_header net_hdr = &buffer;
     net_hdr.flags = VIRTIO_NET_HDR_F_NEEDS_CSUM;
     net_hdr.gso_type = VIRTIO_NET_HDR_GSO_NONE;
     net_header.csum_start = 0;

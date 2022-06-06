@@ -1,14 +1,17 @@
 #ifndef DHCP_H
 #define DHCP_H
 
+#define DHCP_MAGIC_COOKIE 0x63825363
+#define DHCP_DISCOVER 0x01
+#define DHCP_OFFER    0x02
 
 struct dhcp_header {
     uint8_t op;
     uint8_t hw_type;
     uint8_t hw_len;
     uint8_t hops;
-    uint32_t transaction_id;
-    uint16_t sec;
+    uint32_t xid;
+    uint16_t secs;
     uint16_t flags;
     uint32_t ciaddr;
     uint32_t yiaddr;
