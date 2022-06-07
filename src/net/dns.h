@@ -1,6 +1,7 @@
 #ifndef DNS_H
 #define DNS_H
 
+#include <stdint.h>
 
 struct dns_hdr {
     uint16_t id;
