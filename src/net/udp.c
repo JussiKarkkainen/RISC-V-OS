@@ -21,10 +21,13 @@ void udp_send_packet(uint8_t dst_ip, uint16_t src_port, uint16_t dst_port, void 
     uint8_t *pseudo_header = kalloc(pseudo_hdr_len);
     struct ipv4_pseudo_hdr pseudo_hdr;
 
+    pseudo_hdr.dst_ipaddr = dst_ip;
     pseudo_hdr.protocol = PROTOCOL_TYPE_UDP;
     pseudo_hdr.udp_len = sizeof(struct udp_header) + len;
+    pseudo_hdr.src_port = htons(src_port);
+    pseudo_hdr.dst_port = htons(dst_port);
     pseudo_hdr.udp_length = sizeof(struct upd_header) + len;
-    
+     
     memcpy(pseudo_header, &pseudo_hdr, sizeof(struct ipv4_pseudo_hdr));
 
     usp_header.checksum = ipv4_checksum(pseudo_header, pseudo_header_len);
