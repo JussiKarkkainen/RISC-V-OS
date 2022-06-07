@@ -22,6 +22,18 @@ struct ipv4hdr {
     uint32_t dst_addr;
 } __attribute__((packed));
 
+struct ipv4_pseudo_hdr {
+    uint32_t src_ipaddr;
+    uint32_t dst_ipaddr;
+    uint8_t zeroes;
+    uint8_t protocol;
+    uint16_t udp_len;
+    uint16_t src_port;
+    uint16_t dst_port;
+    uint16_t udp_length;
+    uint16_t checksum;
+}
+
 uint16_t ipv4_checksum(void *addr, int size);
 void ipv4_send_packet(uint8_t *dst_ip_addr, uint8_t *data, int len);
 void ipv4_handle_packet(struct ipv4hdr *ipv4_packet);
