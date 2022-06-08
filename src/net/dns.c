@@ -1,4 +1,5 @@
 #include "dns.h"
+#include "net.h"
 #include "../libc/include/string.h"
 #include "..öibc/include/stdio.h"
 #include "../kernel/pmm.h"
@@ -10,7 +11,6 @@ static uint16_t dns_id = 1;
 
 int dns_lookup(char *domain, uint8_t ip[4]) {
 
-
     // transmit
     struct dns_hdr dns_header;
     dns_header.id = htons(dns_id);
@@ -19,7 +19,7 @@ int dns_lookup(char *domain, uint8_t ip[4]) {
     
     // Tansform domain name into DNS query name, by replacing dots with numbers
     uint32_t domain_len = strlen(domain);
-    uint32_t data_len = (1 + domain_len + 5 ) * sizeof(uint8_t);
+    uint32_t data_len = (1 + domain_len + 5) * sizeof(uint8_t);
 
     char *tmp_domain = kalloc((domain_len + 1) * sizeof(char));
     strcat(tmp_domain, domain);
@@ -36,6 +36,7 @@ int dns_lookup(char *domain, uint8_t ip[4]) {
             pos++;
         }
     }
+
     // END
     data[j++] = 0;
     // Type
@@ -45,6 +46,7 @@ int dns_lookup(char *domain, uint8_t ip[4]) {
     data[j++] = (uint8_t)(DNS_CLASS_IN << 8);
     data[j++] = (uint8_t)(DNS_CLASS_IN);
 
+    kfree(tmp_domain);
 
     uint16_t packet_len = sizeof(struct dns_hdr) + data_len;
     uint8_t *packet = kalloc(packet_len);
@@ -53,15 +55,27 @@ int dns_lookup(char *domain, uint8_t ip[4]) {
 
     kfree(data);
 
-   
+    int sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
-
-   kfree(packet);
+    struct sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT_DNS);
+    server_addr.sin_addr.s_addr = inet_addr2(interface->dns_ip);
     
+    socklen_t server_addr_len = sizeof(struct sockaddr_in);
+
+    if (sendto(sockfd,
+             packet,
+             packet_len,
+             0,
+             (struct sockaddr*)&server_addr,
+             server_addr_len) < 0) {
+        
+        return -1;
+    }
+    
+    kfree(packet);
     dns_id++;
-
-
-
 
     // Receive
     uint8_t buffer[128];
