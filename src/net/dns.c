@@ -16,6 +16,34 @@ int dns_lookup(char *domain, uint8_t ip[4]) {
     dns_header.id = htons(dns_id);
     dns_header.qdcount = htons(0x0001);
     dns_header.flags = htons(0x0100);
+    
+    // Tansform domain name into DNS query name, by replacing dots with numbers
+    uint32_t domain_len = strlen(domain);
+    uint32_t data_len = (1 + domain_len + 5 ) * sizeof(uint8_t);
+
+    char *tmp_domain = kalloc((domain_len + 1) * sizeof(char));
+    strcat(tmp_domain, domain);
+    strcat(tmp_domain, ".");
+
+    uint32_t j = 0, pos = 0;    
+    for (uint32_t i = 0; i < domain_len + 1; i++) {
+        if (tmp_domain[i] == '.') {
+            data[j++] = i - pos;
+            
+            while (pos < i) {
+                data[j++] = tmp_domain[pos++];
+            }
+            pos++;
+        }
+    }
+    // END
+    data[j++] = 0;
+    // Type
+    data[j++] = (uint8_t)(DNS_TYPE_A << 8);
+    data[j++] = (uint8_t)(DNS_TYPE_A);
+    // Class
+    data[j++] = (uint8_t)(DNS_CLASS_IN << 8);
+    data[j++] = (uint8_t)(DNS_CLASS_IN);
 
 
     uint16_t packet_len = sizeof(struct dns_hdr) + data_len;
@@ -25,7 +53,10 @@ int dns_lookup(char *domain, uint8_t ip[4]) {
 
     kfree(data);
 
-    kfree(packet);
+   
+
+
+   kfree(packet);
     
     dns_id++;
 

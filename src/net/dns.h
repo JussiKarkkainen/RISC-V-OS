@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+#define DNS_TYPE_A 0x0001
+#define DNS_CLASS_IN 0x0001
+
 struct dns_hdr {
     uint16_t id;
     uint16_t flags;
