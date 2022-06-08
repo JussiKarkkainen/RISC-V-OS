@@ -15,6 +15,15 @@ struct dns_hdr {
     uint16_t arcount;
 } __attribute__((packed));
 
+struct dns_ans_hdr {
+    uint16_t name;
+    uint16_t type;
+    uint16_t class;
+    uint32_t ttl;
+    uint16_t data_len;
+} __attribute__((packed));
+
+
 int dns_lookup(char *domain, uint8_t ip[4]);
 
 

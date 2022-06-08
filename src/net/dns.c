@@ -86,7 +86,7 @@ int dns_lookup(char *domain, uint8_t ip[4]) {
     close(sockfd);
 
     struct dns_hdr dns_header;
-    memcpy(&dns_header, buf, sizeof(struct dns_hdr);
+    memcpy(&dns_header, buf, sizeof(struct dns_hdr));
     dns_header.id = ntohs(dns_header.id);
     dns_header.flags = ntohs(dns_header.flags);
     dns_header.qdcount = ntohs(dns_header.qdcount);
@@ -97,9 +97,39 @@ int dns_lookup(char *domain, uint8_t ip[4]) {
     uint8_t dns_data = buf + sizeof(struct dns_hdr):
 
 
+    uint16_t query_len = 0;
+    for (uint16_t query = 0; query < dns_header.qdcount; query++) {
+        while (dns_data[query_len++] != 0x00) {
+            ;
+        }
+        query_len += 2; // type
+        query_len += 2; // class
+    }
 
+    if (dns_ans_hdr.ancount > 0) {
+        struct dns_ans_hdr ans_header;
+        memcpy(&ans_header, dns_data + query_len + sizeof(struct dns_ans_hdr));
+        ans_header.name = ntohs(ans_header.name);
+        ans_header.type = ntohs(ans_header.type);
+        ans_header.class = ntohs(ans_header.class);
+        ans_header.ttl = ntohs(ans_header.ttl);
+        ans_header.data_len = ntohs(ans_header.data_len);
 
+        if (ans_header.class == DNS_CLASS_IN && answer_header.data_len == 4) {
+             memcpy(ip, dns_data + query_len + sizeof(struct dns_ans_hdr),
+             ans_header.data_len);
+        } else {
+            kprintf("wrong class type");
+            return -1;
+        }
+    } else {
+        kprintf("no answer"),
+        return -1;
+    }
 
+    }
+
+    return 0;
 }
 
 
