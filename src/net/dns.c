@@ -62,7 +62,7 @@ int dns_lookup(char *domain, uint8_t ip[4]) {
     server_addr.sin_port = htons(PORT_DNS);
     server_addr.sin_addr.s_addr = inet_addr2(interface->dns_ip);
     
-    socklen_t server_addr_len = sizeof(struct sockaddr_in);
+    uint32_t server_addr_len = sizeof(struct sockaddr_in);
 
     if (sendto(sockfd,
              packet,
@@ -79,8 +79,12 @@ int dns_lookup(char *domain, uint8_t ip[4]) {
 
     // Receive
     uint8_t buffer[128];
-    int num_bytes_received = recv(dns, buf);            // receive dns message, maybe through sockets, copy to buffer
-    
+    int num_bytes_received = recvfrom(sockfd, buf, sizeof(buf), 0, 
+                                     (struct sockaddr*)&server_addr, 
+                                     &server_addr_len);            // receive dns message, maybe through sockets, copy to buffer
+   
+    close(sockfd);
+
     struct dns_hdr dns_header;
     memcpy(&dns_header, buf, sizeof(struct dns_hdr);
     dns_header.id = ntohs(dns_header.id);

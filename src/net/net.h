@@ -17,6 +17,12 @@ struct sockaddr_in {
     unsigned char sin_zero[8];
 };
 
+int socket(int domain, int type, int protocol);
+int close(int socket);
+int sendto(int sockfd, void *buf, size_t len, int flags,
+                const struct sockaddr *dst_addr, uint32_t addrlen);
+int recvfrom(int sockfd, void *buf, size_t len, int flags,
+                struct sockaddr *src_addr, uint32_t *addrlen);
 
 
 #endif
