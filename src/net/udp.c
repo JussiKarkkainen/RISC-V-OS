@@ -4,7 +4,7 @@
 #include "../libc/include/stdio.h"
 #include <stddef.h>
 #include <stdint.h>
-#include <arpa/inet.h>
+#include "arpa/inet.h"
 
 
 uint16_t udp_checksum(struct udp_header *udp_header) {

@@ -3,7 +3,7 @@
 #include "../libc/include/string.h"
 #include "..öibc/include/stdio.h"
 #include "../kernel/pmm.h"
-#include <arpa/inet.h>
+#include "arpa/inet.h"
 #include <stddef.h>
 #include <stdint.h>
 

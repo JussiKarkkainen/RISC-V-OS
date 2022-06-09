@@ -3,7 +3,7 @@
 #include "../libc/include/string.h"
 #include "../libc/include/stdio.h"
 #include <stddef.h>
-#include <arpa/inet.h>
+#include "arpa/inet.h"
 
 static uint32_t xid = 1;
 

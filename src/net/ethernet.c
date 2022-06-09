@@ -5,7 +5,7 @@
 #include "../libc/include/stdio.h"
 #include <stdint.h>
 #include <stddef.h>
-#include <arpa/inet.h>
+#include "arpa/inet.h"
 
 
 void ethernet_send_frame(uint8_t dst_mac_addr, uint8_t *data, uint32_t len, uint16_t protocol) {

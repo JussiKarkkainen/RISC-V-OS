@@ -2,7 +2,7 @@
 #include "ipv4.h"
 #include "ethernet.h"
 #include "../libc/include/string.h"
-#include <arpa/inet.h>
+#include "arpa/inet.h"
 #include <stddef.h>
 
 

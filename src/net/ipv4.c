@@ -3,7 +3,7 @@
 #include "../libc/include/stdio.h"
 #include "../libc/include/string.h"
 #include <stdef.h>
-#include <arpa/inet.h>
+#include "arpa/inet.h"
 
 uint16_t ipv4_checksum(void *addr, int size) {
 
