@@ -1,15 +1,10 @@
-#include <string.h>
-#include <stdint.h>
-#include <stdio.h>
+#include "../net/net.h"
+#include "../libc/include/string.h"
+#include "../libc/include/stdio.h"
 #include <stddef.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <unistd.h>
+#include <stdint.h>
 
 int main() {
-
 
     char buf[2056];
     
@@ -25,14 +20,13 @@ int main() {
     int sockfd, cnt;
     
     if ((sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0) {
-   
-        printf("sockfd = %d\n", sockfd); 
-        printf("socket() returned error\n");
+        kprintf("sockfd = %d\n", sockfd); 
+        kprintf("socket() returned error\n");
         return -1;
     }
     
     if (connect(sockfd, res->ai_addr, res->ai_addrlen) < 0) {
-        printf("connect returned error");
+        kprintf("connect returned error");
         return -1;
     }  
 
@@ -47,7 +41,7 @@ int main() {
             break;
         }
         buf[n] = 0;
-        printf("%s\n", buf);
+        kprintf("%s\n", buf);
     }
 
     return 0;
