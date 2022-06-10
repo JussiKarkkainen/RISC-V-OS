@@ -24,6 +24,8 @@ int recvfrom(int sockfd, void *buf, size_t len, int flags,
 }
 
 int send(int socket, const void *buffer, size_t length, int flags) {
+
+    return(sendto(socket, buffer, length, flags, NULL, 0);
 }
 
 int recv(int socket, void *buffer, size_t length, int flags) {
