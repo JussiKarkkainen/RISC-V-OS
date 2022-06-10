@@ -1,8 +1,10 @@
-#ifndef NET_H
-#define NET_H
+#ifndef SYSNET_H
+#define SYSNET_H
 
 #include <stdint.h>
 #include <stddef.h>
+
+typedef socklen_t uint32_t;
 
 struct sockaddr {
     unsigned short sa_family;
@@ -19,7 +21,6 @@ struct sockaddr_in {
     struct in_addr sin_addr;
     unsigned char sin_zero[8];
 };
-
 
 
 struct addrinfo {
