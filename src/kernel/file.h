@@ -10,12 +10,13 @@
 #define CONSOLE 1
 
 struct file {
-    enum { FD_NONE, FD_PIPE, FD_INODE, FD_DEVICE } type;
+    enum { FD_NONE, FD_PIPE, FD_INODE, FD_DEVICE, FD_SOCKET } type;
     int ref;
     char readable;
     char writable;
     struct pipe *pipe;
     struct inode *inode;
+    struct socket *socket;
     unsigned int offset;
     short major_dev_num;
 };
