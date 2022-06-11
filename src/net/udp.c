@@ -2,10 +2,12 @@
 #include "ipv4.h"
 #include "../libc/include/string.h"
 #include "../libc/include/stdio.h"
+#include "../kernel/locks.h"
 #include <stddef.h>
 #include <stdint.h>
 #include "arpa/inet.h"
 
+struct spinlock udplock;
 
 uint16_t udp_checksum(struct udp_header *udp_header) {
 }
@@ -57,4 +59,7 @@ void udp_receive_packet(struct udp_header packet) {
     }
 }
 
-
+int udp_init() {
+    initlock(&udplock, "udplock");
+    return 0;
+}
