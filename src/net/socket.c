@@ -31,10 +31,20 @@ int socket_write(struct socket *s, char *addr, int n) {
 
 
 int socket_sendto(struct socket *s, char *buf, int n, struct sockaddr *addr, int *addrlen) {
+
+    if (s->type != SOCK_DGRAM) {
+        return -1;
+    }
+    return udp_sendto(s->desc, (uint8_t *)buf, n, addr, addrlen);
 }
 
 
 int socket_recvfrom(struct socket *s, char *buf, int n, struct sockaddr *addr, int *addrlen) {
+
+    if (s->type != SOCK_DGRAM) {
+        return -1;
+    }
+    return udp_recvfrom(s->desc, (uint8_t *)buf, n, addr, addrlen);
 }
 
 
