@@ -1,4 +1,7 @@
 #include "net.h"
+#include "../kernel/file.h"
+#include "../kernel/syscall.h"
+#include "socket.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -9,25 +12,32 @@ int sys_getaddrinfo(const char *restrict node,
                 struct addrinfo **restrict res) {
 }
 
-int sys_socket(int domain, int type, int protocol) {
+int sys_socket(void) {
 
 }
 
-int sys_sendto(int sockfd, const void *buf, size_t len, int flags,
-               const struct sockaddr *dest_addr, socklen_t addrlen) {
+int sys_sendto(void) {
 
 }
 
-int sys_recvfrom(int sockfd, void *buf, size_t len, int flags,
-                 struct sockaddr *src_addr, socklen_t *addrlen) {
+int sys_recvfrom(void) {
 }
 
-int sys_send(int socket, const void *buffer, size_t length, int flags) {
-
-    return sendto(socket, buffer, length, flags, NULL, 0);
+int sys_send(void) {
+    
+    struct file *file;
+    int n;
+    char *addr;
+    
+    if (argfd(0, 0, &file) < 0 || argint(2, &n) < 0 || argptr(1, &addr, n) < 0) {
+        return -1;
+    }
+    if (file->type != FD_SOCKET) {
+        return -1;
+    }
+    return socket_write(file->socket, addr, n);
 }
 
-int sys_recv(int socket, void *buffer, size_t length, int flags) {
+int sys_recv(void) {
 
-    return recvfrom(socket, buf, length, flags, NULL, 9);
 }
