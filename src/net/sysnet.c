@@ -1,6 +1,7 @@
 #include "net.h"
 #include "../kernel/file.h"
 #include "../kernel/syscall.h"
+#include "../kernel/filesys.h"
 #include "socket.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -14,6 +15,19 @@ int sys_getaddrinfo(const char *restrict node,
 
 int sys_socket(void) {
 
+    int fd, domain, type, protocol;
+    struct file *file;
+
+    if (argint(0, &domain) < 0 || argint(1, &type) < 0 || argint(2, &protocol) < 0) {
+        return -1;
+    }
+    if ((file = socket_alloc(domain, type, protocol)) == 0 || (fd = fdalloc(file)) < 0) {
+        if (file) {
+            file_close(file);
+        }
+        return -1;
+    }
+    return fd;
 }
 
 int sys_sendto(void) {

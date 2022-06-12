@@ -1,6 +1,7 @@
 #include "socket.h"
 #include "../kernel/paging.h"
 #include "../kernel/file.h"
+#include "../kernel/filesys.h"
 #include <stdint.h>
 #include <stddef.h>
 
