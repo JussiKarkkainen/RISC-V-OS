@@ -39,5 +39,16 @@ int sys_send(void) {
 }
 
 int sys_recv(void) {
+    
+    struct file *file;
+    int n;
+    char *addr;
 
+    if (argfd(0, 0, &file) < 0 || argint(2, &n) < 0 || argptr(1, &addr, n) < 0) {
+        return -1;
+    }
+    if (file->type != FD_SOCKET) {
+        return -1;
+    }
+    return socket_recv(file->socket, addr, n);
 }
