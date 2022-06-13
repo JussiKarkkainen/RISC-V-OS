@@ -25,6 +25,12 @@
 #define SYS_LINK 19
 #define SYS_MKDIR 20
 #define SYS_CLOSE 21
+#define SYS_socket 22
+#define SYS_recv 23
+#define SYS_send 24
+#define SYS_recvfrom 25
+#define SYS_sendto 26
+
 
 #define O_RDONLY  0x000
 #define O_WRONLY  0x001

@@ -9,7 +9,19 @@
 
 struct spinlock udplock;
 
-uint16_t udp_checksum(struct udp_header *udp_header) {
+int udp_init() {
+    initlock(&udplock, "udplock");
+    return 0;
+}
+
+
+void udp_recvfrom(int desc, uint8_t *buf, int n, struct sockaddr *addr, int *addrlen) {
+}
+
+void udp_sendto(int desc, uint8_t *buf, int n, struct sockaddr, *addr, int *addrlen) {
+}
+
+void udp_open(void) {
 }
 
 
@@ -59,7 +71,3 @@ void udp_receive_packet(struct udp_header packet) {
     }
 }
 
-int udp_init() {
-    initlock(&udplock, "udplock");
-    return 0;
-}

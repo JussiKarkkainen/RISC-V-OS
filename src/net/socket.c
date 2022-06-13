@@ -25,7 +25,7 @@ struct *file socket_alloc(int domain, int type, int protocol) {
     }
 
     socket->type = type;
-    socket->desc = (type == SOCK_STREAM ? tcp_open() : udp_open);
+    socket->desc = (type == SOCK_STREAM ? tcp_open() : udp_open());
     file->type = FD_SOCKET;
     file->readable = 1;
     file->writable = 1;

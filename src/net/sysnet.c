@@ -6,12 +6,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-
-int sys_getaddrinfo(const char *restrict node,
-                const char *restrict service,
-                const struct addrinfo *restrict hints,
-                struct addrinfo **restrict res) {
+/* Optional, can be filled by hand
+int sys_getaddrinfo(void) {
 }
+*/
 
 int sys_socket(void) {
 
