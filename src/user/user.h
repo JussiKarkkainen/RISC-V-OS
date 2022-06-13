@@ -30,6 +30,13 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+int socket(int, int, int);
+int connect(int struct sockaddr *, int);
+int recv(int, char *, int);
+int send(int, char *, int);
+int recvfrom(int, char *, int, struct sockaddr *, int *);
+int sendto(int, char *, int, stuct sockaddr *, int *);
+
 
 int stat(const char*, struct stat*);
 char* strcpy(char*, const char*);
