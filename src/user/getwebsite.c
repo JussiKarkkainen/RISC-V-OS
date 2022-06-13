@@ -10,22 +10,21 @@ int main() {
     
     char *header = "GET / HTTP/1.1\r\nHost: info.cern.ch\r\n\r\nConnection: close\r\n\r\n";
 
-    struct addrinfo hints, *res; 
-    memset(&hints, 0, sizeof(hints));
-
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    getaddrinfo("info.cern.ch", "80", &hints, &res);
-    
     int sockfd, cnt;
     
-    if ((sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0) {
+    struct sockaddr_in addr;
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(80);
+    addr.sin_addr.s_addr = inet_addr("188.184.21.108");
+    memset(addr.sin_zero, '\0', sizeof(addr.sin_zero));
+
+    if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
         kprintf("sockfd = %d\n", sockfd); 
         kprintf("socket() returned error\n");
         return -1;
     }
     
-    if (connect(sockfd, res->ai_addr, res->ai_addrlen) < 0) {
+    if (connect(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
         kprintf("connect returned error");
         return -1;
     }  
