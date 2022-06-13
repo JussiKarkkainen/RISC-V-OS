@@ -3,9 +3,14 @@
 #include "../libc/include/string.h"
 #include "../libc/include/stdio.h"
 #include "../kernel/locks.h"
+#include "socket.h"
 #include <stddef.h>
 #include <stdint.h>
 #include "arpa/inet.h"
+
+// udp_recvfrom and udp_sendto are used to interface with socket layer
+// while udp_send/receive_packet actually sends the packet
+
 
 struct spinlock udplock;
 
@@ -16,9 +21,17 @@ int udp_init() {
 
 
 void udp_recvfrom(int desc, uint8_t *buf, int n, struct sockaddr *addr, int *addrlen) {
+
+
 }
 
 void udp_sendto(int desc, uint8_t *buf, int n, struct sockaddr, *addr, int *addrlen) {
+
+    struct sockaddr_in *sin;
+    
+    sin = (struct sockaddr_in *)addr;
+    
+    return udp_send_packet(dst_ip, src_port, buf, n, &sin->sin_addr, sin->sin_port);
 }
 
 void udp_open(void) {
