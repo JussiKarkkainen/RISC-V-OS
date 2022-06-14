@@ -125,6 +125,8 @@ void tcp_receive_packet(struct *ipv4hdr, uint8_t *data) {
 void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num, uint32_t ack_num, uint8_t flags, uint8_t buf, int len) {
     uint8_t segment[1500];
     struct tcp_header *tcp_header;
+    uint32_t pseudo;
+    uint32_t self, peer;
 
     memset(&segment, 0, sizeof(segment));
 
@@ -138,9 +140,21 @@ void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num, uint32_t ac
     tcp_header->window_size = htons(cb.receive.wnd);
     tcp_header->tcp_checksum = 0;
     tcp_header->urgent_pointer = 0;
+    
+    memcpy(hdr + 1, buf, len);
+    //self = ((struct netif_ip *)cb->net_iface)->unicast;
+    peer = cb->peer.addr;
+    pseudo += (self >> 16) & 0xffff;
+    pseudo += self & 0xffff;
+    pseudo += (peer >> 16) & 0xffff;
+    pseudo += peer & 0xffff;
+    pseudo += htons((uint16_t)PROTOCOL_TYPE_TCP);
+    pseudo += htons(sizeof(struct tcp_header) + len);
+    //hdr->sum = cksum16((uint16_t *)hdr, sizeof(struct tcp_hdr) + len, pseudo);
+    ipv4_send_packet(cb->iface, IP_PROTOCOL_TCP, (uint8_t *)hdr, sizeof(struct tcp_hdr) + len, &peer);
+//    tcp_txq_add(cb, hdr, sizeof(struct tcp_hdr) + len);
+    return len; 
 
-
-    ipv4_send_packet();
 }
 
 
