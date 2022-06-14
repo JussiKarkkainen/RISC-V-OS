@@ -9,12 +9,23 @@
 // while tcp_send, and tcp_recv are used as an interface between
 // socket syscalls and tcp protocol
 
+#define TCP_CB_STATE_CLOSED      0
+#define TCP_CB_STATE_LISTEN      1
+#define TCP_CB_STATE_SYN_SENT    2
+#define TCP_CB_STATE_SYN_RCVD    3
 #define TCP_CB_STATE_ESTABLISHED 4
+#define TCP_CB_STATE_FIN_WAIT1   5
+#define TCP_CB_STATE_FIN_WAIT2   6
+#define TCP_CB_STATE_CLOSING     7
+#define TCP_CB_STATE_TIME_WAIT   8
 #define TCP_CB_STATE_CLOSE_WAIT  9
+#define TCP_CB_STATE_LAST_ACK    10
 
 #define TCP_CB_TABLE_SIZE 16
+
 #define SOCKET_INVALID(x) (x < 0 || x >= TCP_CB_TABLE_SIZE)
 #define TCP_CB_STATE_TX_ISREADY(x) (x->state == TCP_CB_STATE_ESTABLISHED || x->state == TCP_CB_STATE_CLOSE_WAIT)
+#define TCP_CB_STATE_RX_ISREADY(x) (x->state == TCP_CB_STATE_ESTABLISHED || x->state == TCP_CB_STATE_FIN_WAIT1 || x->state == TCP_CB_STATE_FIN_WAIT2)
 
 #define TCP_FLG_FIN 0x01
 #define TCP_FLG_SYN 0x02
@@ -76,6 +87,32 @@ void tcp_send(int desc, uint8_t *buf, int len) {
 
 
 void tcp_recv(int desc, uint8_t addr, int n) {
+    struct tcp_cb *cb;
+    int total, len;
+
+    if (SOCKET_INVALID(desc)) {
+        return -1;
+    }
+    acquire_lock(&tcplock);
+    cb = &cb_table[desc];
+    if (!cb->used) {
+        release_lock(&tcplock);
+        return -1;
+    }
+    while (!(total = sizeof(cb->window) - cb->receive.wnd)) {
+        if (!TCP_CB_STATE_RX_ISREADY(cb)) {
+            release(&tcplock);
+            return 0;
+        }
+        sleep(cb, &tcplock);
+    }
+    len = size < total ? size : total;
+    memcpy(buf, cb->window, len);
+    memmove(cb->window, cb->window + len, total - len);
+    cb->receive.wnd += len;
+    release_lock(&tcplock);
+    
+    return len;
 }
 
 
