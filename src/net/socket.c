@@ -1,4 +1,6 @@
 #include "socket.h"
+#include "udp.h"
+#include "tcp.h"
 #include "../kernel/paging.h"
 #include "../kernel/file.h"
 #include "../kernel/filesys.h"
@@ -25,7 +27,7 @@ struct *file socket_alloc(int domain, int type, int protocol) {
     }
 
     socket->type = type;
-    socket->desc = (type == SOCK_STREAM ? tcp_open() : udp_open());
+    socket->desc = (type == SOCK_STREAM ? tcp_assign_desc() : udp_open());
     file->type = FD_SOCKET;
     file->readable = 1;
     file->writable = 1;

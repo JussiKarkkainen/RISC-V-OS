@@ -37,16 +37,15 @@
 static struct spinlock tcplock;
 struct tcp_cb cb_table[TCP_CB_TABLE_SIZE];
 
-int tcp_init(void) {
+void tcp_init(void) {
     initlock(&tcplock, "tcplock");
-    return 0;
 }
 
 
 void tcp_connect(int desc, struct sockaddr *addr, int addrlen) {
 }
 
-void tcp_open(void) {
+void tcp_assign_desc(void) {
 
     struct tcp_cb *cb;
     acquire_lock(&tcplock);
@@ -122,7 +121,7 @@ void tcp_receive_packet(struct *ipv4hdr, uint8_t *data) {
 }
 
 
-void tcp_send_packet() {
+void tcp_send_packet(uint8_t *segment, size_t len, ip_addr_t *src, ip_addr_t *dst, struct net_interface *net_iface) {
 
     ipv4_send_packet();
 }

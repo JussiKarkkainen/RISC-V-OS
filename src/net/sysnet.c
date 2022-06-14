@@ -42,7 +42,7 @@ int sys_sendto(void) {
     if (file->type != FD_SOCKET) {
         return -1;
     }
-    return socket_sendto(file-<socket, ptr, n, addr, addrlen);
+    return socket_sendto(file->socket, ptr, n, addr, addrlen);
 }
 
 int sys_recvfrom(void) {
