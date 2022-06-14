@@ -24,7 +24,10 @@ void tcp_connect(int desc, struct sockaddr *addr, int addrlen) {
 void tcp_open(void) {
 }
 
-void tcp_send(int desc, uint8_t *addr, int n) {
+void tcp_send(int desc, uint8_t *buf, int len) {
+
+
+    tcp_send_packet();
 }
 
 
@@ -39,6 +42,8 @@ void tcp_receive_packet(struct *ipv4hdr, uint8_t *data) {
 
 
 void tcp_send_packet() {
+
+    ipv4_send_packet();
 }
 
 
