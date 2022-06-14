@@ -28,9 +28,9 @@ struct tcp_tx_queue_head {
     struct tcp_txq_entry *tail;
 };
 
-struct tcp_cb {
+struct tcp_control_block {
     uint8_t used;
-    uint8_tv state;
+    uint8_t state;
     struct net_interface *net_iface;
     uint16_t port;
     struct {
@@ -54,10 +54,15 @@ struct tcp_cb {
     uint32_t irs;
     struct tcp_tx_queue_head txq;
     uint8_t window[PGESIZE];
-    struct tcp_cb *parent;
-    struct quque_head backlog;
+    struct tcp_control_block *parent;
+    struct queue_head backlog;
 }
 
-
+int tcp_init(void);
+void tcp_connect(int desc, struct sockaddr *addr, int addrlen);
+void tcp_assign_desc(void);
+void tcp_send(int desc, uint8_t *buf, int len);
+void tcp_recv(int desc, uint8_t addr, int n);
+void tcp_send_packet(
 
 #endif

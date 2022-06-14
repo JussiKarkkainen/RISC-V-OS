@@ -2,6 +2,7 @@
 #include "ipv4.h"
 #include "../kernel/locks.h"
 #include "socket.h"
+#include "arpa/inet.h"
 #include <stdint.h>
 #include <stddef.h>
 
@@ -35,7 +36,7 @@
 #define TCP_FLG_URG 0x20
 
 static struct spinlock tcplock;
-struct tcp_cb cb_table[TCP_CB_TABLE_SIZE];
+struct tcp_control_block cb_table[TCP_CB_TABLE_SIZE];
 
 void tcp_init(void) {
     initlock(&tcplock, "tcplock");
@@ -47,7 +48,7 @@ void tcp_connect(int desc, struct sockaddr *addr, int addrlen) {
 
 void tcp_assign_desc(void) {
 
-    struct tcp_cb *cb;
+    struct tcp_control_block *cb;
     acquire_lock(&tcplock);
     
     for (int i = 0; i < TCP_CB_TABLE_SIZE; i++) {
@@ -63,7 +64,7 @@ void tcp_assign_desc(void) {
 
 void tcp_send(int desc, uint8_t *buf, int len) {
     
-    struct tcp_cb *cb;
+    struct tcp_control_block *cb;
 
     if (SOCKET_INVALID(desc)) {
         return -1;
@@ -86,7 +87,7 @@ void tcp_send(int desc, uint8_t *buf, int len) {
 
 
 void tcp_recv(int desc, uint8_t addr, int n) {
-    struct tcp_cb *cb;
+    struct tcp_control_block *cb;
     int total, len;
 
     if (SOCKET_INVALID(desc)) {
@@ -121,7 +122,23 @@ void tcp_receive_packet(struct *ipv4hdr, uint8_t *data) {
 }
 
 
-void tcp_send_packet(uint8_t *segment, size_t len, ip_addr_t *src, ip_addr_t *dst, struct net_interface *net_iface) {
+void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num, uint32_t ack_num, uint8_t flags, uint8_t buf, int len) {
+    uint8_t segment[1500];
+    struct tcp_header *tcp_header;
+
+    memset(&segment, 0, sizeof(segment));
+
+    tcp_header = (struct tcp_header *)segment;
+    tcp_header->src_port = cb->port;
+    tcp_header->dst_port = cb->peer.port;
+    tcp_header->sequence_num = htonl(seq_num);
+    tcp_header->acknowledge_num = htonl(ack);
+    tcp_header->offset = (sizeof(struct tcp_header) >> 2) << 4;
+    tcp_header->flags = flags; 
+    tcp_header->window_size = htons(cb.receive.wnd);
+    tcp_header->tcp_checksum = 0;
+    tcp_header->urgent_pointer = 0;
+
 
     ipv4_send_packet();
 }
