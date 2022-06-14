@@ -24,7 +24,7 @@
 #define TCP_FLG_URG 0x20
 
 static struct spinlock tcplock;
-
+struct tcp_cb cb_table[TCP_CB_TABLE_SIZE];
 
 int tcp_init(void) {
     initlock(&tcplock, "tcplock");
@@ -36,6 +36,19 @@ void tcp_connect(int desc, struct sockaddr *addr, int addrlen) {
 }
 
 void tcp_open(void) {
+
+    struct tcp_cb *cb;
+    acquire_lock(&tcplock);
+    
+    for (int i = 0; i < TCP_CB_TABLE_SIZE; i++) {
+        cb = cb_table[i];
+        if (!cb->used) {
+            cb->used = 1;
+            release_lock(&tcplock);
+            return i;
+        }
+    release_lock(&tcplock);
+    return -1;
 }
 
 void tcp_send(int desc, uint8_t *buf, int len) {
