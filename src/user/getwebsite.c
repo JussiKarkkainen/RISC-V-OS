@@ -1,4 +1,4 @@
-#include "../net/sysnet.h"
+#include "../net/net.h"
 #include "../libc/include/string.h"
 #include "../libc/include/stdio.h"
 #include <stddef.h>

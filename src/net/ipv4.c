@@ -56,8 +56,6 @@ void ipv4_send_packet(uint8_t *dst_ip_addr, uint8_t *data, int len, uint16_t fla
 }
 
 
-
-
 void ipv4_handle_packet(struct ipv4hdr *ipv4_packet) {
 
     struct ipv4hdr ipv4_header;
@@ -75,9 +73,4 @@ void ipv4_handle_packet(struct ipv4hdr *ipv4_packet) {
             kprintf("Unrecognized ipv4 header protocol %p\n", ipv4_header.protocol);
     }
 }
-
-
-
-
-
 

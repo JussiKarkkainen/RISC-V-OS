@@ -92,5 +92,5 @@ int sys_recv(void) {
     if (file->type != FD_SOCKET) {
         return -1;
     }
-    return socket_recv(file->socket, addr, n);
+    return socket_read(file->socket, addr, n);
 }

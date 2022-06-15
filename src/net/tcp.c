@@ -158,5 +158,3 @@ void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num, uint32_t ac
 }
 
 
-
-
