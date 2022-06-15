@@ -1,5 +1,6 @@
 #include "udp.h"
 #include "ipv4.h"
+#include "net.h"
 #include "../libc/include/string.h"
 #include "../libc/include/stdio.h"
 #include "../kernel/locks.h"
@@ -11,13 +12,35 @@
 // udp_recvfrom and udp_sendto are used to interface with socket layer
 // while udp_send/receive_packet actually sends the packet
 
+#define UDP_CB_TABLE_SIZE 16
 
 struct spinlock udplock;
+
+struct udp_control_block cb_table[UDP_CB_TABLE_SIZE];
 
 int udp_init() {
     initlock(&udplock, "udplock");
     return 0;
 }
+
+
+void udp_assign_desc(void) {
+
+    struct udp_control_block *cb;
+    acquire_lock(&udplock);
+
+    for (i = 0; i < UDP_CB_TABLE_SIZE; i++) {
+        cb = cb_table[i];
+        if (!cb->used) {
+            cb->used = 1;
+            release_lock(&udplock);
+            return i;
+        }
+    kprintf("no free udp_control_blocks");
+    release_lock(&udplock);
+    return -1;
+}
+
 
 
 void udp_recvfrom(int desc, uint8_t *buf, int n, struct sockaddr *addr, int *addrlen) {
@@ -34,11 +57,9 @@ void udp_sendto(int desc, uint8_t *buf, int n, struct sockaddr, *addr, int *addr
     return udp_send_packet(dst_ip, src_port, buf, n, &sin->sin_addr, sin->sin_port);
 }
 
-void udp_open(void) {
-}
 
 
-void udp_send_packet(uint8_t dst_ip, uint16_t src_port, uint16_t dst_port, void *data, int len) {
+void udp_send_packet(struct net_interface *netif, uint8_t src_port, uint16_t dst_port, void *data, int len) {
 
     struct udp_header udp_header;
     udp_header.src_port = src_port;

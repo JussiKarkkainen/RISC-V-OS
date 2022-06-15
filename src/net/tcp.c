@@ -50,14 +50,16 @@ void tcp_assign_desc(void) {
 
     struct tcp_control_block *cb;
     acquire_lock(&tcplock);
-    
-    for (int i = 0; i < TCP_CB_TABLE_SIZE; i++) {
+    int i;
+
+    for (i = 0; i < TCP_CB_TABLE_SIZE; i++) {
         cb = cb_table[i];
         if (!cb->used) {
             cb->used = 1;
             release_lock(&tcplock);
             return i;
         }
+    kprintf("no free tcp control blocks");
     release_lock(&tcplock);
     return -1;
 }
