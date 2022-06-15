@@ -115,7 +115,7 @@ void udp_send_packet(struct net_interface *netif, uint8_t src_port, uint16_t dst
 }
 
 
-void udp_receive_packet(struct net_interface, netif, uint8_t *packet, struct ipv4hdr *ipv4_header) {
+void udp_receive_packet(struct net_interface netif, uint8_t *packet, struct ipv4hdr *ipv4_header) {
 
     uint8_t *ip_data = packet + (4 * ipv4_header->ihl);
     
@@ -128,7 +128,10 @@ void udp_receive_packet(struct net_interface, netif, uint8_t *packet, struct ipv
     udp_header.checksum = ntohs(udp_header.checksum);
 
     uint8_t *udp_data = ip_data + sizeof(struct udp_header);  
+    
+    
 
+/*
     switch (udp_header.dst_port) {
         case DHCP_CLIENT_PORT:
             dhcp_receive_packet(udp_data);
@@ -136,5 +139,7 @@ void udp_receive_packet(struct net_interface, netif, uint8_t *packet, struct ipv
         default:
             kprintf("Unrecognized udp_header.dst_port %d\n", udp_header.dst_port);
     }
+*/
+
 }
 

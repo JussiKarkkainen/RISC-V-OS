@@ -56,17 +56,17 @@ void ipv4_send_packet(uint8_t *dst_ip_addr, uint8_t *data, int len, uint16_t fla
 }
 
 
-void ipv4_handle_packet(struct ipv4hdr *ipv4_packet) {
+void ipv4_handle_packet(struct net_interface *netif, uint8_t *data, uint32_t data_len) {
 
     struct ipv4hdr ipv4_header;
     memcpy(&ipv4_header, data, sizeof(struct ipv4hdr));
 
     switch (ipv4_header.protocol) {
         case PROTOCOL_TYPE_UDP;
-            udp_receive_packet(&ipv4_header, data);
+            udp_receive_packet(netif, payload, &ipv4_header->src_addr, &ipv4_header->dst_addr, payload_len);
             break;
         case PROTOCOL_TYPE_TCP;
-            tcp_receive_packet(&ipv4_header, data);
+            tcp_receive_packet(netif, payload, &ipv4_header->src_addr, &ipv4_header->dst_addr, payload_len);
             break;
         
         default:
