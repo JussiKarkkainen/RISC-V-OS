@@ -54,7 +54,7 @@ void udp_sendto(int desc, uint8_t *buf, int n, struct sockaddr, *addr, int *addr
     
     sin = (struct sockaddr_in *)addr;
     
-    return udp_send_packet(dst_ip, src_port, buf, n, &sin->sin_addr, sin->sin_port);
+    return udp_send_packet(netif, src_port, sin->sin_port, &sin->sin_addr, buf, len);
 }
 
 
@@ -115,9 +115,19 @@ void udp_send_packet(struct net_interface *netif, uint8_t src_port, uint16_t dst
 }
 
 
-void udp_receive_packet(struct udp_header packet) {
+void udp_receive_packet(struct net_interface, netif, uint8_t *packet, struct ipv4hdr *ipv4_header) {
 
-    void *udp_data = (void *)packet + sizeof(struct udp_header); 
+    uint8_t *ip_data = packet + (4 * ipv4_header->ihl);
+    
+    struct udp_header udp_header = { 0 };
+    
+    memcpy(&udp_header, ip_data, sizeof(struct udp_header));
+    udp_header.src_port = ntohs(udp_header.src_port);
+    udp_header.dst_port = ntohs(udp_header.dst_port);
+    udp_header.len = ntohs(usp_header.len);
+    udp_header.checksum = ntohs(udp_header.checksum);
+
+    uint8_t *udp_data = ip_data + sizeof(struct udp_header);  
 
     switch (udp_header.dst_port) {
         case DHCP_CLIENT_PORT:
