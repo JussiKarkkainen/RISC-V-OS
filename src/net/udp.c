@@ -59,34 +59,57 @@ void udp_sendto(int desc, uint8_t *buf, int n, struct sockaddr, *addr, int *addr
 
 
 
-void udp_send_packet(struct net_interface *netif, uint8_t src_port, uint16_t dst_port, void *data, int len) {
+void udp_send_packet(struct net_interface *netif, uint8_t src_port, uint16_t dst_port, 
+                     uint32_t ip_addr, uint8_t *data, int len) {
 
     struct udp_header udp_header;
     udp_header.src_port = src_port;
     udp_header.dst_port = dst_port;
     udp_header.udp_length = htons(sizeof(struct udp_header) + len);
     
-    uint8_t *pseudo_header = kalloc(pseudo_hdr_len);
-    struct ipv4_pseudo_hdr pseudo_hdr;
+    uint16_t *pseudo_header = kalloc(pseudo_hdr_len);
+    // struct ipv4_pseudo_hdr pseudo_hdr;
 
+    pseudo_header[0] = netif->ip[0] | (netif->ip[1] << 8);
+    pseudo_header[1] = netif->ip[2] | (netif->ip[3] << 8);
+    pseudo_header[2] = (uint16_t)(ip_addr >> 16);
+    pseudo_header[3] = (uint16_t)(ip_addr);
+    pseudo_header[4] = htons(PROTOCOL_TYPE_UDP);
+    pseudo_header[5] = htons(len + sizeof(struct udp_header));
+    pseudo_header[6] = htons(src_port);
+    pseudo_header[7] = htons(dst_port);
+    pseudo_header[8] = htons(len + sizeof(struct udp_header));
+    
+    uint32_t idx = 9;
+    for (uint32_t i = 0; i < len; i += 2) {
+        if (i + 1 < len) {
+            pseudo_header[idx++] = data[i] | (data[i + 1] << 8);
+        } else {
+            pseudo_header[idx++] = data[i] | (0x0 << 8);
+        }
+    }
+
+/*
     pseudo_hdr.dst_ipaddr = dst_ip;
     pseudo_hdr.protocol = PROTOCOL_TYPE_UDP;
     pseudo_hdr.udp_len = sizeof(struct udp_header) + len;
     pseudo_hdr.src_port = htons(src_port);
     pseudo_hdr.dst_port = htons(dst_port);
     pseudo_hdr.udp_length = sizeof(struct upd_header) + len;
-     
-    memcpy(pseudo_header, &pseudo_hdr, sizeof(struct ipv4_pseudo_hdr));
+*/   
+ 
+    // memcpy(pseudo_header, &pseudo_hdr, sizeof(struct ipv4_pseudo_hdr));
 
-    usp_header.checksum = ipv4_checksum(pseudo_header, pseudo_header_len);
+    udp_header.checksum = ipv4_checksum(pseudo_header, pseudo_header_len);
    
     kfree(pseudo_header); 
 
     int data_len = sizeof(struct udp_header) + len;
     uint8_t *data = kalloc(data_len);
     memcpy(data, &udp_header, sizeof(struct udp_header);
-    
-    ipv4_send_packet(dst_addr, data, data_len, IPV4_DF_FLAG, PROTOCOL_TYPE_UDP);
+    memcpy(data + sizeof(struct udp_header), data, len);
+
+    ipv4_send_packet(netif, dst_addr, data, data_len, IPV4_DF_FLAG, PROTOCOL_TYPE_UDP);
 
     kfree(data);
 }
