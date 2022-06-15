@@ -115,8 +115,13 @@ void udp_send_packet(struct net_interface *netif, uint8_t src_port, uint16_t dst
 }
 
 
-void udp_receive_packet(struct net_interface netif, uint8_t *packet, struct ipv4hdr *ipv4_header) {
+void udp_receive_packet(struct net_interface netif, uint8_t *buf, uint32_t *src_addr, 
+                        uint32_t *dst_addr, uint32_t payload_len) {
 
+    struct udp_control_block *cb;
+    void *data;
+    struct udp_queue_head *udp_queue_hdr; 
+    
     uint8_t *ip_data = packet + (4 * ipv4_header->ihl);
     
     struct udp_header udp_header = { 0 };
@@ -129,8 +134,28 @@ void udp_receive_packet(struct net_interface netif, uint8_t *packet, struct ipv4
 
     uint8_t *udp_data = ip_data + sizeof(struct udp_header);  
     
-    
-
+    acquire_lock(&udplock);
+    int i;
+    for (i = 0; i < UDP_CB_TABLE_SIZE; i++) {
+        cb = cb_table[i];
+        if (cb->used && cb->port == hdr->dport) {
+            if ((data = (void *)kalloc()) == 0) {
+                release_lock(&udplock);
+                return;
+            }
+        udp_queue_hdr = data;
+        udp_queue_hdr->addr = *src_addr;
+        udp_queue_hdr->port = udp_header.src_port;
+        udp_queue_hdr->len = payload_len - sizeof(struct udp_header);
+        
+        memcpy(udp_queue_hdr + 1, udp_header + 1, len - sizeof(struct udp_header))
+        push_to_queue(&cb->queue, data, sizeof(struct udp_queue_head) + (payload_len - sizeof(struct udp_header)));
+        wakeup(cb);
+        release_lock(&udplock);
+        return; 
+        }
+    }
+    release_lock(&udplock);
 /*
     switch (udp_header.dst_port) {
         case DHCP_CLIENT_PORT:
