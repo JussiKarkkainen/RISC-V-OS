@@ -4,6 +4,7 @@
 #include "../libc/include/string.h"
 #include "../libc/include/stdio.h"
 #include "../kernel/locks.h"
+#include "../kernel/process.h"
 #include "socket.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -45,6 +46,49 @@ void udp_assign_desc(void) {
 
 void udp_recvfrom(int desc, uint8_t *buf, int n, struct sockaddr *addr, int *addrlen) {
 
+    struct sockaddr_in *ip_addr;
+    struct queue_entry *qe; 
+    struct udp_control_block *cb; 
+    struct queue_head *q_head;
+    struct udp_queue_head *udp_qheader;
+    int len;
+    
+
+    if (addr) {
+        if (*addrlen < sizeof(struct sockaddr_in)) {
+            return -1;
+        }
+        *addrlen = sizeof(struct sockaddr_in);
+        ip_addr = (struct sockaddr_in *)addr;
+
+
+    acquire_lock(&udplock);
+    cb = cb_table[desc];
+    
+    if (!cb->used) {
+        release_lock(&udplock);
+        return -1;
+    }
+
+    while (!(qe = get_from_queue(cb->qhead))) {
+        sleep(cb, &udplock);
+    }
+
+    release_lock(&udplock);
+    udp_qheader = (struct udp_queue_head *)qe->data;
+    
+    if (ip_addr) {
+        ip_addr->sin_family = AF_INET;
+        ip_addr->sin_addr = udp_qheader->addr;
+        ip_addr->sin_port = udp_qheader->port;
+    }
+
+    len = udp_qheader->len < n ? udp_qheader->len : n;
+
+    memcpy(buf, udp_qheader + 1, len);
+    kfree((uint32_t *)qe->data);
+    kfree((uint32_t *)qe);
+    return len; 
 
 }
 
