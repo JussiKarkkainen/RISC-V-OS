@@ -43,7 +43,6 @@ void udp_assign_desc(void) {
 }
 
 
-
 void udp_recvfrom(int desc, uint8_t *buf, int n, struct sockaddr *addr, int *addrlen) {
 
     struct sockaddr_in *ip_addr;
@@ -95,12 +94,38 @@ void udp_recvfrom(int desc, uint8_t *buf, int n, struct sockaddr *addr, int *add
 void udp_sendto(int desc, uint8_t *buf, int n, struct sockaddr, *addr, int *addrlen) {
 
     struct sockaddr_in *sin;
-    
+    struct net_interface *netif;
+    struct udp_control_block *cb;
+    uint16_t src_port;
+
+    if (addr->sa_family != AF_INET || addrlen < sizeof(struct sockaddr_in)) {
+        return -1;
+    }
+
     sin = (struct sockaddr_in *)addr;
     
+    acquire_lock(&udplock);
+    
+    cb = cb_table[desc];
+    if (!cb->used) {
+        release_lock(&udplock);
+        return -1;
+    }
+    
+    netif = cb->netif;
+    if (!netif) {
+        release_lock(&udplock);
+        return -1;
+    }
+    
+    if (!cb->port) {
+        release_lock(&udplock);
+        return -1;
+    }
+
+    src_port = cb->port;
     return udp_send_packet(netif, src_port, sin->sin_port, &sin->sin_addr, buf, len);
 }
-
 
 
 void udp_send_packet(struct net_interface *netif, uint8_t src_port, uint16_t dst_port, 

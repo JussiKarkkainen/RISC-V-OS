@@ -1,6 +1,8 @@
 #ifndef UDP_H
 #define UDP_H
 
+#include "net.h"
+#include "queue_handler.h"
 #include <stdint.h>
 
 #define DHCP_SERVER_PORT 67
