@@ -27,6 +27,19 @@ struct queue_entry push_to_queue(struct queue_head *q, void *data, int size) {
 
 
 struct queue_entry get_from_queue(struct queue_head *q) {
+    
+    struct queue_entry *qe;
+
+    qe = q->next;
+    q->next = qe->next;
+    
+    if (!queue->next) {
+        queue->tail = NULL;
+    }
+    
+    queue->num--;
+    return entry;
+
 }
 
 

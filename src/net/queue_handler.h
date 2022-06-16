@@ -4,7 +4,7 @@
 struct queue_entry {
     void *data;
     int size;
-    struct queue_entryentry next;
+    struct queue_entry *next;
 };
 
 struct queue_head {
