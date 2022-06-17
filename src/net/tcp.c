@@ -1,6 +1,8 @@
 #include "tcp.h"
 #include "ipv4.h"
 #include "../kernel/locks.h"
+#include "net.h"
+#include "queue_handler.h"
 #include "socket.h"
 #include "arpa/inet.h"
 #include <stdint.h>
@@ -10,41 +12,19 @@
 // while tcp_send, and tcp_recv are used as an interface between
 // socket syscalls and tcp protocol
 
-#define TCP_CB_STATE_CLOSED      0
-#define TCP_CB_STATE_LISTEN      1
-#define TCP_CB_STATE_SYN_SENT    2
-#define TCP_CB_STATE_SYN_RCVD    3
-#define TCP_CB_STATE_ESTABLISHED 4
-#define TCP_CB_STATE_FIN_WAIT1   5
-#define TCP_CB_STATE_FIN_WAIT2   6
-#define TCP_CB_STATE_CLOSING     7
-#define TCP_CB_STATE_TIME_WAIT   8
-#define TCP_CB_STATE_CLOSE_WAIT  9
-#define TCP_CB_STATE_LAST_ACK    10
-
-#define TCP_CB_TABLE_SIZE 16
-
 #define SOCKET_INVALID(x) (x < 0 || x >= TCP_CB_TABLE_SIZE)
 #define TCP_CB_STATE_TX_ISREADY(x) (x->state == TCP_CB_STATE_ESTABLISHED || x->state == TCP_CB_STATE_CLOSE_WAIT)
 #define TCP_CB_STATE_RX_ISREADY(x) (x->state == TCP_CB_STATE_ESTABLISHED || x->state == TCP_CB_STATE_FIN_WAIT1 || x->state == TCP_CB_STATE_FIN_WAIT2)
 
-#define TCP_FLG_FIN 0x01
-#define TCP_FLG_SYN 0x02
-#define TCP_FLG_RST 0x04
-#define TCP_FLG_PSH 0x08
-#define TCP_FLG_ACK 0x10
-#define TCP_FLG_URG 0x20
 
 static struct spinlock tcplock;
 struct tcp_control_block cb_table[TCP_CB_TABLE_SIZE];
+
 
 void tcp_init(void) {
     initlock(&tcplock, "tcplock");
 }
 
-
-void tcp_connect(int desc, struct sockaddr *addr, int addrlen) {
-}
 
 void tcp_assign_desc(void) {
 
@@ -62,6 +42,24 @@ void tcp_assign_desc(void) {
     kprintf("no free tcp control blocks\n");
     release_lock(&tcplock);
     return -1;
+}
+
+
+void tcp_connect(int desc, struct sockaddr *addr, int addrlen) {
+    
+    struct tcp_control_block *cb;
+    
+    if (SOCKT_INVALID(desc)) {
+        return -1;
+    }
+    
+    if (addr-sa_family != AF_INET) {
+        return -1;
+    }
+    
+    acquire_lock(&tcplock);
+    cb = cb_table[desc]; 
+
 }
 
 void tcp_send(int desc, uint8_t *buf, int len) {
@@ -121,7 +119,9 @@ void tcp_recv(int desc, uint8_t addr, int n) {
 void tcp_handle_state(struct tcp_control_block *cb, struct tcp_header *hdr, int len) {
     
     switch (cb->state) {
-    
+        case TCP_CB_STATE_CLOSED:
+        case TCP_CB_STATE_LISTEN:
+        case TCP_SB_STATE_SYN_SENT:      
     }
 }
 
@@ -157,7 +157,7 @@ void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num, uint32_t ac
     pseudo += peer & 0xffff;
     pseudo += htons((uint16_t)PROTOCOL_TYPE_TCP);
     pseudo += htons(sizeof(struct tcp_header) + len);
-    //hdr->sum = cksum16((uint16_t *)hdr, sizeof(struct tcp_hdr) + len, pseudo);
+    tcp_header->sum = ipv4_checksum((uint16_t *)hdr, sizeof(struct tcp_hdr) + len, pseudo);
     ipv4_send_packet(cb->net_iface, &peer, (uint8_t *)hdr, sizeof(struct tcp_hdr) + len, flags, IP_PROTOCOL_TCP);
 //    tcp_txq_add(cb, hdr, sizeof(struct tcp_hdr) + len);
     return len; 

@@ -4,6 +4,27 @@
 #include <stdint.h>
 #include "net.h"
 
+#define TCP_CB_STATE_CLOSED      0
+#define TCP_CB_STATE_LISTEN      1
+#define TCP_CB_STATE_SYN_SENT    2
+#define TCP_CB_STATE_SYN_RCVD    3
+#define TCP_CB_STATE_ESTABLISHED 4
+#define TCP_CB_STATE_FIN_WAIT1   5
+#define TCP_CB_STATE_FIN_WAIT2   6
+#define TCP_CB_STATE_CLOSING     7
+#define TCP_CB_STATE_TIME_WAIT   8
+#define TCP_CB_STATE_CLOSE_WAIT  9
+#define TCP_CB_STATE_LAST_ACK    10
+
+#define TCP_CB_TABLE_SIZE 16
+
+#define TCP_FLG_FIN 0x01
+#define TCP_FLG_SYN 0x02
+#define TCP_FLG_RST 0x04
+#define TCP_FLG_PSH 0x08
+#define TCP_FLG_ACK 0x10
+#define TCP_FLG_URG 0x20
+
 struct tcp_header {
     uint16_t src_port;
     uint16_t dst_port;
