@@ -3,6 +3,12 @@
 
 #include "../kernel/file.h"
 
+#define AF_INET 2
+#define PF_INET 2
+
+#define SOCK_STREAM 1
+#define SOCK_DGRAM 2
+
 typedef socklen_t uint32_t;
 
 struct sockaddr {

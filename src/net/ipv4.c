@@ -5,9 +5,9 @@
 #include <stdef.h>
 #include "arpa/inet.h"
 
-uint16_t ipv4_checksum(void *addr, int size) {
+uint16_t ipv4_checksum(void *addr, int size, uint32_t init) {
 
-    uint32_t sum = 0;
+    uint32_t sum = init;
     uint16_t *ptr = addr;
 
     while (size > 1) {
@@ -15,14 +15,14 @@ uint16_t ipv4_checksum(void *addr, int size) {
         size -= 2;
     }
 
-    if (count > 0) {
+    if (size > 0) {
         sum += *(uint8_t *)ptr;
 
     while (sum >> 16) {
         sum = (sum & 0xffff) + (sum >> 16);
     }
 
-    return ~ret;
+    return ~sum;
 }
 
 static uint16_t ipv4_id = 1;
@@ -42,7 +42,7 @@ void ipv4_send_packet(struct net_interface *netif, uint8_t *dst_ip_addr, uint8_t
     ipv4_header.protocol = protocol;
     ipv4_header.src_addr = src_addr;
     ipv4_header.dst_addr = dst_ip_addr;
-    ipv4_header.checksum = ipv4_checksum(&ipv4_header, sizeof(struct ipv4hdr) 
+    ipv4_header.checksum = ipv4_checksum(&ipv4_header, sizeof(struct ipv4hdr, 0) 
 
     ipv4_id++;
 
@@ -78,10 +78,10 @@ void ipv4_handle_packet(struct net_interface *netif, uint8_t *data, uint32_t dat
     }
 
     switch (ipv4_header.protocol) {
-        case PROTOCOL_TYPE_UDP;
+        case PROTOCOL_TYPE_UDP:
             udp_receive_packet(netif, payload, &ipv4_header->src_addr, &ipv4_header->dst_addr, payload_len);
             break;
-        case PROTOCOL_TYPE_TCP;
+        case PROTOCOL_TYPE_TCP:
             tcp_receive_packet(netif, payload, &ipv4_header->src_addr, &ipv4_header->dst_addr, payload_len);
             break;
         
