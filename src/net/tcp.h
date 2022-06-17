@@ -2,6 +2,7 @@
 #define TCP_H
 
 #include <stdint.h>
+#include "net.h"
 
 struct tcp_header {
     uint16_t src_port;

@@ -198,7 +198,7 @@ void udp_receive_packet(struct net_interface netif, uint8_t *buf, uint32_t *src_
     memcpy(&udp_header, ip_data, sizeof(struct udp_header));
     udp_header.src_port = ntohs(udp_header.src_port);
     udp_header.dst_port = ntohs(udp_header.dst_port);
-    udp_header.len = ntohs(usp_header.len);
+    udp_header.len = ntohs(udp_header.len);
     udp_header.checksum = ntohs(udp_header.checksum);
 
     uint8_t *udp_data = ip_data + sizeof(struct udp_header);  

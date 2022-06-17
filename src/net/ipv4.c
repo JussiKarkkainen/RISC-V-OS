@@ -27,7 +27,7 @@ uint16_t ipv4_checksum(void *addr, int size) {
 
 static uint16_t ipv4_id = 1;
 
-void ipv4_send_packet(uint8_t *dst_ip_addr, uint8_t *data, int len, uint16_t flags, uint8_t protocol) {
+void ipv4_send_packet(struct net_interface *netif, uint8_t *dst_ip_addr, uint8_t *data, int len, uint16_t flags, uint8_t protocol) {
 
     int packet_len = sizeof(struct ipv4hdr) + len;
     struct ipv4hdr ipv4_header;
@@ -57,9 +57,25 @@ void ipv4_send_packet(uint8_t *dst_ip_addr, uint8_t *data, int len, uint16_t fla
 
 
 void ipv4_handle_packet(struct net_interface *netif, uint8_t *data, uint32_t data_len) {
+    
+    struct ipv4hdr *ipv_4header;
+    uint16_t hdr_len;
 
-    struct ipv4hdr ipv4_header;
-    memcpy(&ipv4_header, data, sizeof(struct ipv4hdr));
+    ipv4_header = (struct ipv4hdr *)data;
+    hdr_len = ipv4_header.ihl << 2;          // hdr len in bytes
+    
+    payload = ((uint8_t *)ipv4_header) + hdr_len;
+    payload_len = ntohs(ipv4_header->len) - hdr_len;
+
+    if (!ipv4_header.ttl) {
+        kprintf("IPV4 time to live = 0");
+        return;
+    }
+
+    if ((ntohs(ipv4_header.offset) & 0x2000) || (ntohs(ipv4_header.offset) & 0x1fff)) {
+        kprintf("IP fragments not supported\n");
+        return;
+    }
 
     switch (ipv4_header.protocol) {
         case PROTOCOL_TYPE_UDP;

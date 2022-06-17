@@ -59,7 +59,7 @@ void tcp_assign_desc(void) {
             release_lock(&tcplock);
             return i;
         }
-    kprintf("no free tcp control blocks");
+    kprintf("no free tcp control blocks\n");
     release_lock(&tcplock);
     return -1;
 }
@@ -118,9 +118,14 @@ void tcp_recv(int desc, uint8_t addr, int n) {
 }
 
 
+void tcp_handle_state(struct tcp_control_block *cb, struct tcp_header *hdr, int len) {
+    
+    switch (cb->state) {
+    
+    }
+}
 
-
-void tcp_receive_packet(struct *ipv4hdr, uint8_t *data) {
+void tcp_receive_packet(struct net_interface *netif, uint8_t *segment, uint32_t *src_addr, uint32_t dst_addr, uint32_t len) {
 }
 
 
@@ -145,7 +150,7 @@ void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num, uint32_t ac
     
     memcpy(hdr + 1, buf, len);
     //self = ((struct netif_ip *)cb->net_iface)->unicast;
-    peer = cb->peer.addr;
+    peer = cb->peer.ip_addr;
     pseudo += (self >> 16) & 0xffff;
     pseudo += self & 0xffff;
     pseudo += (peer >> 16) & 0xffff;
@@ -153,7 +158,7 @@ void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num, uint32_t ac
     pseudo += htons((uint16_t)PROTOCOL_TYPE_TCP);
     pseudo += htons(sizeof(struct tcp_header) + len);
     //hdr->sum = cksum16((uint16_t *)hdr, sizeof(struct tcp_hdr) + len, pseudo);
-    ipv4_send_packet(cb->iface, IP_PROTOCOL_TCP, (uint8_t *)hdr, sizeof(struct tcp_hdr) + len, &peer);
+    ipv4_send_packet(cb->net_iface, &peer, (uint8_t *)hdr, sizeof(struct tcp_hdr) + len, flags, IP_PROTOCOL_TCP);
 //    tcp_txq_add(cb, hdr, sizeof(struct tcp_hdr) + len);
     return len; 
 
