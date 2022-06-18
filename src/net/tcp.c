@@ -13,8 +13,13 @@
 // socket syscalls and tcp protocol
 
 #define SOCKET_INVALID(x) (x < 0 || x >= TCP_CB_TABLE_SIZE)
-#define TCP_CB_STATE_TX_ISREADY(x) (x->state == TCP_CB_STATE_ESTABLISHED || x->state == TCP_CB_STATE_CLOSE_WAIT)
-#define TCP_CB_STATE_RX_ISREADY(x) (x->state == TCP_CB_STATE_ESTABLISHED || x->state == TCP_CB_STATE_FIN_WAIT1 || x->state == TCP_CB_STATE_FIN_WAIT2)
+
+#define TCP_CB_STATE_TX_ISREADY(x) (x->state == TCP_CB_STATE_ESTABLISHED \
+                                    || x->state == TCP_CB_STATE_CLOSE_WAIT)
+
+#define TCP_CB_STATE_RX_ISREADY(x) (x->state == TCP_CB_STATE_ESTABLISHED \
+                                    || x->state == TCP_CB_STATE_FIN_WAIT1 \
+                                    || x->state == TCP_CB_STATE_FIN_WAIT2)
 
 
 static struct spinlock tcplock;
@@ -45,10 +50,11 @@ void tcp_assign_desc(void) {
 }
 
 
-void tcp_connect(int desc, struct sockaddr *addr, int addrlen) {
+int tcp_connect(int desc, struct sockaddr *addr, int addrlen) {
     
     struct tcp_control_block *cb;
-    
+    struct sockaddr_in *sin;
+
     if (SOCKT_INVALID(desc)) {
         return -1;
     }
@@ -57,12 +63,31 @@ void tcp_connect(int desc, struct sockaddr *addr, int addrlen) {
         return -1;
     }
     
+    sin = (struct sockaddr_in *)addr;
+
     acquire_lock(&tcplock);
     cb = cb_table[desc]; 
+    
+    cb->peer.addr = sin->sin_addr;
+    cb->peer->port = sin->sin_port;
+    cb_receive->wnd = sizeof(cb->window);
 
+    cb->iss = isn_gen();
+    uint32_t seq_num = cb->iss;
+    
+    tcp_send_packet(cb, seq_num, TCP_FLAG_SYN, NULL, 0);
+     
+    cb->send.next += 1;
+    cb-state = TCP_CB_SYN_SENT;
+    while (cb->state == TCP_CB_SYN_SENT) {
+        sleep(&cb_table[desc], &tcplock);
+    }
+    release_lock(&tcplock);
+    return 0;
 }
 
-void tcp_send(int desc, uint8_t *buf, int len) {
+
+int tcp_send(int desc, uint8_t *buf, int len) {
     
     struct tcp_control_block *cb;
 
@@ -79,14 +104,15 @@ void tcp_send(int desc, uint8_t *buf, int len) {
         release_lock(&tcp_lock);
         return -1;
     }
-    tcp_send_packet(cb, cb->send.next, cb->receive.next, TCP_FLG_ACK | TCP_FLG_PSH, buf, len);
+    tcp_send_packet(cb, cb->send.next, cb->receive.next, 
+                    TCP_FLG_ACK | TCP_FLG_PSH, buf, len);
     cb->send.next += len;
     release_lock(&tcplock);
     return 0;
 }
 
 
-void tcp_recv(int desc, uint8_t addr, int n) {
+int tcp_recv(int desc, uint8_t addr, int n) {
     struct tcp_control_block *cb;
     int total, len;
 
@@ -116,7 +142,8 @@ void tcp_recv(int desc, uint8_t addr, int n) {
 }
 
 
-void tcp_handle_state(struct tcp_control_block *cb, struct tcp_header *hdr, int len) {
+void tcp_handle_state(struct tcp_control_block *cb, 
+                      struct tcp_header *hdr, int len) {
     
     switch (cb->state) {
         case TCP_CB_STATE_CLOSED:
@@ -125,11 +152,14 @@ void tcp_handle_state(struct tcp_control_block *cb, struct tcp_header *hdr, int 
     }
 }
 
-void tcp_receive_packet(struct net_interface *netif, uint8_t *segment, uint32_t *src_addr, uint32_t dst_addr, uint32_t len) {
+void tcp_receive_packet(struct net_interface *netif, uint8_t *segment, 
+                        uint32_t *src_addr, uint32_t dst_addr, uint32_t len) {
 }
 
 
-void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num, uint32_t ack_num, uint8_t flags, uint8_t buf, int len) {
+void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num, 
+                     uint32_t ack_num, uint8_t flags, uint8_t buf, int len) {
+    
     uint8_t segment[1500];
     struct tcp_header *tcp_header;
     uint32_t pseudo;
@@ -157,9 +187,13 @@ void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num, uint32_t ac
     pseudo += peer & 0xffff;
     pseudo += htons((uint16_t)PROTOCOL_TYPE_TCP);
     pseudo += htons(sizeof(struct tcp_header) + len);
-    tcp_header->sum = ipv4_checksum((uint16_t *)hdr, sizeof(struct tcp_hdr) + len, pseudo);
-    ipv4_send_packet(cb->net_iface, &peer, (uint8_t *)hdr, sizeof(struct tcp_hdr) + len, flags, IP_PROTOCOL_TCP);
-//    tcp_txq_add(cb, hdr, sizeof(struct tcp_hdr) + len);
+    tcp_header->sum = ipv4_checksum((uint16_t *)hdr, 
+                                     sizeof(struct tcp_hdr) + len, pseudo);
+    
+    ipv4_send_packet(cb->net_iface, &peer, (uint8_t *)hdr, 
+                     sizeof(struct tcp_hdr) + len, flags, IP_PROTOCOL_TCP);
+//  
+//  tcp_txq_add(cb, hdr, sizeof(struct tcp_hdr) + len);
     return len; 
 
 }
