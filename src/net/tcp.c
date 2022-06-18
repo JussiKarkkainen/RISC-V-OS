@@ -13,6 +13,7 @@
 // socket syscalls and tcp protocol
 
 #define SOCKET_INVALID(x) (x < 0 || x >= TCP_CB_TABLE_SIZE)
+#define FLAG_IS_SET(x, y) ((x & 0x3f) == (y))
 
 #define TCP_CB_STATE_TX_ISREADY(x) (x->state == TCP_CB_STATE_ESTABLISHED \
                                     || x->state == TCP_CB_STATE_CLOSE_WAIT)
@@ -179,9 +180,10 @@ void tcp_receive_packet(struct net_interface *netif, uint8_t *segment,
                         uint32_t *src_addr, uint32_t dst_addr, uint32_t len) {
 
     struct tcp_header *tcp_hdr;
-    struct tcp_control_block *cb;
+    struct tcp_control_block *cb, *tcb;
     uint32_t pseudo = 0;
-    
+    int i;
+
     if (len < sizeof(struct tcp_header)) {
         return;
     }
@@ -200,6 +202,37 @@ void tcp_receive_packet(struct net_interface *netif, uint8_t *segment,
     }
 
     acquire_lock(&tcplock);
+    for (i = 0; i < TCP_CB_TABLE_SIZE; i++) {
+        cb = cb_table[i];
+        if (!cb->used) {
+            if (!tcb) {
+                tcb = cb;
+            }
+        else if ((!cb->net_iface || cb->net_iface == iface) && cb->port == tcp_hdr->dst) {
+            if (cb->peer.addr == *src && cb->peer.port == hdr->src) {
+                break;
+            }
+            if (cb->state == TCP_CB_STATE_LISTEN && !lcb) {
+                lcb = cb;
+            }
+        }
+
+    }
+    if (cb = cb_table[TCP_CB_TABLE_SIZE]) {    
+        if (!tcb || !lcb || !FLAG_IS_SET(tcp_hdr, TCP_FLG_SIN)) {
+            release_lock(&tcplock);
+            return;
+        }
+        cb = tcb;
+        cb->used = 1;
+        cb->state = tcb->state;
+        cb->net_iface = iface;
+        cb->port = lcb->port;
+        cb->peer.addr = *src;
+        cb->peer.port = tcp_hdr->src_port;
+        cb->receive.wnd = sizeof(cb->window);
+        cb->parent = lcb;
+    }
 
     tcp_handle_state(cb, tcp_hdr, len);
     release_lock(&tcplock);
