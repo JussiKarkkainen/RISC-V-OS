@@ -281,4 +281,11 @@ void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num,
 
 }
 
+uint32_t isn_gen(uint32_t localip, uint16_t localport, 
+                 uint32_t remoteip, uint16_t remoteport) {
 
+    uint32_t m = get_time();
+    uint32_t hash = siphash(localip, localport, remoteip, remoteport);
+    uint32_t isn = m + hash;
+    return isn;
+}
