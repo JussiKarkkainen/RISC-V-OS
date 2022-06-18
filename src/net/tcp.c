@@ -177,6 +177,33 @@ void tcp_handle_state(struct tcp_control_block *cb,
 
 void tcp_receive_packet(struct net_interface *netif, uint8_t *segment, 
                         uint32_t *src_addr, uint32_t dst_addr, uint32_t len) {
+
+    struct tcp_header *tcp_hdr;
+    struct tcp_control_block *cb;
+    uint32_t pseudo = 0;
+    
+    if (len < sizeof(struct tcp_header)) {
+        return;
+    }
+
+    tcp_header = (struct tcp_header *)segment;
+    pseudo += *src >> 16;
+    pseudo += *src & 0xffff;
+    pseudo += *dst >> 16;
+    pseudo += *dst & 0xffff;
+    pseudo += htons((uint16_t)PROTOCOL_TYPE_TCP);
+    pseudo += htons(len);
+    
+    if (ipv4_checksum((uint16_t *)tcp_header, len, pseudo) != 0) {
+        kprintf("tcp receive checksum error\n");
+        return;
+    }
+
+    acquire_lock(&tcplock);
+
+    tcp_handle_state(cb, tcp_hdr, len);
+    release_lock(&tcplock);
+    return;
 }
 
 
