@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include "net.h"
 
+#define TCP_SRC_PORT_MIN 49152
+#define TCP_SRC_PORT_MAX 65535
+
 #define TCP_CB_STATE_CLOSED      0
 #define TCP_CB_STATE_LISTEN      1
 #define TCP_CB_STATE_SYN_SENT    2

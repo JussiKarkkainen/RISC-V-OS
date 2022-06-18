@@ -35,7 +35,7 @@ void tcp_assign_desc(void) {
 
     struct tcp_control_block *cb;
     acquire_lock(&tcplock);
-    int i;
+    int i, p;
 
     for (i = 0; i < TCP_CB_TABLE_SIZE; i++) {
         cb = cb_table[i];
@@ -52,8 +52,9 @@ void tcp_assign_desc(void) {
 
 int tcp_connect(int desc, struct sockaddr *addr, int addrlen) {
     
-    struct tcp_control_block *cb;
+    struct tcp_control_block *cb, *tmp;
     struct sockaddr_in *sin;
+    int i;
 
     if (SOCKT_INVALID(desc)) {
         return -1;
@@ -68,6 +69,28 @@ int tcp_connect(int desc, struct sockaddr *addr, int addrlen) {
     acquire_lock(&tcplock);
     cb = cb_table[desc]; 
     
+    if (!cb->used || cb->state != TCP_CB_STATE_CLOSED) {
+        release_lock(&tcplock);
+        return -1;
+    }
+
+    // Assign an ephemeral port as a source port
+    if (!cb_port) {
+        for (i = TCP_SRC_PORT_MIN; i <= TCP_SRC_PORT_MAX; i++) {
+           for (p = 0; p < TCP_CB_TABLE_SIZE; p++) {
+               tmp = cb_table[i];
+               if (tmp->used && tmp->port == htons((uint16_t)i)) {
+                   break;
+                }
+               cb->port = htons((uint16_t)i);
+               break;
+            }
+        if (!cb->port) {
+            release_lock(&tcplock);
+            return -1;
+        }
+    }
+
     cb->peer.addr = sin->sin_addr;
     cb->peer->port = sin->sin_port;
     cb_receive->wnd = sizeof(cb->window);
