@@ -86,13 +86,22 @@ void randinit(uint32_t flag) {
 }
 
 
-uint64_t rng() {
+uint8_t *siphash_key_gen(void) {
     randinit(1);
-    return rand(); 
+    uint64_t a = rand();
+    uint64_t b = rand();
+    uint8_t c[16] = a + b
+    return c; 
 }
 
 
+// http://cr.yp.to/siphash/siphash-20120918.pdf
+uint64_t siphash24(uint8_t *in, int inlen, uint8_t key[16], uint8_t out[8]) { 
 
-uint32_t siphash_4u32(uint32_t, uint32_t, uint32_t, uint32_t, siphash_key_t key) {
+    uint64_t v0 = UINT64_C(0x736f6d6570736575);
+    uint64_t v1 = UINT64_C(0x646f72616e646f6d);
+    uint64_t v2 = UINT64_C(0x6c7967656e657261);
+    uint64_t v3 = UINT64_C(0x7465646279746573);
 
+     
 }

@@ -285,7 +285,13 @@ uint32_t isn_gen(uint32_t localip, uint16_t localport,
                  uint32_t remoteip, uint16_t remoteport) {
 
     uint32_t m = get_time();
-    uint32_t hash = siphash(localip, localport, remoteip, remoteport);
+    
+    uint8_t *in = localip + localport + remoteip + remoteport;
+    int inlen = sizeof(*in);
+
+    key = siphash_key_gen();
+
+    uint32_t hash = (uint32_t)siphash24(in, inlen, key, k);
     uint32_t isn = m + hash;
     return isn;
 }
