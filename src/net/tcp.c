@@ -50,6 +50,32 @@ void tcp_assign_desc(void) {
     return -1;
 }
 
+int pushto_txq(struct tcb_control_block *cb, struct tcp_header *hdr, int len) {
+    
+   struct tcp_txq_entry *txqe = (struct tcp_txq_entry *)kalloc();
+   if (!txqe) {
+       return -1;
+    }  
+
+    txqe->segment = (struct tcp_header *)kalloc();
+    if (!txqe->segment) {
+        kfree((uint32_t)txqe);
+        return -1;
+    }
+    
+    memcpy(txqe->segment, hdr, len);
+    txqe->len = len;
+
+    if (cb->txq.head == NULL) {
+        cb->txq.head = txq;
+    } else {
+        cb->txq.tail->next = txq;
+    }
+    
+    cb->txq.tail = txq;
+
+    return 0;
+}
 
 int tcp_connect(int desc, struct sockaddr *addr, int addrlen) {
     
@@ -275,8 +301,8 @@ void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num,
     
     ipv4_send_packet(cb->net_iface, &peer, (uint8_t *)hdr, 
                      sizeof(struct tcp_hdr) + len, flags, IP_PROTOCOL_TCP);
-//  
-//  tcp_txq_add(cb, hdr, sizeof(struct tcp_hdr) + len);
+  
+    tcp_txq_add(cb, hdr, sizeof(struct tcp_hdr) + len);
     return len; 
 
 }
