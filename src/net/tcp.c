@@ -290,8 +290,9 @@ uint32_t isn_gen(uint32_t localip, uint16_t localport,
     int inlen = sizeof(*in);
 
     key = siphash_key_gen();
-
-    uint32_t hash = (uint32_t)siphash24(in, inlen, key, k);
-    uint32_t isn = m + hash;
+    uint8_t buf[8];
+    
+    siphash24(in, inlen, key, buf);
+    uint32_t isn = (uint32_t)(*buf + m);
     return isn;
 }
