@@ -227,9 +227,49 @@ void tcp_handle_state(struct tcp_control_block *cb,
                 tcp_send_packet(cb, seq_num, TCP_FLG_RST, NULL, 0);
                 return; 
 
-
-
         case TCP_SB_STATE_SYN_SENT:      
+            
+            if (FLAG_IS_SET(hdr->flags, TCP_FLG_ACK)) {
+                if (ntohl(hdr->ack_num) <= cb->iss || ntohl(hdr->ack_num) > cb->send.next) {
+                    if (FLAG_IS_SET(hdr->flags, TCP_FLG_RST)) {
+                        return;
+                    } else {
+                        seq_num = hdr->ack_num;
+                        tcp_send_packet(cb, seq_num, TCP_FLG_RST, NULL, 0);
+                        return;
+                    }
+
+            if (FLAG_IS_SET(hdr->flags, TCP_FLG_RST)) {
+                if (cb->send.next <= ntohl(hdr->ack_num) && tohl(hdr->ack_num) <= cb->send.next) {
+                    kprintf("error: connection reset\n");
+                }
+                return;
+            }
+            
+            // There's a step here I might still need to implement
+            // Check the security and precedence
+
+            if (FLAG_IS_SET(hdr->flags, TCP_FLG_SYN)) {
+                cb->receive.next = ntohl(hdr->seq_num) + 1;
+                cb->irs = htohl(hdr->seq_num);
+                if (FLAG_IS_SET(hdr->flags, TCP_FLG_ACK)) {
+                    cb->send.una = ntohl(hdr->ack_num);
+                    if (cb->send.una < cb->iss) {
+                        cb->state = TCP_CB_STATE_ESTABLISHED;
+                        seq_num = cb->send.next;
+                        ack = receive.next;
+                        tcp_send_packet(cb, seq_num, TCP_FLG_ACK, NULL, 0);
+                    }
+                    return;
+                }
+                seq_num = cb->iss;
+                ack = cb->receive.next;
+                tcp_send_packet(cb, seq_num, TCP_FLG_ACK | TCP_FLG_SYN, NULL, 0);
+            }
+            return;
+        
+        default:
+            break;
     }
 }
 
