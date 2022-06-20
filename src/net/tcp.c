@@ -191,13 +191,44 @@ int tcp_recv(int desc, uint8_t addr, int n) {
     return len;
 }
 
-
+// RFC793 pages 64-75
 void tcp_handle_state(struct tcp_control_block *cb, 
                       struct tcp_header *hdr, int len) {
     
+    uint32_t seq_num, ack;
+    int hdr_len, payload_len;
+    hdr_len = ((hdr->off >> 4) << 2);
+    payload_len = len - hdr_len;
+    
+    
     switch (cb->state) {
         case TCP_CB_STATE_CLOSED:
+            
+            if (FLAG_IS_SET(hdr->flags, TCP_FLG_RST)) {
+                return;
+            }
+            if (!FLAG_IS_SET(hdr->flags, TCP_FLG_ACK)) {
+                seq_num = 0;
+                ack = hdr->sequence_num + hdr->header_length;
+            } else {
+                seq_num = hdr->ack_num;
+                return;
+
         case TCP_CB_STATE_LISTEN:
+            
+            if (FLAG_IS_SET(hdr->flags, TCP_FLG_RST)) {
+                return;
+            }
+            if (FLAG_IS_SET(hdr->flags, TCP_FLG_ACK)) {
+                seq_num = hdr->ack_num;
+                return;
+            if (FLAG_IS_SET(hdr->flags, TCP_FLG_SYN)) {
+                seq_num = hdr->ack_num;
+                tcp_send_packet(cb, seq_num, TCP_FLG_RST, NULL, 0);
+                return; 
+
+
+
         case TCP_SB_STATE_SYN_SENT:      
     }
 }
