@@ -88,6 +88,6 @@ void tcp_connect(int desc, struct sockaddr *addr, int addrlen);
 void tcp_assign_desc(void);
 void tcp_send(int desc, uint8_t *buf, int len);
 void tcp_recv(int desc, uint8_t addr, int n);
-void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num, uint8_t flags, uint8_t buf, int len);
+void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num, uint32_t ack, uint8_t flags, uint8_t buf, int len);
 
 #endif

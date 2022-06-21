@@ -212,6 +212,7 @@ void tcp_handle_state(struct tcp_control_block *cb,
                 ack = hdr->sequence_num + hdr->header_length;
             } else {
                 seq_num = hdr->ack_num;
+                ack = 0;
                 return;
 
         case TCP_CB_STATE_LISTEN:
@@ -224,7 +225,8 @@ void tcp_handle_state(struct tcp_control_block *cb,
                 return;
             if (FLAG_IS_SET(hdr->flags, TCP_FLG_SYN)) {
                 seq_num = hdr->ack_num;
-                tcp_send_packet(cb, seq_num, TCP_FLG_RST, NULL, 0);
+                ack = 0;
+                tcp_send_packet(cb, seq_num, ack, TCP_FLG_RST, NULL, 0);
                 return; 
 
         case TCP_SB_STATE_SYN_SENT:      
@@ -235,7 +237,8 @@ void tcp_handle_state(struct tcp_control_block *cb,
                         return;
                     } else {
                         seq_num = hdr->ack_num;
-                        tcp_send_packet(cb, seq_num, TCP_FLG_RST, NULL, 0);
+                        ack = 0;
+                        tcp_send_packet(cb, seq_num, ack, TCP_FLG_RST, NULL, 0);
                         return;
                     }
 
@@ -258,13 +261,13 @@ void tcp_handle_state(struct tcp_control_block *cb,
                         cb->state = TCP_CB_STATE_ESTABLISHED;
                         seq_num = cb->send.next;
                         ack = receive.next;
-                        tcp_send_packet(cb, seq_num, TCP_FLG_ACK, NULL, 0);
+                        tcp_send_packet(cb, seq_num, ack, TCP_FLG_ACK, NULL, 0);
                     }
                     return;
                 }
                 seq_num = cb->iss;
                 ack = cb->receive.next;
-                tcp_send_packet(cb, seq_num, TCP_FLG_ACK | TCP_FLG_SYN, NULL, 0);
+                tcp_send_packet(cb, seq_num, ack, TCP_FLG_ACK | TCP_FLG_SYN, NULL, 0);
             }
             return;
         
@@ -276,7 +279,7 @@ void tcp_handle_state(struct tcp_control_block *cb,
         if (!FLAG_IS_SET(hdr->flags, TCP_FLG_RST)) {
             seq_num = cb->send.next;
             ack = cb->receive.next;
-            tcp_send_packet(cb, seq_num, TCP_FLG_ACK, NULL, 0);
+            tcp_send_packet(cb, seq_num, ack, TCP_FLG_ACK, NULL, 0);
         }
         return;
     }
@@ -325,7 +328,8 @@ void tcp_handle_state(struct tcp_control_block *cb,
         case TCP_CB_STATE_SYN_RCVD:
             if (!(hdr->ack_num <= cb->send.next && cb->send.una <= hdr->ack_num)) {
                 seq_num = hdr->ack_num;
-                tcp_send_packet(cb, seq_num, TCP_FLG_RST, NULL, 0);
+                ack = 0;
+                tcp_send_packet(cb, seq_num, ack, TCP_FLG_RST, NULL, 0);
             }
             cb->state = TCP_CB_STATE_ESTABLISHED;
 
@@ -353,15 +357,46 @@ void tcp_handle_state(struct tcp_control_block *cb,
         }
     }
 
-
-
-                
-            
-
-
+    if (plen) {
+        switch (cb->state) {
+            case TCP_CB_STATE_ESTABLISHED:
+            case TCP_CB_STATE_FIN_WAIT1:
+            case TCP_CB_STATE_DIN_WAIT2:
+                memcpy(cb->window + (sizeof(cb->window) - cb->rcv.wnd), (uint8_t *)hdr + hlen, plen);
+                cb->rcv.nxt = ntohl(hdr->seq_num) + plen;
+                cb->rcv.wnd -= plen; 
+                seq_num = cb->sedn.next;
+                ack = cb->receive.next;
+                tcp_send_packet(cb, seq_num, ack, TCP_FLG_ACK, NULL, 0);
+                break;
+            default:
+                break;
+        }
+    }     
     
-    
+    if (FLAG_IS_SET(hdr->flags, TCP_FLG_SYN)) {
+        cb->receive.next++;
+        tcp_send_packet(cb, cb->send.next, cb->receive.next, TCP_FLG_ACK, NULL, 0);
+        
+        switch (cb->state) {
+            case TCP_CB_STATE_SYN_RCVD:
+            case TCP_CB_STATE_ESTABLISHED:
+                cb->state = TCP_CB_STATE_CLOSE_WAIT;
+                wakeup(cb);
+                break;
+            case TCP_CB_STATE_FIN_WAIT1:
+                cb->state = TCP_CB_STATE_FIN_WAIT2;
+                break;
+            case TCP_CB_STATE_FIN_WAIT2:
+                cb->state = TCP_CB_STATE_TIME_WAIT;
+                wakeup(cb);
+                break;
+            default:
+                break;
+        }
+        return;
     }
+    return;
 }
 
 void tcp_receive_packet(struct net_interface *netif, uint8_t *segment, 
