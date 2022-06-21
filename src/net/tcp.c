@@ -270,6 +270,52 @@ void tcp_handle_state(struct tcp_control_block *cb,
         
         default:
             break;
+
+    // TO-DO implement check_seq() returns -1 if not valid
+    if (check_seq(hdr->sequence_num) < 0) {
+        if (!FLAG_IS_SET(hdr->flags, TCP_FLG_RST)) {
+            seq_num = cb->send.next;
+            ack = cb->receive.next;
+            tcp_send_packet(cb, seq_num, TCP_FLG_ACK, NULL, 0);
+        }
+        return;
+    }
+    if (FLAG_IS_SET(hdr->flags, TCP_FLG_RST)) {
+        
+        switch(cb->state) {
+            case TCP_CB_STATE_SYN_RCVD:
+                if (cb->parent) {
+                    cb->state = TCP_CB_STATE_LISTEN;
+                    return;
+                } else {
+                    kprintf("connection refused\n");
+                    cb->state = TCP_CB_STATE_CLOSED;
+                    return;
+                }
+
+            case TCP_CB_STATE_ESTABLISHED:
+            case TCP_CB_STATE_FIN_WAIT1:
+            case TCP_CB_STATE_FIN_WAIT2:
+            case TCP_CB_STATE_CLOSE_WAIT:
+                kprintf("connection reset\n");
+                cb->state = TCP_CB_STATE_CLOSED;
+                return;
+
+            case TCP_CB_STATE_CLOSING:
+            case TCP_CB_STATE_LAST_ACK:
+            case TCP_CB_STATE_TIME_WAIT:
+                cb->state = TCP_CB_STATE_CLOSED;
+                return;
+
+            default:
+                break;
+        }
+    }
+
+
+
+    
+    
     }
 }
 
