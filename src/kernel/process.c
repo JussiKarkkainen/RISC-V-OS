@@ -29,7 +29,7 @@ void map_kstack(uint32_t *pagetable) {
     struct process *proc;
 
     for (proc = p; proc < &p[MAXPROC]; proc++) {
-        uint32_t *phy_addr = kalloc();
+        uint32_t *phy_addr = kalloc(1);
         if (phy_addr == 0) {
             panic("map_kstack, phy_addr = 0, error with kalloc");
         }
@@ -49,6 +49,17 @@ void process_init(void) {
     }
 }
 
+unsigned char initcode[] = {
+  0x17, 0x05, 0x00, 0x00, 0x13, 0x05, 0x05, 0x02,
+  0x97, 0x05, 0x00, 0x00, 0x93, 0x85, 0x05, 0x02,
+  0x9d, 0x48, 0x73, 0x00, 0x00, 0x00, 0x89, 0x48,
+  0x73, 0x00, 0x00, 0x00, 0xef, 0xf0, 0xbf, 0xff,
+  0x2f, 0x69, 0x6e, 0x69, 0x74, 0x00, 0x00, 0x01,
+  0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00
+};
+
+/*
 // This is src/user/initcode.S
 unsigned char initcode[] = {
     0x17, 0x05, 0x00, 0x00, 0x13, 0x05, 0x45, 0x02,
@@ -60,6 +71,7 @@ unsigned char initcode[] = {
     0x00, 0x00, 0x00, 0x00
 };
 
+*/
 // First user process called from enter in kernel.c
 void init_user(void) {
     
@@ -76,7 +88,6 @@ void init_user(void) {
     proc->cwd = name_inode("/");
 
     proc->state = RUNNABLE;
-
     release_lock(&proc->lock);
 }
 
@@ -123,12 +134,12 @@ struct process *alloc_process(void) {
         }
     }
     return 0;
-    
+
     found:
         proc->process_id = alloc_pid();
         proc->state = USED;
 
-        if ((proc->trapframe = (struct trapframe *)kalloc()) == 0) {
+        if ((proc->trapframe = (struct trapframe *)kalloc(1)) == 0) {
             freeproc(proc);
             release_lock(&proc->lock);
             return 0;
@@ -190,7 +201,7 @@ int fork(void) {
     np->trapframe->a0 = 0;
 
     // increment reference counts on open file descriptors.
-    for (i = 0; i < NUMFILE; i++) {
+    for (i = 0; i < NFILE; i++) {
         if (p->openfile[i]) {
             np->openfile[i] = file_dup(p->openfile[i]);
         }
@@ -312,7 +323,6 @@ void wakeup(void *sleep_channel) {
         }
     }
 }
-
 // This is the scheduler for CPUS. Its called from enter()
 // and runs in an infinite loop. 
 // 1. Choose process to run
@@ -331,17 +341,13 @@ void cpu_scheduler(void) {
             if (proc->state == RUNNABLE) {
                 proc->state = RUNNING;
                 cpu->proc = proc;
-     
-     /*           
-                // Transfer replaces the cpus pc register (along with other registers) with the processes pc, 
-                // which leads to cpu executing said process
+                /*           
                 kprintf("sp %p\nra %p\ns0 %p\ns1 %p\ns2 %p\ns3 %p\ns4 %p\ns5 %p\ns6 %p\ns7 %p\ns8 %p\ns9 %p\ns10 %p\ns11 %p\n", 
                          proc->context.sp, proc->context.ra, proc->context.s0, proc->context.s1, proc->context.s2, proc->context.s3, 
                          proc->context.s4, proc->context.s5, proc->context.s6, proc->context.s7, proc->context.s8, proc->context.s9, 
                          proc->context.s10, proc->context.s11);
-                
-                procdump();
-*/
+                */
+    //            procdump();
                 transfer(&cpu->context, &proc->context);
                 kprintf("cpu1->proc->name %s\n", cpu->proc->name);           
                 cpu->proc = 0;
@@ -354,7 +360,7 @@ void cpu_scheduler(void) {
 void scheduler(void) {
     int intr_prev_state;
     struct process *proc = get_process_struct();
-    kprintf("name %d\n", get_cpu_struct()->depth_lock_intr_disable);
+    kprintf("name is now %s\n", proc->name);
     if (!is_holding(&proc->lock)) {
         panic("scheduler, is_holding");
     }
@@ -367,7 +373,6 @@ void scheduler(void) {
     if (get_intr()) {
         panic("scheduler, interrupts");
     }
-
     intr_prev_state = get_cpu_struct()->intr_prev_state;
     transfer(&proc->context, &get_cpu_struct()->context);
     get_cpu_struct()->intr_prev_state = intr_prev_state;
@@ -391,7 +396,6 @@ void sleep(void *sleep_channel, struct spinlock *lock) {
     proc->sleep_channel = sleep_channel;
     proc->state = SLEEPING;
     
-    kprintf("lockis %s\n", lock->name); 
     scheduler();
 
     proc->sleep_channel = 0;
@@ -438,7 +442,7 @@ void exit(int status) {
     }
 
     // Close all open files.
-    for (int fd = 0; fd < NUMFILE; fd++) {
+    for (int fd = 0; fd < NFILE; fd++) {
         if (proc->openfile[fd]) {
             struct file *f = proc->openfile[fd];
             file_close(f);

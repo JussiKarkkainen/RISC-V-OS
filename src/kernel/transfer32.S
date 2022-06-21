@@ -5,7 +5,6 @@
 
 
 .globl transfer
-.globl asmprintf
 transfer:
     
     sw ra, 0(a0)

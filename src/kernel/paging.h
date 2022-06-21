@@ -33,7 +33,7 @@ extern char mem_end[];
 
 // Functions from pmm.c
 void pmm_init(void);
-void *kalloc(void);
+void *kalloc(int size);
 //uint32_t *zalloc(void);
 void kfree(void *ptr);
 void test_alloc(void);

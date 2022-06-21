@@ -289,11 +289,11 @@ void tcp_handle_state(struct tcp_control_block *cb,
             case TCP_CB_STATE_SYN_RCVD:
                 if (cb->parent) {
                     cb->state = TCP_CB_STATE_LISTEN;
-                    return;
+                    break;
                 } else {
                     kprintf("connection refused\n");
                     cb->state = TCP_CB_STATE_CLOSED;
-                    return;
+                    break;
                 }
 
             case TCP_CB_STATE_ESTABLISHED:
@@ -302,17 +302,18 @@ void tcp_handle_state(struct tcp_control_block *cb,
             case TCP_CB_STATE_CLOSE_WAIT:
                 kprintf("connection reset\n");
                 cb->state = TCP_CB_STATE_CLOSED;
-                return;
+                break;
 
             case TCP_CB_STATE_CLOSING:
             case TCP_CB_STATE_LAST_ACK:
             case TCP_CB_STATE_TIME_WAIT:
                 cb->state = TCP_CB_STATE_CLOSED;
-                return;
+                break;
 
             default:
                 break;
         }
+        return;
     }
     
     if (FLAG_IS_SET(hdr->flags, TCP_FLG_SYN)) {

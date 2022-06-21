@@ -91,7 +91,7 @@ struct queue_buffer {
     uint16_t next;
 };
 
-
+/*
 struct virtio_desc {
     uint32_t addr;
     uint32_t len;
@@ -104,7 +104,7 @@ struct disk_avail {
     uint16_t idx;
     uint16_t ring[];
 };
-
+*/
 struct virtio_used_item {
     uint32_t id;
     uint32_t len;

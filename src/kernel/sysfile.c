@@ -79,7 +79,7 @@ int exec(char *path, char **argv) {
     struct prog_header ph;
     uint32_t *pagetable = 0, *oldpagetable;
     struct process *p = get_process_struct();
-
+    kprintf("jeelleo");
     begin_op();
 
     if ((ip = name_inode(path)) == 0) {
@@ -234,7 +234,7 @@ uint32_t sys_exec(void) {
             argv[i] = 0;
             break;
         }
-        argv[i] = (char *)kalloc();
+        argv[i] = (char *)kalloc(1);
         if (argv[i] == 0) {
             goto bad;
         }

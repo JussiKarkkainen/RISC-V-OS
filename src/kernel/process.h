@@ -58,16 +58,16 @@ struct process {
     int exit_state;
     int process_id;
 
+    struct process *parent;
+
     uint32_t kernel_stack;              // Adress of kernel stack
     uint32_t mem_size;
     
-    struct process *parent;
-
     uint32_t *pagetable;                // User page table
     struct trapframe *trapframe;
-    struct inode *cwd;                  // Current directory
-    struct file *openfile[NUMOFILES];
     struct context context;
+    struct file *openfile[NUMOFILES];
+    struct inode *cwd;                  // Current directory
     char name[16];    
 };
 

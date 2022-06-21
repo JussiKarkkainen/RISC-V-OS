@@ -37,24 +37,22 @@ OBJS = \
     $(KERNEL)/syscall.o \
     $(KERNEL)/sysproc.o \
     $(LIBCSTDIO)/putchar.o \
-    $(LIBCSTDIO)/asmprint.o \
-    $(NET)/virtio-net.o \
-    $(NET)/pcie.o
+    $(LIBCSTDIO)/asmprint.o 
+#    $(NET)/virtio-net.o \
+#    $(NET)/pcie.o
 
 
 AS = riscv64-unknown-elf-as
 ASFLAGS = -march=rv32ima -mabi=ilp32
 
-CXX = riscv64-unknown-elf-g++
-CXXFLAGS = -Wall -Wextra
-CXXFLAGS += -mcmodel=medany
-CXXFLAGS += -nostdlib -ffreestanding -lgcc
-CXXFLAGS += -march=rv32ima -mabi=ilp32
 
 CC = riscv64-unknown-elf-gcc
-CFLAGS = -Wall -Wextra
+CFLAGS = -Wall -O -fno-omit-frame-pointer -ggdb
+CFLAGS += -MD
 CFLAGS += -mcmodel=medany 
-CFLAGS += -nostdlib -ffreestanding -lgcc
+CFLAGS += -nostdlib -ffreestanding -fno-common -mno-relax
+CFLAGS += -I.
+CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
 CFLAGS += -march=rv32ima -mabi=ilp32
 
 OBJCOPY = riscv64-unknown-elf-objcopy
@@ -109,22 +107,6 @@ UPROGS = \
     $(USER)/_sh\
     $(USER)/_wc
 
-UOBJS = \
-    $(USER)/cat.o \
-    $(USER)/echo.o \
-    $(USER)/initcode.o \
-    $(USER)/init.o \
-    $(USER)/kill.o \
-    $(USER)/ln.o \
-    $(USER)/malloc.o \
-    $(USER)/mkdir.o \
-    $(USER)/printf.o \
-    $(USER)/rm.o \
-    $(USER)/sh.o \
-    $(USER)/ulibc.o \
-    $(USER)/usyscall.o \
-    $(USER)/wc.o
-    
 fs.img: src/makefs README.md $(UPROGS)
 	src/makefs fs.img README.md $(UPROGS)
 
@@ -133,7 +115,7 @@ clean:
 	*/*.o */*.d */*.asm */*.sym \
 	$(USER)/initcode $(USER)/initcode.out $(KERNEL)/kern fs.img \
 	src/makefs $(USER)/usyscall.S \
-	$(UPROGS) $(OBJS) $(UOBJS) 
+	$(UPROGS) 
 
 GDBPORT = $(shell expr `id -u` % 5000 + 25000)
 QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \

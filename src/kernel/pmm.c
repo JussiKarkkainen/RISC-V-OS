@@ -19,19 +19,15 @@ int page_align = 12;
 struct spinlock pmm_lock;
 
 void pmm_init(void) {
-    
     initlock(&pmm_lock, "pmmlock");
     
     // Bitmap starts at end 
     uint32_t *start_addr = (uint32_t *)PGROUNDUP((uint32_t)mem_end);
     
-    kprintf("start_addr %p\n", start_addr);
-    kprintf("mem_end %p\n", mem_end);
     int bitmap_size = HEAP_SIZE / page_size;
     memset(start_addr, 0, bitmap_size);
 
     alloc_start = (uint32_t)PGROUNDUP((uint32_t)mem_end + bitmap_size);
-    kprintf("alloc_start %p\n", alloc_start);
 }
 
 
@@ -51,10 +47,10 @@ void *kalloc(int size) {
                 release_lock(&pmm_lock);
                 return (uint32_t *)(alloc_start + (i * page_size));
             }
-        else {
+        } else {
             int num_pages = size / page_size;       // Make sure this rounds up
             if (!IS_SET(i)) {
-                int j;
+                uint32_t j;
                 int found = 1; 
                 for (j = i; j < (i + num_pages); j++) {
                     if (IS_SET(j)) {
@@ -67,9 +63,12 @@ void *kalloc(int size) {
                         SET_BIT(u);
                     }
                     release_lock(&pmm_lock);
-                    return (uint32_t *)(alloc_start + (i * page_size);
+                    return (uint32_t *)(alloc_start + (i * page_size));
                 }
                 
+            }
+        }
+
     }
     release_lock(&pmm_lock);
     panic("no more memory, kalloc");
@@ -79,7 +78,7 @@ void *kalloc(int size) {
 
 uint32_t *zalloc(void) {
 
-    uint32_t *addr = kalloc();
+    uint32_t *addr = kalloc(1);
 
     if (addr != 0) {
         uint32_t *ptr = addr;
@@ -114,9 +113,9 @@ void kfree(void *ptr) {
 // Used to verify that allocations work as expected
 void test_alloc(void) { 
         
-    uint32_t *a = kalloc();
-    uint32_t *o = kalloc();
-    uint32_t *s = kalloc();
+    uint32_t *a = kalloc(1);
+    uint32_t *o = kalloc(1);
+    uint32_t *s = kalloc(1);
     kprintf("first page %p\n", a); 
     kprintf("next page %p\n", o);
     kprintf("third page %p\n", s);

@@ -140,7 +140,6 @@ void console_intr(int c) {
 }
 
 void console_init(void) {
-
     initlock(&console.lock, "console lock");
 
     uart_configure();

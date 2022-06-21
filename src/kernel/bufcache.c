@@ -54,7 +54,7 @@ struct buffer *buffer_get(unsigned int dev, unsigned int blockno) {
     
     // Check if buffer is cached
     for (buf = buffer_cache.list_head.next; buf != &buffer_cache.list_head; buf = buf->next) {
-        if ((buf->dev == dev) && (buf->blockno == blockno)) {
+        if (buf->dev == dev && buf->blockno == blockno) {
             buf->refcount++;
             release_lock(&buffer_cache.lock);
             acquire_sleeplock(&buf->lock);
@@ -91,7 +91,7 @@ struct buffer *buffer_read(unsigned int dev, unsigned int blockno) {
 
 // Write to disk
 void buffer_write(struct buffer *buf) {
-    if (!is_holding_sleeplock) {
+    if (!is_holding_sleeplock(&buf->lock)) {
         panic("buffer_write");
     }
     disk_read_write(buf, 1);

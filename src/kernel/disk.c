@@ -229,7 +229,7 @@ void disk_read_write(struct buffer *buf, int write) {
     disk.desc[idx[1]].flags |= DESC_NEXT;
     disk.desc[idx[1]].next = idx[2];
 
-    disk.info[idx[0]].status = 0; // device writes 0 on success
+    disk.info[idx[0]].status = 0xff; // device writes 0 on success
     disk.desc[idx[2]].addr = (uint32_t) &disk.info[idx[0]].status & 0xffffffff;
     disk.desc[idx[2]].len = 1;
     disk.desc[idx[2]].flags = DESC_WRITE; // device writes the status
@@ -252,13 +252,12 @@ void disk_read_write(struct buffer *buf, int write) {
 
     // Wait for virtio_disk_intr() to say request has finished.
     while(buf->disk == 1) {
-        kprintf("sleep\n");
         sleep(buf, &disk.disk_lock);
     }
 
     disk.info[idx[0]].b = 0;
     free_chain(idx[0]);
-
+    
     release_lock(&disk.disk_lock);
     }
 }

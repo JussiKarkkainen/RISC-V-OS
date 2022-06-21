@@ -19,10 +19,10 @@ void enter(void) {
     
     if (which_cpu() == 0) {
         
-        console_init();     // Start console
+        console_init();                 // Start console
         kprintf_init();
         kprintf("%s\n", "Booting OS");
-        virtio_net_init();              // Initialize virtio-net driver
+//        virtio_net_init();              // Initialize virtio-net driver
         pmm_init();                     // Initialize physical memory manager
         kpage_init();                   // Initilaize kernel pagetable
         init_paging();                  // Initialize paging
@@ -35,7 +35,7 @@ void enter(void) {
         inode_init();                   // Initialize the inode table
         file_init();                    // Initialize file table
         disk_init();                    // Initialize virtio disk
-//        init_user();
+        init_user();
         __sync_synchronize();
 //        started = 1;
     }

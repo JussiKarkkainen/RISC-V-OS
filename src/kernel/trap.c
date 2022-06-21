@@ -8,6 +8,9 @@
 #include "plic.h"
 #include "paging.h"
 
+struct spinlock tickslock;
+unsigned int ticks;
+
 void ktrapvec();
 
 int handle_device_intr(void) {
@@ -38,7 +41,6 @@ int handle_device_intr(void) {
   
     // Check if software/timer interrupt
     else if (scause == SOFTWARE_INTR) {
-        
         // Device timer interrupts get turned into software interrupts
         if (which_cpu() == 0) {
             timer_interrupt();
@@ -66,7 +68,6 @@ void utrap(void) {
     uint32_t sstatus = get_sstatus(); 
     uint32_t scause = get_scause();
     int intr_result;
-
     // Check if trap comes from user mode
     if ((sstatus & SSTATUS_SPP) == 0) {
         panic("trap not from user mdoe");
@@ -140,7 +141,6 @@ void ktrap(void) {
     uint32_t scause = get_scause();
     uint32_t stval = get_stval();
     int intr_result = 2;
-    
     // Make sure interrupt comes from supervisor mode
     if ((sstatus & SSTATUS_SPP) == 0) {
         panic("trap not in supervisor mode");

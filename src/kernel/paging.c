@@ -23,7 +23,7 @@ static inline void satp_write(uint32_t kpagetable) {
 
 // create the kernel pagetable
 uint32_t *kpagemake(void) {
-    uint32_t *kpage = kalloc();
+    uint32_t *kpage = kalloc(1);
     memset(kpage, 0, PGESIZE);
 
     // Create a virtual memory map
@@ -78,7 +78,7 @@ uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc) {
         }
         // Turn phy_addr into pte
         else {
-            if (!alloc || ((pagetable = kalloc()) == 0)) {
+            if (!alloc || ((pagetable = kalloc(1)) == 0)) {
                 return 0;
             }
             *pte = (((uint32_t)pagetable >> 12) << 10) | PTE_V;
@@ -160,7 +160,7 @@ int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, i
 
 uint32_t *upaging_create(void) {
     uint32_t *pagetable;
-    pagetable = kalloc();
+    pagetable = kalloc(1);
     if (pagetable == 0) {
         return 0;
     }
@@ -176,7 +176,7 @@ void upaging_init(uint32_t *pagetable, unsigned char *src, unsigned int size) {
         panic("size >= PGESIZE, upaging_init()");
     }
 
-    mem = kalloc();
+    mem = kalloc(1);
     memset(mem, 0, PGESIZE);
     kmap(pagetable, 0, (uint32_t)mem, PGESIZE, PTE_W | PTE_R | PTE_X | PTE_U);
 
@@ -194,8 +194,9 @@ uint32_t uvmalloc(uint32_t *pagetable, uint32_t oldsize, uint32_t newsize) {
     }
 
     oldsize = (((oldsize) + PGESIZE-1) & ~(PGESIZE-1));      // Round up to pagesize
-    for (a = oldsize; a < newsize; a += PGESIZE) {
-        mem = kalloc();
+    a = oldsize;
+    for (; a < newsize; a += PGESIZE) {
+        mem = kalloc(1);
         if (mem == 0) {
             uvmdealloc(pagetable, a, oldsize);
             return 0;
@@ -254,7 +255,7 @@ int uvmcopy(uint32_t *old, uint32_t *new_addr, uint32_t size) {
         }
         pa = (((*pte) >> 10) << 12);
         flags = ((*pte) & 0x3ff);
-        if ((mem = kalloc()) == 0) {
+        if ((mem = kalloc(1)) == 0) {
             goto err;
         }
         memmove(mem, (char*)pa, PGESIZE);
@@ -299,7 +300,7 @@ void uvmunmap(uint32_t *pagetable, uint32_t va, uint32_t num_pages, int free) {
 
 void freewalk(uint32_t *pagetable) {
 
-    for (int i = 0; i < 1024; i++) {
+    for (int i = 0; i < 512; i++) {
         uint32_t pte = pagetable[i];
         if ((pte & PTE_V) && (pte & (PTE_R|PTE_W|PTE_X)) == 0) {
             uint32_t child = ((pte >> 10) << 12);
