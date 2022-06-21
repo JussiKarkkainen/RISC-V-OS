@@ -311,7 +311,52 @@ void tcp_handle_state(struct tcp_control_block *cb,
                 break;
         }
     }
+    
+    if (FLAG_IS_SET(hdr->flags, TCP_FLG_SYN)) {
+        kprintf("coneection reset\n");
+        cb->state = TCP_CB_STATE_CLOSED;
+        return;
+    }
+    if (!FLAG_IS_SET(hdr->flags, TCP_FLG_ACK)) {
+        return;
+    }
+    
+    switch (cb->state) {
+        case TCP_CB_STATE_SYN_RCVD:
+            if (!(hdr->ack_num <= cb->send.next && cb->send.una <= hdr->ack_num)) {
+                seq_num = hdr->ack_num;
+                tcp_send_packet(cb, seq_num, TCP_FLG_RST, NULL, 0);
+            }
+            cb->state = TCP_CB_STATE_ESTABLISHED;
 
+        case TCP_CB_STATE_ESTABLISHED:
+            
+        default:
+            break;
+    }
+
+    if (FLAG_IS_SET(hdr->flags, TCP_FLG_URG)) {
+
+        switch (cb->state) {
+            case TCP_CB_STATE_ESTABLISHED:
+            case TCP_CB_STATE_FIN_WAIT1:
+            case TCP_CB_STATE_FIN_WAIT2:
+                break;
+            case TCP_CB_STATE_CLOSE_WAIT:
+            case TCP_CB_STATE_CLOSING:
+            case TCP_CB_STATE_LAST_ACK:
+            case TCP_CB_STATE_TIME_WAIT:
+                break;
+
+            default:
+                break;
+        }
+    }
+
+
+
+                
+            
 
 
     
