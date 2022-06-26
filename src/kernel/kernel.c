@@ -8,6 +8,7 @@
 #include "file.h"
 #include "syscall.h"
 #include "disk.h"
+#include "regs.h"
 #include "../net/virtio-net.h"
 #include "../net/pcie.h"
 
@@ -18,10 +19,15 @@ static volatile int started = 0;
 void enter(void) {  
     
     if (which_cpu() == 0) {
-        
+
+        uint32_t a  = get_sie();
+        uint32_t b = a | 0x222L;
+        asm volatile("csrw sie, %0" : : "r" (b)); 
+
         console_init();                 // Start console
         kprintf_init();
-        kprintf("%s\n", "Booting OS");
+        kprintf("\n");
+        kprintf("%s\n\n", "Booting OS");
 //        virtio_net_init();              // Initialize virtio-net driver
         pmm_init();                     // Initialize physical memory manager
         kpage_init();                   // Initilaize kernel pagetable

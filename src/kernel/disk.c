@@ -200,6 +200,7 @@ void disk_read_write(struct buffer *buf, int write) {
     }
     else {
         buf0->type = DISK_BLOCK_READ;
+    } 
     
     buf0->reserved = 0;
     buf0->sector = sector;
@@ -251,6 +252,7 @@ void disk_read_write(struct buffer *buf, int write) {
     *R(DISK_QUEUE_NOTIFY) = 0; // value is queue number
 
     // Wait for virtio_disk_intr() to say request has finished.
+    kprintf("disk\n");
     while(buf->disk == 1) {
         sleep(buf, &disk.disk_lock);
     }
@@ -259,7 +261,7 @@ void disk_read_write(struct buffer *buf, int write) {
     free_chain(idx[0]);
     
     release_lock(&disk.disk_lock);
-    }
+    
 }
 
 

@@ -2,6 +2,6 @@
 
 int putchar(char c) {
     //char s = (char) c;
-    uart_putchar(c);
+    console_putc(c);
     return c;
 }

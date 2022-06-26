@@ -79,10 +79,11 @@ struct buffer *buffer_get(unsigned int dev, unsigned int blockno) {
 
 struct buffer *buffer_read(unsigned int dev, unsigned int blockno) {
     struct buffer *buf;
-
+    
     buf = buffer_get(dev, blockno);
     if (!buf->valid) {
         disk_read_write(buf, 0);
+        kprintf("r buf\n"); 
         buf->valid = 1;
     }
     return buf;

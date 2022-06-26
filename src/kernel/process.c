@@ -25,29 +25,36 @@ extern char uvec[];
 int nextpid = 1;
 
 // Map each processes kernel stack
-void map_kstack(uint32_t *pagetable) {
+void process_init(void) {
     struct process *proc;
-
+    initlock(&pid_lock, "pid_lock");
+    
     for (proc = p; proc < &p[MAXPROC]; proc++) {
-        uint32_t *phy_addr = kalloc(1);
+        
+        initlock(&proc->lock, "proc");
+        uint32_t *phy_addr = kalloc();
+        
         if (phy_addr == 0) {
             panic("map_kstack, phy_addr = 0, error with kalloc");
         }
         uint32_t va = (USERVEC - ((proc - p) + 1) * 2 * PGESIZE);
-        kmap(pagetable, va, (uint32_t)phy_addr, PGESIZE, PTE_R | PTE_W);
+        kmap(va, (uint32_t)phy_addr, PGESIZE, PTE_R | PTE_W);
+        proc->kernel_stack = va;
     }
+    init_paging();
 }
-
+/*
 void process_init(void) {
     struct process *proc;
     initlock(&pid_lock, "pid_lock");
-    initlock(&wait_lock, "wait_lock");
+   // initlock(&wait_lock, "wait_lock");
 
     for (proc = p; proc < &p[MAXPROC]; proc++) {
         initlock(&proc->lock, "proc");
         proc->kernel_stack = (USERVEC - ((int)(proc - p) + 1) * 2 * PGESIZE);;
     }
 }
+*/
 
 unsigned char initcode[] = {
   0x17, 0x05, 0x00, 0x00, 0x13, 0x05, 0x05, 0x02,
@@ -70,8 +77,8 @@ unsigned char initcode[] = {
     0x74, 0x00, 0x00, 0x24, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00
 };
-
 */
+
 // First user process called from enter in kernel.c
 void init_user(void) {
     
@@ -109,11 +116,11 @@ uint32_t *proc_pagetable(struct process *proc) {
     if (pagetable == 0) {
         return 0;
     }
-    if (kmap(pagetable, USERVEC, (uint32_t)uvec, PGESIZE, PTE_R | PTE_X) < 0) {
+    if (map_pages(pagetable, USERVEC, (uint32_t)uvec, PGESIZE, PTE_R | PTE_X) < 0) {
         uvmfree(pagetable, 0);
         return 0;
     }
-    if (kmap(pagetable, TRAPFRAME, (uint32_t)(proc->trapframe), PGESIZE, PTE_R | PTE_W) < 0) {
+    if (map_pages(pagetable, TRAPFRAME, (uint32_t)(proc->trapframe), PGESIZE, PTE_R | PTE_W) < 0) {
         uvmunmap(pagetable, USERVEC, 1, 0);
         uvmfree(pagetable, 0);
         return 0;
@@ -139,7 +146,7 @@ struct process *alloc_process(void) {
         proc->process_id = alloc_pid();
         proc->state = USED;
 
-        if ((proc->trapframe = (struct trapframe *)kalloc(1)) == 0) {
+        if ((proc->trapframe = (struct trapframe *)kalloc()) == 0) {
             freeproc(proc);
             release_lock(&proc->lock);
             return 0;
@@ -271,14 +278,14 @@ int wait(uint32_t addrs) {
 }
 
 void forkret(void) {
-    
     static int first = 1;
     release_lock(&get_process_struct()->lock);
-
+    
     if (first) {
         first = 0;
         filesys_init(ROOTDEV);
     }
+    kprintf("forkret\n");
     utrapret();
 }
 
@@ -336,7 +343,10 @@ void cpu_scheduler(void) {
     
     while (1) {
         enable_intr();
+        uint32_t sie = get_sie();
+        kprintf("sie %p\n", sie); 
         for (proc = p; proc < &p[MAXPROC]; proc++) {
+            //kprintf("helloe\n");
             acquire_lock(&proc->lock);
             if (proc->state == RUNNABLE) {
                 proc->state = RUNNING;
@@ -347,20 +357,23 @@ void cpu_scheduler(void) {
                          proc->context.s4, proc->context.s5, proc->context.s6, proc->context.s7, proc->context.s8, proc->context.s9, 
                          proc->context.s10, proc->context.s11);
                 */
-    //            procdump();
+                procdump();
                 transfer(&cpu->context, &proc->context);
-                kprintf("cpu1->proc->name %s\n", cpu->proc->name);           
+                kprintf("sleep->scheduler->tranfer here\n");
                 cpu->proc = 0;
             }
+            //kprintf("afret\n"); 
+            //procdump();
             release_lock(&proc->lock);
         }
     }
 }
 
 void scheduler(void) {
+    kprintf("sched");
     int intr_prev_state;
     struct process *proc = get_process_struct();
-    kprintf("name is now %s\n", proc->name);
+    //kprintf("name is now %d\n", proc->process_id);
     if (!is_holding(&proc->lock)) {
         panic("scheduler, is_holding");
     }
@@ -373,7 +386,9 @@ void scheduler(void) {
     if (get_intr()) {
         panic("scheduler, interrupts");
     }
+    //kprintf("cpu proc id %p\n", c->context.ra);
     intr_prev_state = get_cpu_struct()->intr_prev_state;
+    procdump();
     transfer(&proc->context, &get_cpu_struct()->context);
     get_cpu_struct()->intr_prev_state = intr_prev_state;
 }
@@ -388,7 +403,6 @@ void yield_process(void) {
 
 void sleep(void *sleep_channel, struct spinlock *lock) {
     struct process *proc = get_process_struct();
-    
     acquire_lock(&proc->lock);
     release_lock(lock);
     

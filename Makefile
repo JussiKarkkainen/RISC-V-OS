@@ -9,8 +9,8 @@ OBJS = \
     $(KERNEL)/mstart.o \
     $(KERNEL)/console.o \
     $(LIBCSTDIO)/kprintf.o \
+    $(KERNEL)/kalloc.o \
     $(KERNEL)/uart.o \
-    $(KERNEL)/pmm.o \
     $(KERNEL)/locks.o \
     $(LIBCSTRING)/memset.o \
     $(LIBCSTRING)/memcmp.o \
@@ -20,8 +20,8 @@ OBJS = \
     $(LIBCSTRING)/strlen.o \
     $(LIBCSTRING)/strncmp.o \
     $(KERNEL)/kernel.o \
-    $(KERNEL)/disk.o \
     $(KERNEL)/pipes.o \
+    $(KERNEL)/virtio_disk.o \
     $(KERNEL)/bufcache.o \
     $(KERNEL)/filesys.o \
     $(KERNEL)/paging.o \
@@ -41,6 +41,8 @@ OBJS = \
 #    $(NET)/virtio-net.o \
 #    $(NET)/pcie.o
 
+    #$(KERNEL)/pmm.o \
+    #$(KERNEL)/disk.o \
 
 AS = riscv64-unknown-elf-as
 ASFLAGS = -march=rv32ima -mabi=ilp32
@@ -123,7 +125,7 @@ QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
 	else echo "-s -p $(GDBPORT)"; fi)
 
 QEMU = qemu-system-riscv32
-QEMUOPT = -machine virt -bios none -kernel $(KERNEL)/kern -m 128M -smp 3 -nographic
+QEMUOPT = -machine virt -bios none -kernel $(KERNEL)/kern -m 1024M -smp 3 -nographic
 QEMUOPT += -drive file=fs.img,if=none,format=raw,id=x0
 QEMUOPT += -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
 QEMUOPT += -netdev user,id=network0 -device virtio-net-pci,netdev=network0

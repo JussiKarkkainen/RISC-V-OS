@@ -11,20 +11,24 @@
 struct spinlock tickslock;
 unsigned int ticks;
 
+extern char uvec[], utrapvec[], utrapreturn[];
+
 void ktrapvec();
+
+extern int handle_device_intr();
 
 int handle_device_intr(void) {
     // Check if external/device interrupt
     uint32_t scause = get_scause();
-    if (((scause & 0x80000000)) && ((scause & EXT_INTERRUPT) == 9)) {  
+    if (((scause & 0x80000000L)) && ((scause & EXT_INTERRUPT) == 9)) {  
         // Interrupt given by PLIC
         int intr_id = plic_read();
-
         // Check if interrupt is from uart, disk or neither
         if (intr_id == UART_INTR) {
             uart_intr();
         }
         else if (intr_id == VIRTIO_DISK) {
+            kprintf("disk interrutp\n");
             virtio_disk_intr();
         }
         else if (intr_id) {
@@ -135,37 +139,40 @@ void utrapret(void) {
 }
 
 void ktrap(void) {
-
     uint32_t sepc = get_sepc();
     uint32_t sstatus = get_sstatus();
     uint32_t scause = get_scause();
     uint32_t stval = get_stval();
-    int intr_result = 2;
+    int intr_result;
+    
     // Make sure interrupt comes from supervisor mode
     if ((sstatus & SSTATUS_SPP) == 0) {
         panic("trap not in supervisor mode");
     }
+    /*
     // Make sure interrupts are not enabled
     if (sstatus & SSTATUS_SIE) {
         panic("interrupts are enabled");
     }
+    */
+    if (get_intr() != 0) {
+        panic("trap not in supervisor mode");
+    }
 
-    // trap can be either device interrupt or exceptions.
-    // handle_interrupt deals with device interrupt. If trap is
-    // an external interrupt, we call panic() and stop executing
     if ((intr_result = handle_device_intr()) == 2) {
         // Print out register info and panic
-        kprintf("scause: %p\nsstatus: %p\nstval: %p\n", scause, sstatus, stval);
+        kprintf("scause: %p\nsstatus: %p\nstval: %p\nsepc %p\n", scause, sstatus, stval, sepc);
         panic("kernel interrupt, ktrap");
     }
-        
+     
     if (intr_result == 1) {
         yield_process();
+    }
 
     // Restore trap registers if changed by yield_process()
     write_sepc(sepc);
     write_sstatus(sstatus);
-    }
+    
 }
 
 void init_trapvec(void) {

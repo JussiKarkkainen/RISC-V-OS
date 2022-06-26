@@ -4,6 +4,11 @@
 #include <stdint.h>
 #include "trap.h"
 
+#define SIE_SEIE (1L << 9)
+#define SIE_STIE (1L << 5)
+#define SIE_SSIE (1L << 1)
+#define MIE_MTIE (1L << 7)
+
 static inline uint32_t get_mstatus(void) {
     uint32_t mstatus;
     asm volatile("csrr %0, mstatus" : "=r" (mstatus));
@@ -119,16 +124,19 @@ static inline void write_sip(uint32_t x) {
 }
 
 static inline void enable_intr(void) {
+    uint32_t a  = get_sie();
+    uint32_t b = a | 0x222L;
+    asm volatile("csrw sie, %0" : : "r" (b)); 
     write_sstatus(get_sstatus() | SSTATUS_SIE);
 }
 
 static inline void disable_intr(void) {
-    write_sstatus(get_sstatus() & SSTATUS_SIE_CLEAR);
+    write_sstatus(get_sstatus() & ~SSTATUS_SIE);
 }
 
 static inline int get_intr(void) {
     uint32_t sstatus = get_sstatus();
-    return (sstatus & SSTATUS_SIE);
+    return (sstatus & SSTATUS_SIE) != 0;
 }
 
 static inline void write_tp(uint32_t x) {

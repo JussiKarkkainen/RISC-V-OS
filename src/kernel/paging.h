@@ -11,11 +11,11 @@ extern uint32_t MEMORY_END, MEMORY_END, HEAP_START, TEXT_START, RODATA_START, DA
 
 extern char mem_end[];
 
-#define PTE_V (1 << 0)
-#define PTE_R (1 << 1)
-#define PTE_X (1 << 3)
-#define PTE_W (1 << 2)
-#define PTE_U (1 << 4)
+#define PTE_V (1L << 0)
+#define PTE_R (1L << 1)
+#define PTE_X (1L << 3)
+#define PTE_W (1L << 2)
+#define PTE_U (1L << 4)
 #define PGEOFFSET 12
 #define VPNMASK 0x3ff
 #define PGESIZE (1 << 12)
@@ -33,7 +33,7 @@ extern char mem_end[];
 
 // Functions from pmm.c
 void pmm_init(void);
-void *kalloc(int size);
+void *kalloc(void);
 //uint32_t *zalloc(void);
 void kfree(void *ptr);
 void test_alloc(void);
@@ -41,9 +41,11 @@ void test_alloc(void);
 // Functions from paging.c
 uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc);
 uint32_t fetch_pa_addr(uint32_t *pagetable, uint32_t va);
-int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int permission);
+void kmap(uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int permission);
+int map_pages(uint32_t *pagetable, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int perm);
 void kpage_init(void);
-uint32_t *kpagemake(void);
+uint32_t fetch_kpa(uint32_t va);
+//uint32_t *kpagemake(void);
 void init_paging(void);
 void test_alloc(void);
 void upaging_init(uint32_t *pagetable, unsigned char *src, unsigned int size);

@@ -6,11 +6,11 @@
 #include "../libc/include/stdio.h"
 #include "paging.h"
 
-#define MSTATUS_MIE (1 << 3)
-#define SIE_SEIE (1 << 9)
-#define SIE_STIE (1 << 5)
-#define SIE_SSIE (1 << 1)
-#define MIE_MTIE (1 << 7)
+#define MSTATUS_MIE (1L << 3)
+#define SIE_SEIE (1L << 9)
+#define SIE_STIE (1L << 5)
+#define SIE_SSIE (1L << 1)
+#define MIE_MTIE (1L << 7)
 
 #define CLINT_MTIMECMP(hartid) (CLINT + 0x4000 + 8*(hartid))
 #define CLINT_MTIME (CLINT + 0xBFF8)
@@ -18,7 +18,7 @@
 void enter();
 void timer_init();
 
-void tvec();
+extern void tvec();
 
 __attribute__((aligned (16))) char stacks[4096 * MAXCPUS];
 
@@ -45,7 +45,6 @@ void timer_init(void) {
 
     // Enable machine mode interrupts
     write_mstatus(get_mstatus() | MSTATUS_MIE);
-
     // Enable machine mode timer interrupts
     write_mie(get_mie() | MIE_MTIE);
 }
@@ -54,8 +53,8 @@ void mstart(void) {
     
     // Clear the mstatus MPP bits and set them to supervisor mode
     uint32_t mstatus = get_mstatus();
-    mstatus &= ~(3 << 11);
-    mstatus |= (1 << 11);
+    mstatus &= ~(3L << 11);
+    mstatus |= (1L << 11);
     write_mstatus(mstatus);
     // Set mepc to point to enter(), so when we call mret, execution jumps there
     write_mepc((uint32_t)enter);
@@ -67,8 +66,6 @@ void mstart(void) {
     // writing to the medeleg and mideleg registers and the mie registers
     write_medeleg(0xffff);
     write_mideleg(0xffff);
-    uint32_t sie = get_sie();
-    write_sie(sie | SIE_SEIE | SIE_STIE | SIE_SSIE);
     
     // Configure physical memory protection
     write_pmpaddr0(0xffffffff);
