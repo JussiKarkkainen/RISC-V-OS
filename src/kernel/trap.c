@@ -65,7 +65,6 @@ void timer_interrupt(void) {
 
 void utrap(void) {
     uint32_t sstatus = get_sstatus(); 
-    uint32_t scause = get_scause();
     int intr_result = 2;
     
     
@@ -84,9 +83,9 @@ void utrap(void) {
     proc->trapframe->saved_pc = get_sepc(); 
     
     // check if syscall
-    if (scause == 8) {
+    if (get_scause() == 8) {
         // Return to next instruction 
-        
+         
         if (proc->killed) {
             exit(-1);
         }
@@ -100,9 +99,9 @@ void utrap(void) {
     } else if ((intr_result = handle_device_intr()) != 2) {
 
     } else {
-        kprintf("Unexpexted scause in utrap(), scause: %x\n, sepc: %x\n, stval: %x\n", 
-                get_scause(), get_sepc(), get_stval());
-        
+        kprintf("Unexpexted scause in utrap(), scause: %p\n, sepc: %p\n, stval: %p\nname %s\n", 
+                get_scause(), get_sepc(), get_stval(), proc->name);
+         
         proc->killed = 1;
     }
     // Otherwise kill process

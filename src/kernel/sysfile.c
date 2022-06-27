@@ -73,13 +73,13 @@ int loadseg(uint32_t *pagetable, uint32_t va, struct inode *ip, unsigned int off
 int exec(char *path, char **argv) {
     char *s, *last;
     int i, off;
-    uint32_t argc, sz = 0, sp, ustack[MAXARG], stackbase;       // These need to be added
+    uint32_t argc, sz, sp, ustack[MAXARG], stackbase;       // These need to be added
     struct elf_header elf;
     struct inode *ip;
     struct prog_header ph;
     uint32_t *pagetable = 0, *oldpagetable;
     struct process *p = get_process_struct();
-    kprintf("jeelleo");
+    
     begin_op();
 
     if ((ip = name_inode(path)) == 0) {
@@ -99,6 +99,8 @@ int exec(char *path, char **argv) {
     if ((pagetable = proc_pagetable(p)) == 0) {
         goto bad;
     }
+       
+    sz = 0; 
 
     // Load program into memory.
     for (i=0, off=elf.phoff; i<elf.phnum; i++, off+=sizeof(ph)) {
@@ -115,12 +117,9 @@ int exec(char *path, char **argv) {
             goto bad;
         }
         
-        uint32_t sz1;
-        
-        if ((sz1 = uvmalloc(pagetable, sz, ph.vaddr + ph.memsz)) == 0) {
+        if ((sz = uvmalloc(pagetable, sz, ph.vaddr + ph.memsz)) == 0) {
             goto bad;
         }
-        sz = sz1;
         if ((ph.vaddr % PGESIZE) != 0) {
             goto bad;
         }
@@ -197,7 +196,7 @@ int exec(char *path, char **argv) {
     p->trapframe->saved_pc = elf.entry;  // initial program counter = main
     p->trapframe->sp = sp; // initial stack pointer
     proc_freepagetable(oldpagetable, oldsz);
-
+    
     return argc; // this ends up in a0, the first argument to main(argc, argv)
 
     bad:
@@ -218,7 +217,7 @@ uint32_t sys_exec(void) {
     char *argv[MAXARG];
     int i;
     uint32_t uargv, uarg;
-
+    
     if (argstr(0, path, MAXPATH) < 0 || argaddr(1, &uargv) < 0) {
         return -1;
     }
@@ -234,7 +233,7 @@ uint32_t sys_exec(void) {
             argv[i] = 0;
             break;
         }
-        argv[i] = (char *)kalloc(1);
+        argv[i] = (char *)kalloc();
         if (argv[i] == 0) {
             goto bad;
         }
@@ -248,7 +247,6 @@ uint32_t sys_exec(void) {
     for(i = 0; i < (int)NUM_ELEM(argv) && argv[i] != 0; i++) {
         kfree((uint32_t *)argv[i]);
     }
-
     return ret;
 
     bad:
@@ -380,7 +378,7 @@ uint32_t sys_mknod(void) {
     struct inode *inode;
     char path[MAXPATH];
     int major, minor;
-
+    
     begin_op();
     if ((argstr(0, path, MAXPATH)) < 0 ||
         argint(1, &major) < 0 ||
@@ -568,7 +566,6 @@ uint32_t sys_open(void) {
     if ((n = argstr(0, path, MAXPATH)) < 0 || argint(1, &omode) < 0) {
         return -1;
     }
-
     begin_op();
 
     if (omode & O_CREATE) {

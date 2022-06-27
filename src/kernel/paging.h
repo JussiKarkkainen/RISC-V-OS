@@ -31,6 +31,9 @@ extern char mem_end[];
 #define PLICSIZE 0x400000
 #define TRAPFRAME (USERVEC - PGESIZE)
 
+#define SATP_SV32 (1L << 31)
+#define MAKE_SATP(pagetable) (SATP_SV32 | (((uint32_t)pagetable) >> 12))
+
 // Functions from pmm.c
 void pmm_init(void);
 void *kalloc(void);

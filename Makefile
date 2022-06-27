@@ -49,7 +49,7 @@ ASFLAGS = -march=rv32ima -mabi=ilp32
 
 
 CC = riscv64-unknown-elf-gcc
-CFLAGS = -Wall -O -fno-omit-frame-pointer -ggdb
+CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb
 CFLAGS += -MD
 CFLAGS += -mcmodel=medany 
 CFLAGS += -nostdlib -ffreestanding -fno-common -mno-relax
@@ -72,8 +72,9 @@ LD = riscv64-unknown-elf-ld
 LDFLAGS = -z max-page-size=4096
 LDFLAGS += -m elf32lriscv
 
-$(KERNEL)/kern: $(OBJS) $(NOBJS) $(KERNEL)/kernel.ld $(USER)/initcode
-	$(LD) $(LDFLAGS) -T $(KERNEL)/kernel.ld -o $(KERNEL)/kern $(OBJS) $(NOBJS)
+$(KERNEL)/kern: $(OBJS) $(KERNEL)/kernel.ld $(USER)/initcode
+	$(LD) $(LDFLAGS) -T $(KERNEL)/kernel.ld -o $(KERNEL)/kern $(OBJS) 
+	$(OBJCOPY) -S -O binary $(USER)/initcode.out $(USER)/initcode
 	$(OBJDUMP) -S $(KERNEL)/kern > $(KERNEL)/kernel.asm
 
 $(USER)/initcode: $(USER)/initcode.S
@@ -82,10 +83,15 @@ $(USER)/initcode: $(USER)/initcode.S
 	$(OBJCOPY) -S -O binary $(USER)/initcode.out $(USER)/initcode
 	$(OBJDUMP) -S $(USER)/initcode.out > $(USER)/initcode.asm 
 
+tags: $(OBJS) _init
+	etags *.S *.c
+
 ULIB = $(USER)/malloc.o $(USER)/ulibc.o $(USER)/printf.o $(USER)/usyscall.o
 
 _%: %.o $(ULIB)
 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
+	$(OBJDUMP) -S $@ > $*.asm
+	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
 
 $(USER)/usyscall.S: $(USER)/usyscall.pl
 	perl $(USER)/usyscall.pl > $(USER)/usyscall.S
@@ -94,7 +100,7 @@ $(USER)/usyscall.o: $(USER)/usyscall.S
 	$(CC) $(CFLAGS) -c -o $(USER)/usyscall.o $(USER)/usyscall.S
 
 src/makefs: src/makefs.c $(KERNEL)/filesys.h 
-	gcc -Wall -I. -o src/makefs src/makefs.c
+	gcc -Werror -Wall -I. -o src/makefs src/makefs.c
 
 .PRECIOUS: %.o
 
@@ -107,10 +113,13 @@ UPROGS = \
     $(USER)/_mkdir\
     $(USER)/_rm\
     $(USER)/_sh\
-    $(USER)/_wc
+    $(USER)/_wc\
+    $(USER)/_ls
 
 fs.img: src/makefs README.md $(UPROGS)
 	src/makefs fs.img README.md $(UPROGS)
+
+-include src/kernel/*.d src/user/*.d
 
 clean:
 	rm -f *.tex *.dvi *.idx *.aux *.log *.ind *.ilg \

@@ -10,7 +10,7 @@ start:
 
 exit:
     li a7, SYS_exit
-    ecall
+    ecall 
     jal exit
 
 init:

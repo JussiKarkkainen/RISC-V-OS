@@ -70,7 +70,7 @@ struct stat {
     unsigned int inode_num;
     short type;
     short num_link;
-    uint32_t size;
+    uint64_t size;
 };
 
 struct direntry {

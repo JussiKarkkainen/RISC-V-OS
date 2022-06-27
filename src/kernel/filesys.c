@@ -10,7 +10,6 @@ struct superblock sb;
 void read_superblock(int dev, struct superblock *sb) {
     struct buffer *buf;
     buf = buffer_read(dev, 1);
-    kprintf("r sblock\n"); 
     memmove(sb, buf->data, sizeof(*sb));
     buffer_release(buf);
 }
@@ -75,7 +74,6 @@ void recover_from_log(void) {
 // writes don't exceed the unreserved log space. If they do, sleep
 // Otherwise increment log.num_syscalls
 void begin_op(void) {
-    
     acquire_lock(&log.lock);
     while (1) {
         if (log.commit) {
@@ -100,7 +98,6 @@ void end_op(void) {
 
     acquire_lock(&log.lock);
     log.num_syscalls -= 1;
-
     if (log.commit) {
         panic("end_op log is committing");
     }
@@ -111,6 +108,8 @@ void end_op(void) {
     else {
         wakeup(&log);
     }
+    
+    release_lock(&log.lock);
 
     if (make_commit) {
         commit();
@@ -193,7 +192,7 @@ void cpy_log_to_home(int recover) {
     for (int i = 0; i < log.loghead.count; i++) {
         struct buffer *logbuf = buffer_read(log.dev, log.start+i+1);
         struct buffer *dest = buffer_read(log.dev, log.loghead.block[i]);
-        memmove(logbuf, dest, BUFFER_SIZE);
+        memmove(dest->data, logbuf->data, BUFFER_SIZE);
         buffer_write(dest);
 
         if (recover == 0) {
@@ -215,6 +214,7 @@ void commit(void) {
         write_log();
         write_header();
         cpy_log_to_home(0);
+        log.loghead.count = 0;
         write_header();
     }
 }
@@ -297,18 +297,18 @@ struct inode *inode_alloc(int dev, uint16_t type) {
     struct buffer *buf;
     struct disk_inode *dinode;
     int inode_num;
-
-    for (inode_num = 0; inode_num < sb.num_inodes; inode_num++) {
+    for (inode_num = 1; inode_num < sb.num_inodes; inode_num++) {
         buf = buffer_read(dev, (inode_num / INODE_PER_BLOCK + sb.inode_start));
         dinode = (struct disk_inode *)buf->data + inode_num % INODE_PER_BLOCK;
         
-        if (dinode == 0) {
-            memset(dinode, 0, sizeof(dinode));
+        if (dinode->type == 0) {
+            memset(dinode, 0, sizeof(*dinode));
             dinode->type = type;
             log_write(buf);
             buffer_release(buf);
             return inode_get(dev, inode_num);
         }
+
         buffer_release(buf);
     }
     panic("no inodes found");
@@ -522,7 +522,7 @@ int read_inode(struct inode *inode, int user_dst, uint32_t dst, unsigned int off
         }
         buffer_release(buf);
     }
-    return i;
+    return n;
 }
 
 // Write data to inode, return number of bytes written

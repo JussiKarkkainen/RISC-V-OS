@@ -66,33 +66,6 @@ void kmap(uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int perm) {
     }
 }
 
-// Finds the PTE for a virtual address
-uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc) {
-    
-    if (vir_addr >= MAXVA) {
-        panic("vir_addr out of range");
-    }
-    
-    for (int i = 1; i > 0; i--) {
-
-        uint32_t *pte = &pagetable[((vir_addr >> (PGEOFFSET + (10 * i))) & VPNMASK)];
-         
-        // Turn pte into phy_addr
-        if (*pte & PTE_V) {
-            // Shift PPNs to correct places from pte
-            pagetable = (uint32_t *)((*pte >> 10) << 12);
-        }
-        // Turn phy_addr into pte
-        else {
-            if (!alloc || ((pagetable = (uint32_t*)kalloc()) == 0)) {
-                return 0;
-            }
-            memset(pagetable, 0, PGESIZE);
-            *pte = (((uint32_t)pagetable >> 12) << 10) | PTE_V;
-        }
-    }
-    return &pagetable[((vir_addr >> (PGEOFFSET + (10 * 0))) & VPNMASK)];
-}   
 
 uint32_t fetch_pa_addr(uint32_t *pagetable, uint32_t va) {
     uint32_t *pte;
@@ -129,9 +102,37 @@ uint32_t fetch_kpa(uint32_t va) {
     if ((*pte & PTE_V) == 0) {
         panic("PTE_V == 0, fetch_kpa");
     }
-    pa = ((*pte << 10) << 12);
+    pa = ((*pte >> 10) << 12);
     return pa + off;
 }
+
+// Finds the PTE for a virtual address
+uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc) {
+    
+    if (vir_addr >= MAXVA) {
+        panic("vir_addr out of range");
+    }
+    
+    for (int i = 1; i > 0; i--) {
+
+        uint32_t *pte = &pagetable[((vir_addr >> (PGEOFFSET + (10 * i))) & VPNMASK)];
+         
+        // Turn pte into phy_addr
+        if (*pte & PTE_V) {
+            // Shift PPNs to correct places from pte
+            pagetable = (uint32_t *)((*pte >> 10) << 12);
+        }
+        // Turn phy_addr into pte
+        else {
+            if (!alloc || ((pagetable = (uint32_t*)kalloc()) == 0)) {
+                return 0;
+            }
+            memset(pagetable, 0, PGESIZE);
+            *pte = (((uint32_t)pagetable >> 12) << 10) | PTE_V;
+        }
+    }
+    return &pagetable[((vir_addr >> (PGEOFFSET + (10 * 0))) & VPNMASK)];
+}   
 
 // Install PTEs for new mappings
 int map_pages(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int permissions) {
@@ -142,7 +143,7 @@ int map_pages(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t si
     
         
     if (size == 0) {
-        panic("kmap: size == 0!");
+        panic("map_pages: size == 0!");
     }
     last = ((vir_addr + size - 1) & ~(PGESIZE - 1));
     vir = (vir_addr & ~(PGESIZE - 1));
@@ -151,8 +152,9 @@ int map_pages(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t si
         if ((pte = walk(kpage, vir, 1)) == 0) { 
             return -1;
         }
+
         if (*pte & PTE_V) {
-            panic("kmap, PTE_V and pte");
+            panic("map_pages, PTE_V and pte");
         }
 
         *pte = ((phy_addr >> 12) << 10) | permissions | PTE_V;
@@ -169,7 +171,7 @@ uint32_t *upaging_create(void) {
     uint32_t *pagetable;
     pagetable = kalloc();
     if (pagetable == 0) {
-        return 0;
+        panic("out of memory");
     }
     memset(pagetable, 0, PGESIZE);
     return pagetable;
@@ -252,7 +254,6 @@ int uvmcopy(uint32_t *old, uint32_t *new_addr, uint32_t size) {
     uint32_t pa, i;
     unsigned int flags;
     uint32_t *mem;
-
     for (i = 0; i < size; i += PGESIZE) {
         if ((pte = walk(old, i, 0)) == 0) {
             panic("uvmcopy: pte should exist");
@@ -266,7 +267,7 @@ int uvmcopy(uint32_t *old, uint32_t *new_addr, uint32_t size) {
             goto err;
         }
         memmove(mem, (char*)pa, PGESIZE);
-        if (map_pages(new_addr, i, PGESIZE, (uint32_t)mem, flags) != 0) {
+        if (map_pages(new_addr, i, (uint32_t)mem, PGESIZE, flags) != 0) {
             kfree(mem);
             goto err;
         }
@@ -307,7 +308,7 @@ void uvmunmap(uint32_t *pagetable, uint32_t va, uint32_t num_pages, int free) {
 
 void freewalk(uint32_t *pagetable) {
 
-    for (int i = 0; i < 1024; i++) {
+    for (int i = 0; i < 512; i++) {
         uint32_t pte = pagetable[i];
         if ((pte & PTE_V) && (pte & (PTE_R|PTE_W|PTE_X)) == 0) {
             uint32_t child = ((pte >> 10) << 12);

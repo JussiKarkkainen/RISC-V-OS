@@ -117,11 +117,11 @@ struct elf_header {
     unsigned char elf[12];
     unsigned short type;
     unsigned short machine;
-    unsigned int version;
+    uint32_t version;
     uint32_t entry;
     uint32_t phoff;
     uint32_t shoff;
-    unsigned int flags;
+    uint32_t flags;
     unsigned short ehsize;
     unsigned short phnum;
     unsigned short shentsize;
@@ -131,13 +131,13 @@ struct elf_header {
 
 struct prog_header {
     uint32_t type;
-    uint32_t flags;
-    uint64_t off;
-    uint64_t vaddr;
-    uint64_t paddr;
-    uint64_t filesz;
-    uint64_t memsz;
-    uint64_t align;
+    // uint32_t flags;
+    uint32_t off;
+    uint32_t vaddr;
+    uint32_t paddr;
+    uint32_t filesz;
+    uint32_t memsz;
+    uint32_t align;
 };
 
 void process_init(void);

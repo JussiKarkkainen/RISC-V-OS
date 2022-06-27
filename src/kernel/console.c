@@ -35,7 +35,7 @@ int console_write(int user_src, uint32_t src, int n) {
         if (either_copyin(&c, user_src, src+i, 1) == -1) {
             break;
         }
-        uart_putc(c);
+        console_putc(c);
     }
     return i;
 }
