@@ -28,18 +28,13 @@ int handle_device_intr(void) {
             uart_intr();
         }
         else if (intr_id == VIRTIO_DISK) {
-            kprintf("disk interrutp\n");
             virtio_disk_intr();
         }
         else if (intr_id) {
             kprintf("Device interrupt not recognizedc: %d\n", intr_id);
         }
 
-        // Tell PLIC its allowed to send interrutps again
-        if (intr_id) {
-            plic_finished(intr_id);
-        }
-
+        plic_finished(intr_id);
         return 0;
     }
   
@@ -71,9 +66,11 @@ void timer_interrupt(void) {
 void utrap(void) {
     uint32_t sstatus = get_sstatus(); 
     uint32_t scause = get_scause();
-    int intr_result;
+    int intr_result = 2;
+    
+    
     // Check if trap comes from user mode
-    if ((sstatus & SSTATUS_SPP) == 0) {
+    if ((sstatus & SSTATUS_SPP) != 0) {
         panic("trap not from user mdoe");
     }
 
@@ -89,19 +86,25 @@ void utrap(void) {
     // check if syscall
     if (scause == 8) {
         // Return to next instruction 
+        
+        if (proc->killed) {
+            exit(-1);
+        }
+    
         proc->trapframe->saved_pc += 4;
         
         enable_intr();
 
         handle_syscall();
-    }
-    // check if device interrupt and handle with handle_device_intr()
-    if ((intr_result = handle_device_intr()) == 2) {
+    
+    } else if ((intr_result = handle_device_intr()) != 2) {
+
+    } else {
         kprintf("Unexpexted scause in utrap(), scause: %x\n, sepc: %x\n, stval: %x\n", 
                 get_scause(), get_sepc(), get_stval());
         
         proc->killed = 1;
-    } 
+    }
     // Otherwise kill process
     if (proc->killed) {
         exit(-1);
@@ -120,22 +123,26 @@ void utrapret(void) {
     disable_intr();
     
     // Send traps to utrapvec
-    write_stvec(USERVEC);
+    write_stvec(USERVEC + (utrapvec - uvec));
     
     // Utrapvec will need these register values
     proc->trapframe->kernel_satp = get_satp();         
-    proc->trapframe->kernel_sp = proc->kernel_stack + 4096;
+    proc->trapframe->kernel_sp = proc->kernel_stack + PGESIZE;
     proc->trapframe->kernel_trap = (uint32_t)utrap;
     proc->trapframe->hartid = get_tp();
-    
     // Set previous privilige mode to user
     uint32_t sstatus = get_sstatus();
-    // Clear SIE and set SPIE
-    write_sstatus(((sstatus & SSTATUS_SIE_CLEAR) | SSTATUS_SPIE));
+    sstatus &= ~SSTATUS_SPP;
+    sstatus |= SSTATUS_SPIE;
+    write_sstatus(sstatus);
 
     // Set exception program counter to saved user pc
     write_sepc(proc->trapframe->saved_pc);
- 
+
+    uint32_t satp = MAKE_SATP(proc->pagetable);
+
+    uint32_t fn = USERVEC + (utrapreturn - uvec);
+    ((void (*)(uint32_t,uint32_t))fn)(TRAPFRAME, satp);
 }
 
 void ktrap(void) {
@@ -143,7 +150,7 @@ void ktrap(void) {
     uint32_t sstatus = get_sstatus();
     uint32_t scause = get_scause();
     uint32_t stval = get_stval();
-    int intr_result;
+    int intr_result = 2;
     
     // Make sure interrupt comes from supervisor mode
     if ((sstatus & SSTATUS_SPP) == 0) {
@@ -165,7 +172,7 @@ void ktrap(void) {
         panic("kernel interrupt, ktrap");
     }
      
-    if (intr_result == 1) {
+    if (intr_result == 1 && get_process_struct() != 0 && get_process_struct()->state == RUNNING) {
         yield_process();
     }
 
