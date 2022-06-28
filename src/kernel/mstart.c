@@ -70,6 +70,10 @@ void mstart(void) {
     // Configure physical memory protection
     write_pmpaddr0(0xffffffff);
     write_pmpcfg0(0xf);
+    
+    uint32_t a  = get_sie();
+    uint32_t b = a | 0x222L;
+    asm volatile("csrw sie, %0" : : "r" (b)); 
 
     // enable clock interrupts
     timer_init();

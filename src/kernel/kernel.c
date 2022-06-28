@@ -19,11 +19,7 @@ static volatile int started = 0;
 void enter(void) {  
     
     if (which_cpu() == 0) {
-
-        uint32_t a  = get_sie();
-        uint32_t b = a | 0x222L;
-        asm volatile("csrw sie, %0" : : "r" (b)); 
-
+        
         console_init();                 // Start console
         kprintf_init();
         kprintf("\n");
