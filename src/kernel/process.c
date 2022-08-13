@@ -126,7 +126,6 @@ struct process *alloc_process(void) {
 
     found:
         proc->process_id = alloc_pid();
-
         if ((proc->trapframe = (struct trapframe *)kalloc()) == 0) {
             release_lock(&proc->lock);
             return 0;
@@ -162,7 +161,6 @@ int growproc(int n) {
 }
 
 int fork(void) {
-
     int i, pid;
     struct process *np;
     struct process *p = get_process_struct();

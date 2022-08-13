@@ -1,6 +1,7 @@
 #ifndef NET_H
 #define NET_H
 
+#include <stdint.h>
 
 struct net_interface {
     uint8_t id;
@@ -10,5 +11,6 @@ struct net_interface {
     uint8_t gateway_ip[4];
 };
 
+uint32_t inet_addr(const char *cp); 
 
 #endif

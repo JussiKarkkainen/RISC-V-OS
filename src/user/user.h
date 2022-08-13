@@ -1,5 +1,7 @@
 struct stat;
 
+#include "../net/socket.h"
+
 #define O_RDONLY  0x000
 #define O_WRONLY  0x001
 #define O_RDWR    0x002
@@ -30,12 +32,12 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
-//int socket(int, int, int);
-//int connect(int struct sockaddr *, int);
-//int recv(int, char *, int);
-//int send(int, char *, int);
-//int recvfrom(int, char *, int, struct sockaddr *, int *);
-//int sendto(int, char *, int, stuct sockaddr *, int *);
+int socket(int, int, int);
+int connect(int, struct sockaddr *, int);
+int recv(int, void *, int, int);
+int send(int, const void *, int, int);
+int recvfrom(int, void *, int, unsigned int, struct sockaddr *, int *);
+int sendto(int, const void *, int, unsigned int, const struct sockaddr *, socklen_t *);
 
 
 int stat(const char*, struct stat*);

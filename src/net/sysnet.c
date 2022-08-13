@@ -13,6 +13,8 @@ int sys_getaddrinfo(void) {
 
 int sys_socket(void) {
 
+    return -1;
+    /*
     int fd, domain, type, protocol;
     struct file *file;
 
@@ -26,10 +28,12 @@ int sys_socket(void) {
         return -1;
     }
     return fd;
+    */
 }
 
 int sys_sendto(void) {
-    
+    return 0;
+    /*
     struct file *file;
     int n;
     char *ptr;
@@ -43,10 +47,12 @@ int sys_sendto(void) {
         return -1;
     }
     return socket_sendto(file->socket, ptr, n, addr, addrlen);
-}
+    */
+    }
 
 int sys_recvfrom(void) {
-
+    return 0;
+    /*
     struct file *file;
     int n;
     char *ptr;
@@ -63,10 +69,12 @@ int sys_recvfrom(void) {
         return -1;
     }
     return socket_recvfrom(file->socket, ptr, n, addr, addrlen);
-}
+*/
+    }
 
 int sys_send(void) {
-    
+    return 0;
+    /*  
     struct file *file;
     int n;
     char *addr;
@@ -78,10 +86,12 @@ int sys_send(void) {
         return -1;
     }
     return socket_write(file->socket, addr, n);
-}
+*/
+    }
 
 int sys_recv(void) {
-    
+    return 0;
+    /*  
     struct file *file;
     int n;
     char *addr;
@@ -93,4 +103,5 @@ int sys_recv(void) {
         return -1;
     }
     return socket_read(file->socket, addr, n);
-}
+*/
+    }

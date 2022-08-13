@@ -66,7 +66,6 @@ void kmap(uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int perm) {
     }
 }
 
-
 uint32_t fetch_pa_addr(uint32_t *pagetable, uint32_t va) {
     uint32_t *pte;
     uint32_t pa;
@@ -275,20 +274,22 @@ int uvmcopy(uint32_t *old, uint32_t *new_addr, uint32_t size) {
     return 0;
 
     err:
-        uvmunmap(new_addr, 0, i / PGESIZE, 1);
+        uvmunmap(new_addr, 0, i, 1);
         return -1;
 }
 
 void uvmunmap(uint32_t *pagetable, uint32_t va, uint32_t num_pages, int free) {
   
-    uint32_t a;
+    uint32_t a, last;
     uint32_t *pte;
+    uint32_t pa;
 
     if ((va % PGESIZE) != 0) {
         panic("uvmunmap: not aligned");
     }
-
-    for (a = va; a < va + num_pages*PGESIZE; a += PGESIZE) {
+    a = (((va)) & ~(PGESIZE - 1));
+    last = (((va + num_pages - 1)) & ~(PGESIZE-1));
+    while (1) {
         if ((pte = walk(pagetable, a, 0)) == 0) {
             panic("uvmunmap: walk");
         }
@@ -303,6 +304,11 @@ void uvmunmap(uint32_t *pagetable, uint32_t va, uint32_t num_pages, int free) {
             kfree((void*)pa);
         }
         *pte = 0;
+        if (a == last) {
+            break;
+        }
+        a += PGESIZE;
+        pa += PGESIZE;
     }
 }
 
@@ -325,7 +331,7 @@ void freewalk(uint32_t *pagetable) {
 void uvmfree(uint32_t *pagetable, uint32_t size) {
 
     if (size > 0) {
-        uvmunmap(pagetable, 0, (((size) + PGESIZE-1) & ~(PGESIZE-1)) / PGESIZE, 1);
+        uvmunmap(pagetable, 0, size,  1);
     }
     freewalk(pagetable);
 } 

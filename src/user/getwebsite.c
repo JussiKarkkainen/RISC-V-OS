@@ -1,16 +1,20 @@
 #include "../net/net.h"
-#include "../libc/include/string.h"
-#include "../libc/include/stdio.h"
+#include "../net/socket.h"
+#include "../net/arpa/inet.h"
+#include "user.h"
 #include <stddef.h>
 #include <stdint.h>
 
-int main() {
+// Program to get the html of info.cern.ch, chosen since it uses http instead of https
+// In the future this should be more automated and be able to get html of every html website
 
+int main() {
+    printf("hello from getwebsite\n");
     char buf[2056];
     
     char *header = "GET / HTTP/1.1\r\nHost: info.cern.ch\r\n\r\nConnection: close\r\n\r\n";
 
-    int sockfd, cnt;
+    int sockfd;
     
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
@@ -19,13 +23,13 @@ int main() {
     memset(addr.sin_zero, '\0', sizeof(addr.sin_zero));
 
     if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
-        kprintf("sockfd = %d\n", sockfd); 
-        kprintf("socket() returned error\n");
+        printf("sockfd = %d\n", sockfd); 
+        printf("socket() returned error\n");
         return -1;
     }
     
     if (connect(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-        kprintf("connect returned error");
+        printf("connect returned error");
         return -1;
     }  
 
@@ -33,14 +37,14 @@ int main() {
 
     // Send request
     send(sockfd, header, strlen(header), 0);
-        // read response
+    // read response
     while (1) {
         n = recv(sockfd, buf, sizeof(buf)-1, 0);
         if (n == 0) {
             break;
         }
         buf[n] = 0;
-        kprintf("%s\n", buf);
+        printf("%s\n", buf);
     }
 
     return 0;

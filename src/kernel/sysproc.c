@@ -20,7 +20,6 @@ uint32_t sys_getpid(void) {
 }
 
 uint32_t sys_fork(void) {
-
     return fork();
 }
 

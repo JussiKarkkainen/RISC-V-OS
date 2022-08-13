@@ -1,6 +1,7 @@
 #include "../libc/include/stdio.h"
+#include "../libc/include/ctype.h"
 #include "arpa/inet.h"
-#include <ctype.h>
+#include "socket.h"
 
 uint32_t inet_addr(const char *cp) {
 	struct in_addr val;
@@ -53,22 +54,22 @@ int inet_aton(const char *cp, struct in_addr *addr) {
 	n = pp - parts + 1;
 	switch (n) {
 
-	case 1:				/* a -- 32 bits */
+	case 1:			
 		break;
 
-	case 2:				/* a.b -- 8.24 bits */
+	case 2:				
 		if (val > 0xffffff)
 			return (0);
 		val |= parts[0] << 24;
 		break;
 
-	case 3:				/* a.b.c -- 8.8.16 bits */
+	case 3:			
 		if (val > 0xffff)
 			return (0);
 		val |= (parts[0] << 24) | (parts[1] << 16);
 		break;
 
-	case 4:				/* a.b.c.d -- 8.8.8.8 bits */
+	case 4:		
 		if (val > 0xff)
 			return (0);
 		val |= (parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8);
@@ -77,4 +78,6 @@ int inet_aton(const char *cp, struct in_addr *addr) {
 	if (addr)
 		addr->s_addr = htonl(val);
 	return (1);
+
 }
+

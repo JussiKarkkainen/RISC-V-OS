@@ -67,7 +67,6 @@ void utrap(void) {
     uint32_t sstatus = get_sstatus(); 
     int intr_result = 2;
     
-    
     // Check if trap comes from user mode
     if ((sstatus & SSTATUS_SPP) != 0) {
         panic("trap not from user mdoe");
@@ -100,8 +99,7 @@ void utrap(void) {
 
     } else {
         kprintf("Unexpexted scause in utrap(), scause: %p\n, sepc: %p\n, stval: %p\nname %s\n", 
-                get_scause(), get_sepc(), get_stval(), proc->name);
-         
+                 get_scause(), get_sepc(), get_stval(), proc->name);
         proc->killed = 1;
     }
     // Otherwise kill process

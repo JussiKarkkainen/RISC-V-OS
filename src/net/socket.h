@@ -2,6 +2,8 @@
 #define SOCKET_H
 
 #include "../kernel/file.h"
+#include <stdint.h>
+#include <stddef.h>
 
 #define AF_INET 2
 #define PF_INET 2
@@ -9,7 +11,7 @@
 #define SOCK_STREAM 1
 #define SOCK_DGRAM 2
 
-typedef socklen_t uint32_t;
+typedef uint32_t socklen_t;
 
 struct sockaddr {
     unsigned short sa_family;
@@ -44,9 +46,9 @@ struct addrinfo {
 struct socket {
     int type;
     int desc;
-}
+};
 
-struct *file socket_alloc(int domain, int type, int protocol);
+struct file *socket_alloc(int domain, int type, int protocol);
 int socket_connect(struct socket *s, struct sockaddr *addr, int addrlen);
 int socket_read(struct socket *s, char *addr, int n);
 int socket_write(struct socket *s, char *addr, int n);
