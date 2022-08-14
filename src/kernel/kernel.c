@@ -11,6 +11,8 @@
 #include "regs.h"
 #include "../net/virtio-net.h"
 #include "../net/pcie.h"
+#include "../net/tcp.h"
+#include "../net/udp.h"
 
 // This should be executed in supervisor mode, boot.S should first call 
 // start() for setup before tranfering control to enter().
@@ -33,6 +35,7 @@ void enter(void) {
         init_ktrapvec();                // Write ktrapvec addr into stvec to init trap handling
         plic_init();                    // Setup interrupt controller  
         plic_init_hart();               // request device interrupts
+        tcp_init();
         buffer_init();                  // Initialize the buffer cache for filesystem
         inode_init();                   // Initialize the inode table
         file_init();                    // Initialize file table

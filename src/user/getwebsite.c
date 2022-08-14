@@ -9,7 +9,6 @@
 // In the future this should be more automated and be able to get html of every html website
 
 int main() {
-    printf("hello from getwebsite\n");
     char buf[2056];
     
     char *header = "GET / HTTP/1.1\r\nHost: info.cern.ch\r\n\r\nConnection: close\r\n\r\n";
@@ -29,7 +28,7 @@ int main() {
     }
     
     if (connect(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-        printf("connect returned error");
+        printf("connect returned error\n");
         return -1;
     }  
 

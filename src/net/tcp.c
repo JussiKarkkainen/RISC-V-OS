@@ -5,6 +5,7 @@
 #include "queue_handler.h"
 #include "socket.h"
 #include "arpa/inet.h"
+#include "../libc/include/stdio.h"
 #include <stdint.h>
 #include <stddef.h>
 
@@ -24,7 +25,7 @@
 
 
 static struct spinlock tcplock;
-struct tcp_control_block cb_table[TCP_CB_TABLE_SIZE];
+struct tcp_control_block tcp_cb_table[TCP_CB_TABLE_SIZE];
 
 
 void tcp_init(void) {
@@ -32,24 +33,24 @@ void tcp_init(void) {
 }
 
 
-void tcp_assign_desc(void) {
+int tcp_assign_desc(void) {
 
     struct tcp_control_block *cb;
     acquire_lock(&tcplock);
-    int i, p;
-
+    int i;
     for (i = 0; i < TCP_CB_TABLE_SIZE; i++) {
-        cb = cb_table[i];
+        cb = &tcp_cb_table[i];
         if (!cb->used) {
             cb->used = 1;
             release_lock(&tcplock);
             return i;
         }
+    }
     kprintf("no free tcp control blocks\n");
     release_lock(&tcplock);
     return -1;
 }
-
+/*
 int pushto_txq(struct tcb_control_block *cb, struct tcp_header *hdr, int len) {
     
    struct tcp_txq_entry *txqe = (struct tcp_txq_entry *)kalloc();
@@ -520,3 +521,4 @@ uint32_t isn_gen(uint32_t localip, uint16_t localport,
     uint32_t isn = (uint32_t)(*buf + m);
     return isn;
 }
+*/

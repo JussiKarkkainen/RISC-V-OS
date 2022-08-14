@@ -17,32 +17,32 @@
 
 struct spinlock udplock;
 
-struct udp_control_block cb_table[UDP_CB_TABLE_SIZE];
+struct udp_control_block udp_cb_table[UDP_CB_TABLE_SIZE];
 
-int udp_init() {
+void udp_init() {
     initlock(&udplock, "udplock");
-    return 0;
 }
 
 
-void udp_assign_desc(void) {
+int udp_assign_desc(void) {
 
     struct udp_control_block *cb;
     acquire_lock(&udplock);
-
+    int i;
     for (i = 0; i < UDP_CB_TABLE_SIZE; i++) {
-        cb = cb_table[i];
+        cb = &udp_cb_table[i];
         if (!cb->used) {
             cb->used = 1;
             release_lock(&udplock);
             return i;
         }
+    }
     kprintf("no free udp_control_blocks");
     release_lock(&udplock);
     return -1;
 }
 
-
+/*
 void udp_recvfrom(int desc, uint8_t *buf, int n, struct sockaddr *addr, int *addrlen) {
 
     struct sockaddr_in *ip_addr;
@@ -90,7 +90,8 @@ void udp_recvfrom(int desc, uint8_t *buf, int n, struct sockaddr *addr, int *add
     return len; 
 
 }
-
+*/
+/*
 void udp_sendto(int desc, uint8_t *buf, int n, struct sockaddr, *addr, int *addrlen) {
 
     struct sockaddr_in *sin;
@@ -126,8 +127,8 @@ void udp_sendto(int desc, uint8_t *buf, int n, struct sockaddr, *addr, int *addr
     src_port = cb->port;
     return udp_send_packet(netif, src_port, sin->sin_port, &sin->sin_addr, buf, len);
 }
-
-
+*/
+/*
 void udp_send_packet(struct net_interface *netif, uint8_t src_port, uint16_t dst_port, 
                      uint32_t ip_addr, uint8_t *data, int len) {
 
@@ -157,7 +158,7 @@ void udp_send_packet(struct net_interface *netif, uint8_t src_port, uint16_t dst
             pseudo_header[idx++] = data[i] | (0x0 << 8);
         }
     }
-
+*/
 /*
     pseudo_hdr.dst_ipaddr = dst_ip;
     pseudo_hdr.protocol = PROTOCOL_TYPE_UDP;
@@ -168,7 +169,7 @@ void udp_send_packet(struct net_interface *netif, uint8_t src_port, uint16_t dst
 */   
  
     // memcpy(pseudo_header, &pseudo_hdr, sizeof(struct ipv4_pseudo_hdr));
-
+/*
     udp_header.checksum = ipv4_checksum(pseudo_header, pseudo_header_len);
    
     kfree(pseudo_header); 
@@ -182,8 +183,8 @@ void udp_send_packet(struct net_interface *netif, uint8_t src_port, uint16_t dst
 
     kfree(data);
 }
-
-
+*/
+/*
 void udp_receive_packet(struct net_interface netif, uint8_t *buf, uint32_t *src_addr, 
                         uint32_t *dst_addr, uint32_t payload_len) {
 
@@ -225,6 +226,7 @@ void udp_receive_packet(struct net_interface netif, uint8_t *buf, uint32_t *src_
         }
     }
     release_lock(&udplock);
+*/
 /*
     switch (udp_header.dst_port) {
         case DHCP_CLIENT_PORT:
@@ -234,6 +236,6 @@ void udp_receive_packet(struct net_interface netif, uint8_t *buf, uint32_t *src_
             kprintf("Unrecognized udp_header.dst_port %d\n", udp_header.dst_port);
     }
 */
-
+/*
 }
-
+*/

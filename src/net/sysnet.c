@@ -11,10 +11,9 @@ int sys_getaddrinfo(void) {
 }
 */
 
-int sys_socket(void) {
+int fdalloc(struct file *f);
 
-    return -1;
-    /*
+uint32_t sys_socket(void) {
     int fd, domain, type, protocol;
     struct file *file;
 
@@ -28,10 +27,27 @@ int sys_socket(void) {
         return -1;
     }
     return fd;
+}
+
+uint32_t sys_connect(void) {
+    return -1;
+    /*
+    struct file *f
+    int addrlen;
+    struct sockaddr *addr;
+
+    if (argfd(0, 0, &f) < 0 || argint(2, &addrlen) < 0 || argptr(1, (void*)&addr, addrlen) < 0) {
+        return -1;
+    }
+    if (f->type != FD_SOCKET) {
+        return -1;
+    }
+    return socket_connect(f->socket, addr, addrlen);
     */
 }
 
-int sys_sendto(void) {
+
+uint32_t sys_sendto(void) {
     return 0;
     /*
     struct file *file;
@@ -48,9 +64,9 @@ int sys_sendto(void) {
     }
     return socket_sendto(file->socket, ptr, n, addr, addrlen);
     */
-    }
+}
 
-int sys_recvfrom(void) {
+uint32_t sys_recvfrom(void) {
     return 0;
     /*
     struct file *file;
@@ -70,9 +86,9 @@ int sys_recvfrom(void) {
     }
     return socket_recvfrom(file->socket, ptr, n, addr, addrlen);
 */
-    }
+}
 
-int sys_send(void) {
+uint32_t sys_send(void) {
     return 0;
     /*  
     struct file *file;
@@ -87,9 +103,9 @@ int sys_send(void) {
     }
     return socket_write(file->socket, addr, n);
 */
-    }
+}
 
-int sys_recv(void) {
+uint32_t sys_recv(void) {
     return 0;
     /*  
     struct file *file;
@@ -104,4 +120,4 @@ int sys_recv(void) {
     }
     return socket_read(file->socket, addr, n);
 */
-    }
+}

@@ -40,6 +40,9 @@ OBJS = \
     $(LIBCSTDIO)/putchar.o \
     $(LIBCSTDIO)/asmprint.o \
     $(NET)/sysnet.o \
+    $(NET)/socket.o \
+    $(NET)/tcp.o \
+    $(NET)/udp.o \
     $(LIBC)/isdigit.o \
     $(LIBC)/isascii.o \
     $(LIBC)/isspace.o \

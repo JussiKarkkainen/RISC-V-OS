@@ -26,10 +26,11 @@
 #define SYS_MKDIR 20
 #define SYS_CLOSE 21
 #define SYS_SOCKET 22
-#define SYS_SEND 23
-#define SYS_RECV 24
-#define SYS_RECVFROM 25
-#define SYS_SENDTO 26
+#define SYS_CONNECT 23
+#define SYS_SEND 24
+#define SYS_RECV 25
+#define SYS_RECVFROM 26
+#define SYS_SENDTO 27
 
 
 #define O_RDONLY  0x000
@@ -49,9 +50,9 @@ int argaddr(int n, uint32_t *ip);
 int argstr(int n, char *buf, int max);
 uint32_t argraw(int n);
 int isdirempty(struct inode *inode);
+int argfd(int n, int *pfd, struct file **pf);
 
 // file syscalls
-int argfd(int n, int *pfd, struct file **pf);
 uint32_t sys_exec(void);
 uint32_t sys_write(void);
 uint32_t sys_read(void);
@@ -76,5 +77,13 @@ uint32_t sys_sbrk(void);
 uint32_t sys_sleep(void);
 uint32_t sys_kill(void);
 uint32_t sys_uptime(void);
+
+// net syscalls
+uint32_t sys_socket(void);
+uint32_t sys_connect(void);
+uint32_t sys_send(void);
+uint32_t sys_recv(void);
+uint32_t sys_sendto(void);
+uint32_t sys_recvfrom(void);
 
 #endif

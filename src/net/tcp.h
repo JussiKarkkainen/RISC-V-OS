@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 #include "net.h"
+#include "socket.h"
+#include "queue_handler.h"
+#include "../kernel/paging.h"
 
 #define TCP_SRC_PORT_MIN 49152
 #define TCP_SRC_PORT_MAX 65535
@@ -81,11 +84,11 @@ struct tcp_control_block {
     uint8_t window[PGESIZE];
     struct tcp_control_block *parent;
     struct queue_head backlog;
-}
+};
 
-int tcp_init(void);
+void tcp_init(void);
 void tcp_connect(int desc, struct sockaddr *addr, int addrlen);
-void tcp_assign_desc(void);
+int tcp_assign_desc(void);
 void tcp_send(int desc, uint8_t *buf, int len);
 void tcp_recv(int desc, uint8_t addr, int n);
 void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num, uint32_t ack, uint8_t flags, uint8_t buf, int len);

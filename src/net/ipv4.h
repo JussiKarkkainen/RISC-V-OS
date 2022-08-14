@@ -32,7 +32,7 @@ struct ipv4_pseudo_hdr {
     uint16_t dst_port;
     uint16_t udp_length;
     uint16_t checksum;
-}
+};
 
 uint16_t ipv4_checksum(void *addr, int size);
 void ipv4_send_packet(uint8_t *dst_ip_addr, uint8_t *data, int len);

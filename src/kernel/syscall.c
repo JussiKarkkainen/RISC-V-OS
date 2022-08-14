@@ -27,7 +27,13 @@ uint32_t (*syscall[])(void) = {
     [SYS_UNLINK] sys_unlink,
     [SYS_LINK] sys_link,
     [SYS_MKDIR] sys_mkdir,
-    [SYS_CLOSE] sys_close
+    [SYS_CLOSE] sys_close,
+    [SYS_SOCKET] sys_socket,
+    [SYS_CONNECT] sys_connect,
+    [SYS_SEND] sys_send,
+    [SYS_RECV] sys_recv,
+    [SYS_SENDTO] sys_sendto,
+    [SYS_RECVFROM] sys_recvfrom
 };
 
 int fetchaddr(uint32_t addr, uint32_t *ip) {
