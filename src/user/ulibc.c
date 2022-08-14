@@ -130,3 +130,23 @@ void *memcpy(void *dst, const void *src, unsigned int n) {
     return memmove(dst, src, n);
 }
 
+int isascii(int c) {
+    return c >= 0 && c < 128;
+}
+
+int isdigit(int c) {
+    return (c >= '0' && c <= '9');
+}
+
+int islower(int c) {
+    return (c >= 'a' && c <= 'z'); 
+}
+
+int isspace(int c) {
+    return (c == '\t' || c == '\n' ||
+	    c == '\v' || c == '\f' || c == '\r' || c == ' ' ? 1 : 0);
+}
+
+int isxdigit(int c) {
+    return (isdigit(c) || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'));
+}

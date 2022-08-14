@@ -1,7 +1,7 @@
 #include "../libc/include/stdio.h"
 #include "../libc/include/ctype.h"
-#include "arpa/inet.h"
-#include "socket.h"
+#include "../net/arpa/inet.h"
+#include "../net/socket.h"
 
 uint32_t inet_addr(const char *cp) {
 	struct in_addr val;

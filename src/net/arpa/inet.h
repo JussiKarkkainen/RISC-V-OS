@@ -2,6 +2,7 @@
 #define ARPA_INET_H
 
 #include <stdint.h>
+#include "../socket.h"
 
 #define HTONS(s) ((((s) & 0xff) << 8) | (((s) & 0xff00) >> 8))
 #define NTOHS(s) htons(s)
@@ -22,6 +23,6 @@ uint32_t ntohl(uint32_t s);
 #define ntohl(s) NTOHL(s)
 
 int inet_aton(const char *cp, struct in_addr *addr);
-uint32_t inet_addr(const char *cp);
+//uint32_t inet_addr(const char *cp);
 
 #endif

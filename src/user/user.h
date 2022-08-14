@@ -1,6 +1,7 @@
 struct stat;
 
 #include "../net/socket.h"
+#include <stddef.h>
 
 #define O_RDONLY  0x000
 #define O_WRONLY  0x001
@@ -55,3 +56,9 @@ void free(void*);
 int atoi(const char*);
 int memcmp(const void *, const void *, unsigned int);
 void *memcpy(void *, const void *, unsigned int);
+int isascii(int);
+int isdigit(int);
+int islower(int);
+int isspace(int);
+int isxdigit(int);
+uint32_t inet_addr(const char *);

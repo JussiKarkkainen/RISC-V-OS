@@ -2,6 +2,7 @@ KERNEL=src/kernel
 USER=src/user
 LIBCSTRING=src/libc/string
 LIBCSTDIO=src/libc/stdio
+LIBC=src/libc
 NET=src/net
 
 OBJS = \
@@ -37,9 +38,16 @@ OBJS = \
     $(KERNEL)/syscall.o \
     $(KERNEL)/sysproc.o \
     $(LIBCSTDIO)/putchar.o \
-    $(LIBCSTDIO)/asmprint.o 
-#    $(NET)/virtio-net.o \
-#    $(NET)/pcie.o
+    $(LIBCSTDIO)/asmprint.o \
+    $(NET)/sysnet.o \
+    $(LIBC)/isdigit.o \
+    $(LIBC)/isascii.o \
+    $(LIBC)/isspace.o \
+    $(LIBC)/isxdigit.o \
+    $(LIBC)/islower.o
+
+#   $(NET)/virtio-net.o \
+#   $(NET)/pcie.o
 
     #$(KERNEL)/pmm.o \
     #$(KERNEL)/disk.o \
@@ -86,7 +94,7 @@ $(USER)/initcode: $(USER)/initcode.S
 tags: $(OBJS) _init
 	etags *.S *.c
 
-ULIB = $(USER)/malloc.o $(USER)/ulibc.o $(USER)/printf.o $(USER)/usyscall.o
+ULIB = $(USER)/inet_addr.o $(USER)/malloc.o $(USER)/ulibc.o $(USER)/printf.o $(USER)/usyscall.o
 
 _%: %.o $(ULIB)
 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
@@ -114,8 +122,9 @@ UPROGS = \
     $(USER)/_rm\
     $(USER)/_sh\
     $(USER)/_wc\
-    $(USER)/_ls
-
+    $(USER)/_ls\
+    $(USER)/_getwebsite
+	
 fs.img: src/makefs README.md $(UPROGS)
 	src/makefs fs.img README.md $(UPROGS)
 
