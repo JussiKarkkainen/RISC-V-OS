@@ -1,6 +1,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+// This should definitely not be used in anything that requires actual security
+// but for this project its fine.
 
 // ---- ISAAC64 CSPRNG --- http://www.burtleburtle.net/bob/rand/isaacafa.html
 #define RANDSIZL   (8)

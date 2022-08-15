@@ -26,8 +26,7 @@ int main() {
         printf("socket() returned error\n");
         return -1;
     }
-    
-    if (connect(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+    if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
         printf("connect returned error\n");
         return -1;
     }  

@@ -23,12 +23,11 @@ struct in_addr {
 };
 
 struct sockaddr_in {
-    short int sin_family;
-    unsigned short int sin_port;
+    unsigned short sin_family;
+    uint16_t sin_port;
     struct in_addr sin_addr;
     unsigned char sin_zero[8];
 };
-
 
 struct addrinfo {
     int ai_flags;
@@ -41,7 +40,6 @@ struct addrinfo {
 
     struct addrinfo *ai_next;
 };
-
 
 struct socket {
     int type;

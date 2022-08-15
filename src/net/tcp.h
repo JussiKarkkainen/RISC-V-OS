@@ -7,6 +7,7 @@
 #include "queue_handler.h"
 #include "../kernel/paging.h"
 
+// RFC 6335: https://www.rfc-editor.org/rfc/rfc6335
 #define TCP_SRC_PORT_MIN 49152
 #define TCP_SRC_PORT_MAX 65535
 
@@ -62,7 +63,7 @@ struct tcp_control_block {
     struct net_interface *net_iface;
     uint16_t port;
     struct {
-        uint32_t ip_addr;
+        struct in_addr ip_addr;
         uint16_t port;
     } peer;
     struct {
@@ -87,7 +88,7 @@ struct tcp_control_block {
 };
 
 void tcp_init(void);
-void tcp_connect(int desc, struct sockaddr *addr, int addrlen);
+int tcp_connect(int desc, struct sockaddr *addr, int addrlen);
 int tcp_assign_desc(void);
 void tcp_send(int desc, uint8_t *buf, int len);
 void tcp_recv(int desc, uint8_t addr, int n);

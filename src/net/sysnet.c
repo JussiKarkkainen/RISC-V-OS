@@ -2,6 +2,7 @@
 #include "../kernel/file.h"
 #include "../kernel/syscall.h"
 #include "../kernel/filesys.h"
+#include "../libc/include/stdio.h"
 #include "socket.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -30,9 +31,7 @@ uint32_t sys_socket(void) {
 }
 
 uint32_t sys_connect(void) {
-    return -1;
-    /*
-    struct file *f
+    struct file *f;
     int addrlen;
     struct sockaddr *addr;
 
@@ -42,8 +41,8 @@ uint32_t sys_connect(void) {
     if (f->type != FD_SOCKET) {
         return -1;
     }
+    kprintf("addr %d\n", addrlen);
     return socket_connect(f->socket, addr, addrlen);
-    */
 }
 
 

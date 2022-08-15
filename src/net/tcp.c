@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-// tcp_receive_packet are used to actually send tcp packets,
+// tcp_receive/send_packet are used to actually send tcp packets,
 // while tcp_send, and tcp_recv are used as an interface between
 // socket syscalls and tcp protocol
 
@@ -27,11 +27,9 @@
 static struct spinlock tcplock;
 struct tcp_control_block tcp_cb_table[TCP_CB_TABLE_SIZE];
 
-
 void tcp_init(void) {
     initlock(&tcplock, "tcplock");
 }
-
 
 int tcp_assign_desc(void) {
 
@@ -77,52 +75,57 @@ int pushto_txq(struct tcb_control_block *cb, struct tcp_header *hdr, int len) {
 
     return 0;
 }
-
+*/
 int tcp_connect(int desc, struct sockaddr *addr, int addrlen) {
     
     struct tcp_control_block *cb, *tmp;
     struct sockaddr_in *sin;
-    int i;
+    int i, p;
 
-    if (SOCKT_INVALID(desc)) {
+    if (SOCKET_INVALID(desc)) {
+        kprintf("Invalid desc in tcp_connect(): %d\n", desc);
         return -1;
     }
     
-    if (addr-sa_family != AF_INET) {
+    if (addr->sa_family != AF_INET) {
+        kprintf("invalid sockaddr->sa_family in tcp_connect(): %p Only ipv4 is supported\n", addr->sa_family);
         return -1;
     }
     
     sin = (struct sockaddr_in *)addr;
 
     acquire_lock(&tcplock);
-    cb = cb_table[desc]; 
+    cb = &tcp_cb_table[desc]; 
     
     if (!cb->used || cb->state != TCP_CB_STATE_CLOSED) {
+        kprintf("tcp_connect: Invalid control block: cb->used %d cb->state %d\n", cb->used, cb->state);
         release_lock(&tcplock);
         return -1;
     }
 
     // Assign an ephemeral port as a source port
-    if (!cb_port) {
+    if (!cb->port) {
         for (i = TCP_SRC_PORT_MIN; i <= TCP_SRC_PORT_MAX; i++) {
            for (p = 0; p < TCP_CB_TABLE_SIZE; p++) {
-               tmp = cb_table[i];
-               if (tmp->used && tmp->port == htons((uint16_t)i)) {
+               tmp = &tcp_cb_table[p];
+               if (tmp->used && (tmp->port == htons((uint16_t)i))) {
                    break;
                 }
-               cb->port = htons((uint16_t)i);
-               break;
             }
+            cb->port = htons((uint16_t)i);
+            break;
+        }
         if (!cb->port) {
             release_lock(&tcplock);
             return -1;
         }
     }
+    cb->peer.ip_addr = sin->sin_addr;
+    cb->peer.port = sin->sin_port;
+    cb->receive.wnd = sizeof(cb->window);
 
-    cb->peer.addr = sin->sin_addr;
-    cb->peer->port = sin->sin_port;
-    cb_receive->wnd = sizeof(cb->window);
-
+    return -1;
+    /*
     cb->iss = isn_gen();
     uint32_t seq_num = cb->iss;
     
@@ -131,13 +134,14 @@ int tcp_connect(int desc, struct sockaddr *addr, int addrlen) {
     cb->send.next += 1;
     cb-state = TCP_CB_SYN_SENT;
     while (cb->state == TCP_CB_SYN_SENT) {
-        sleep(&cb_table[desc], &tcplock);
+        sleep(&tcp_cb_table[desc], &tcplock);
     }
     release_lock(&tcplock);
     return 0;
+    */
 }
 
-
+/*
 int tcp_send(int desc, uint8_t *buf, int len) {
     
     struct tcp_control_block *cb;
@@ -146,7 +150,7 @@ int tcp_send(int desc, uint8_t *buf, int len) {
         return -1;
     }
     acquire_lock(&tcplock);
-    cb = &cb_table[desc];
+    cb = &tcp_cb_table[desc];
     if (!cb->used) {
         release_lock(&tcp_lock);
         return -1;
@@ -171,7 +175,7 @@ int tcp_recv(int desc, uint8_t addr, int n) {
         return -1;
     }
     acquire_lock(&tcplock);
-    cb = &cb_table[desc];
+    cb = &tcp_cb_table[desc];
     if (!cb->used) {
         release_lock(&tcplock);
         return -1;
@@ -428,7 +432,7 @@ void tcp_receive_packet(struct net_interface *netif, uint8_t *segment,
 
     acquire_lock(&tcplock);
     for (i = 0; i < TCP_CB_TABLE_SIZE; i++) {
-        cb = cb_table[i];
+        cb = tcp_cb_table[i];
         if (!cb->used) {
             if (!tcb) {
                 tcb = cb;
@@ -443,7 +447,7 @@ void tcp_receive_packet(struct net_interface *netif, uint8_t *segment,
         }
 
     }
-    if (cb = cb_table[TCP_CB_TABLE_SIZE]) {    
+    if (cb = tcp_cb_table[TCP_CB_TABLE_SIZE]) {    
         if (!tcb || !lcb || !FLAG_IS_SET(tcp_hdr, TCP_FLG_SIN)) {
             release_lock(&tcplock);
             return;

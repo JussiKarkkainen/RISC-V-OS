@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <stddef.h>
 
-
 struct file *socket_alloc(int domain, int type, int protocol) {
     
     struct file *file;
@@ -35,18 +34,13 @@ struct file *socket_alloc(int domain, int type, int protocol) {
     return file;
 }
 
-
 int socket_connect(struct socket *s, struct sockaddr *addr, int addrlen) {
-    return -1;
-    /*
     if (s->type != SOCK_STREAM) {
         return -1;
     }
+    kprintf("s->desc %d addrlen %d\n", s->desc, addrlen);
     return tcp_connect(s->desc, addr, addrlen);
-
-    */
 }
-
 
 int socket_read(struct socket *s, char *addr, int n) {
     return 0;
@@ -58,7 +52,6 @@ int socket_read(struct socket *s, char *addr, int n) {
 */
 }
 
-
 int socket_write(struct socket *s, char *addr, int n) {
     return 0;
     /*
@@ -69,7 +62,6 @@ int socket_write(struct socket *s, char *addr, int n) {
 */
 }
 
-
 int socket_sendto(struct socket *s, char *buf, int n, struct sockaddr *addr, int *addrlen) {
     return 0;
     /*
@@ -79,7 +71,6 @@ int socket_sendto(struct socket *s, char *buf, int n, struct sockaddr *addr, int
     return udp_sendto(s->desc, (uint8_t *)buf, n, addr, addrlen);
     */
 }
-
 
 int socket_recvfrom(struct socket *s, char *buf, int n, struct sockaddr *addr, int *addrlen) {
     return 0;

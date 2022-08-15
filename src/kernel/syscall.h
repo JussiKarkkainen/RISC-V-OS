@@ -51,6 +51,7 @@ int argstr(int n, char *buf, int max);
 uint32_t argraw(int n);
 int isdirempty(struct inode *inode);
 int argfd(int n, int *pfd, struct file **pf);
+int argptr(int n, void **pp, int size);
 
 // file syscalls
 uint32_t sys_exec(void);
