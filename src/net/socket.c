@@ -38,7 +38,6 @@ int socket_connect(struct socket *s, struct sockaddr *addr, int addrlen) {
     if (s->type != SOCK_STREAM) {
         return -1;
     }
-    kprintf("s->desc %d addrlen %d\n", s->desc, addrlen);
     return tcp_connect(s->desc, addr, addrlen);
 }
 

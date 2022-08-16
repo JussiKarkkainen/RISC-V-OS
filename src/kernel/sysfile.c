@@ -12,7 +12,7 @@
 // File system system calls
 
 // Get the n:th system call argument as a file descriptor and return
-// both the descriptor and thr file struct.
+// both the descriptor and the file struct.
 // **file is a pointer to a pointer.
 int argfd(int n, int *pfd, struct file **file) {
 

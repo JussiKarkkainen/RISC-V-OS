@@ -84,13 +84,14 @@ int argptr(int n, void **pp, int size) {
     int i;
     struct process *current_proc = get_process_struct();
  
-    if(argint(n, &i) < 0) {
+    if (argint(n, &i) < 0) {
         return -1;
     }
-    if(size < 0 || (unsigned int)i >= current_proc->mem_size || (unsigned int)i+size > current_proc->mem_size) {
+    if (size < 0 || (unsigned int)i >= current_proc->mem_size || (unsigned int)i+size > current_proc->mem_size) {
         return -1;
     }
-    *pp = (unsigned short*)&i;
+    kprintf("%p\n", (uint32_t*)i);
+    *pp = (uint32_t*)i;
     return 0;
 }
 
