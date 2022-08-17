@@ -84,7 +84,7 @@ void randinit(uint32_t flag) {
 }
 
 
-uint8_t *siphash_key_gen(void) {
+uint8_t *key_gen(void) {
     randinit(1);
     uint64_t a = rand();
     uint64_t b = rand();

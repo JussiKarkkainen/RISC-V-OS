@@ -1,6 +1,7 @@
 #include "tcp.h"
 #include "ipv4.h"
 #include "../kernel/locks.h"
+#include "../kernel/crypto.h"
 #include "net.h"
 #include "queue_handler.h"
 #include "socket.h"
@@ -124,13 +125,13 @@ int tcp_connect(int desc, struct sockaddr *addr, int addrlen) {
     cb->peer.port = sin->sin_port;
     cb->receive.wnd = sizeof(cb->window);
 
-    return -1;
-    /*
-    cb->iss = isn_gen();
-    uint32_t seq_num = cb->iss;
+    // Random number for iss
+    //cb->iss = isn_gen(cb->net_iface->gateway_ip, cb->port, cb->peer.ip_addr, cb->peer.port);
+    cb->iss = 0;
+    tcp_send_packet(cb, cb->iss, 0, TCP_FLG_SYN, NULL, 0);
     
-    tcp_send_packet(cb, seq_num, TCP_FLAG_SYN, NULL, 0);
-     
+    return -1; 
+    /*
     cb->send.next += 1;
     cb-state = TCP_CB_SYN_SENT;
     while (cb->state == TCP_CB_SYN_SENT) {
@@ -468,15 +469,15 @@ void tcp_receive_packet(struct net_interface *netif, uint8_t *segment,
     return;
 }
 
-
+*/
 void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num, 
-                     uint32_t ack_num, uint8_t flags, uint8_t buf, int len) {
+                     uint32_t ack_num, uint8_t flags, uint8_t *buf, int len) {
     
     uint8_t segment[1500];
     struct tcp_header *tcp_header;
     uint32_t pseudo;
     uint32_t self, peer;
-
+    
     memset(&segment, 0, sizeof(segment));
 
     tcp_header = (struct tcp_header *)segment;
@@ -501,28 +502,30 @@ void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num,
     pseudo += htons(sizeof(struct tcp_header) + len);
     tcp_header->sum = ipv4_checksum((uint16_t *)hdr, 
                                      sizeof(struct tcp_hdr) + len, pseudo);
-    
+    return;
+    /*
     ipv4_send_packet(cb->net_iface, &peer, (uint8_t *)hdr, 
                      sizeof(struct tcp_hdr) + len, flags, IP_PROTOCOL_TCP);
   
     tcp_txq_add(cb, hdr, sizeof(struct tcp_hdr) + len);
     return len; 
-
+*/
 }
 
+/*
 uint32_t isn_gen(uint32_t localip, uint16_t localport, 
                  uint32_t remoteip, uint16_t remoteport) {
 
-    uint32_t m = get_time();
+    //uint32_t m = get_time();
     
     uint8_t *in = localip + localport + remoteip + remoteport;
     int inlen = sizeof(*in);
 
-    key = siphash_key_gen();
+    uint8_t *key = key_gen();
     uint8_t buf[8];
     
     siphash24(in, inlen, key, buf);
-    uint32_t isn = (uint32_t)(*buf + m);
+    uint32_t isn = (uint32_t)(*buf);
     return isn;
 }
 */

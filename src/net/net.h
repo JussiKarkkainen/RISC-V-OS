@@ -12,5 +12,6 @@ struct net_interface {
 };
 
 uint32_t inet_addr(const char *cp); 
+void net_config(void);
 
 #endif

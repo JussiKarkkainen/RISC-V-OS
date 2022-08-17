@@ -13,10 +13,12 @@
 #include "../net/pcie.h"
 #include "../net/tcp.h"
 #include "../net/udp.h"
+#include "../net/net.h"
 
 // This should be executed in supervisor mode, boot.S should first call 
 // start() for setup before tranfering control to enter().
 static volatile int started = 0;
+void net_config(void);
 
 void enter(void) {  
     
@@ -35,7 +37,7 @@ void enter(void) {
         init_ktrapvec();                // Write ktrapvec addr into stvec to init trap handling
         plic_init();                    // Setup interrupt controller  
         plic_init_hart();               // request device interrupts
-        tcp_init();
+        net_config();
         buffer_init();                  // Initialize the buffer cache for filesystem
         inode_init();                   // Initialize the inode table
         file_init();                    // Initialize file table
