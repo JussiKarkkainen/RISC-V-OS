@@ -34,7 +34,7 @@ struct ipv4_pseudo_hdr {
     uint16_t checksum;
 };
 
-uint16_t ipv4_checksum(void *addr, int size);
+uint16_t ipv4_checksum(void *addr, int size, uint32_t init);
 void ipv4_send_packet(uint8_t *dst_ip_addr, uint8_t *data, int len);
 void ipv4_handle_packet(struct ipv4hdr *ipv4_packet);
 

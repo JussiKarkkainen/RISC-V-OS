@@ -7,6 +7,7 @@
 #include "socket.h"
 #include "arpa/inet.h"
 #include "../libc/include/stdio.h"
+#include "../libc/include/string.h"
 #include <stdint.h>
 #include <stddef.h>
 
@@ -484,24 +485,23 @@ void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num,
     tcp_header->src_port = cb->port;
     tcp_header->dst_port = cb->peer.port;
     tcp_header->sequence_num = htonl(seq_num);
-    tcp_header->acknowledge_num = htonl(ack);
+    tcp_header->ack_num = htonl(ack_num);
     tcp_header->offset = (sizeof(struct tcp_header) >> 2) << 4;
     tcp_header->flags = flags; 
-    tcp_header->window_size = htons(cb.receive.wnd);
+    tcp_header->window_size = htons(cb->receive.wnd);
     tcp_header->tcp_checksum = 0;
     tcp_header->urgent_pointer = 0;
     
-    memcpy(hdr + 1, buf, len);
-    //self = ((struct netif_ip *)cb->net_iface)->unicast;
-    peer = cb->peer.ip_addr;
+    memcpy(tcp_header + 1, buf, len);
+    self = ((struct netif_ip *)cb->net_iface)->unicast;
+    peer = cb->peer.ip_addr.s_addr;
     pseudo += (self >> 16) & 0xffff;
     pseudo += self & 0xffff;
     pseudo += (peer >> 16) & 0xffff;
     pseudo += peer & 0xffff;
     pseudo += htons((uint16_t)PROTOCOL_TYPE_TCP);
     pseudo += htons(sizeof(struct tcp_header) + len);
-    tcp_header->sum = ipv4_checksum((uint16_t *)hdr, 
-                                     sizeof(struct tcp_hdr) + len, pseudo);
+    tcp_header->tcp_checksum = ipv4_checksum((uint16_t *)tcp_header, (sizeof(struct tcp_header) + len), pseudo);
     return;
     /*
     ipv4_send_packet(cb->net_iface, &peer, (uint8_t *)hdr, 
