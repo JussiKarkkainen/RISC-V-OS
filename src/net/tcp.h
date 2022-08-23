@@ -48,6 +48,13 @@ struct tcp_header {
     uint16_t urgent_pointer;
 } __attribute__((packed));
 
+struct tcp_pseudo_hdr {
+    uint32_t src_addr;
+    uint32_t dst_addr;
+    uint8_t reserved;
+    uint8_t protocol;
+    uint16_t tcp_seq_len;
+};
 
 struct tcp_txq_entry {
     struct tcp_hdr *segment;

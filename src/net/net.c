@@ -10,7 +10,7 @@ void net_interface_init(void) {
            
     struct net_interface *netif; 
     netif->id = 0;
-    memcpy(netif->mac, get_driver_mac_addr(), 6);
+    memcpy(netif->mac, 08:00:27:53:61:21, 6);
     memcpy(netif->ip, ip, 6);
     memcpy(netif->gateway_ip, gateway_ip, 6);
 

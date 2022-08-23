@@ -476,6 +476,7 @@ void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num,
     
     uint8_t segment[1500];
     struct tcp_header *tcp_header;
+    struct tcp_pseudo_hdr *pseudo_hdr;
     uint32_t pseudo;
     uint32_t self, peer;
     
@@ -492,8 +493,9 @@ void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num,
     tcp_header->tcp_checksum = 0;
     tcp_header->urgent_pointer = 0;
     
+
     memcpy(tcp_header + 1, buf, len);
-    self = ((struct netif_ip *)cb->net_iface)->unicast;
+    self = ((struct net_interface *)cb->net_iface)->unicast;
     peer = cb->peer.ip_addr.s_addr;
     pseudo += (self >> 16) & 0xffff;
     pseudo += self & 0xffff;
@@ -503,6 +505,8 @@ void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num,
     pseudo += htons(sizeof(struct tcp_header) + len);
     tcp_header->tcp_checksum = ipv4_checksum((uint16_t *)tcp_header, (sizeof(struct tcp_header) + len), pseudo);
     return;
+    
+    // args = net_iface?, dst_ip_addr, data, len, flags, protocol
     /*
     ipv4_send_packet(cb->net_iface, &peer, (uint8_t *)hdr, 
                      sizeof(struct tcp_hdr) + len, flags, IP_PROTOCOL_TCP);
