@@ -104,11 +104,10 @@ int tcp_connect(int desc, struct sockaddr *addr, int addrlen) {
         release_lock(&tcplock);
         return -1;
     }
-
     // Assign an ephemeral port as a source port
     if (!cb->port) {
         for (i = TCP_SRC_PORT_MIN; i <= TCP_SRC_PORT_MAX; i++) {
-           for (p = 0; p < TCP_CB_TABLE_SIZE; p++) {
+            for (p = 0; p < TCP_CB_TABLE_SIZE; p++) {
                tmp = &tcp_cb_table[p];
                if (tmp->used && (tmp->port == htons((uint16_t)i))) {
                    break;
@@ -475,13 +474,13 @@ void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num,
                      uint32_t ack_num, uint8_t flags, uint8_t *buf, int len) {
     
     uint8_t segment[1500];
+    uint8_t pseudo[100];
     struct tcp_header *tcp_header;
     struct tcp_pseudo_hdr *pseudo_hdr;
-    uint32_t pseudo;
-    uint32_t self, peer;
-    
+    //uint32_t pseudo;
+    //uint32_t self, peer;
+     
     memset(&segment, 0, sizeof(segment));
-
     tcp_header = (struct tcp_header *)segment;
     tcp_header->src_port = cb->port;
     tcp_header->dst_port = cb->peer.port;
@@ -493,9 +492,12 @@ void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num,
     tcp_header->tcp_checksum = 0;
     tcp_header->urgent_pointer = 0;
     
-
-    memcpy(tcp_header + 1, buf, len);
+    if (buf != 0 && len != 0) {
+        memcpy(tcp_header + 1, buf, len);
+    }
+    /*
     self = ((struct net_interface *)cb->net_iface)->unicast;
+    
     peer = cb->peer.ip_addr.s_addr;
     pseudo += (self >> 16) & 0xffff;
     pseudo += self & 0xffff;
@@ -503,8 +505,14 @@ void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num,
     pseudo += peer & 0xffff;
     pseudo += htons((uint16_t)PROTOCOL_TYPE_TCP);
     pseudo += htons(sizeof(struct tcp_header) + len);
-    tcp_header->tcp_checksum = ipv4_checksum((uint16_t *)tcp_header, (sizeof(struct tcp_header) + len), pseudo);
+    */
+    pseudo_hdr = (struct tcp_pseudo_hdr *)pseudo;
+    memset(&pseudo, 0, sizeof(pseudo));
+    pseudo_hdr->dst_addr = cb->peer.ip_addr.s_addr;
+    
     return;
+    //tcp_header->tcp_checksum = ipv4_checksum((uint16_t *)tcp_header, (sizeof(struct tcp_header) + len), pseudo);
+    
     
     // args = net_iface?, dst_ip_addr, data, len, flags, protocol
     /*

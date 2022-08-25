@@ -37,7 +37,7 @@ void enter(void) {
         init_ktrapvec();                // Write ktrapvec addr into stvec to init trap handling
         plic_init();                    // Setup interrupt controller  
         plic_init_hart();               // request device interrupts
-        net_config();
+        net_config();                   // Configure network protocols
         buffer_init();                  // Initialize the buffer cache for filesystem
         inode_init();                   // Initialize the inode table
         file_init();                    // Initialize file table
