@@ -5,9 +5,10 @@
 #include <stdef.h>
 #include "arpa/inet.h"
 
-uint16_t ipv4_checksum(void *addr, int size, uint32_t init) {
+// https://www.rfc-editor.org/rfc/rfc1071
+uint16_t ipv4_checksum(void *addr, int count) {
 
-    uint32_t sum = init;
+    register uint32_t sum = 0;
     uint16_t *ptr = addr;
 
     while (size > 1) {

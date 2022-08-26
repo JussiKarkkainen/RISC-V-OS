@@ -98,7 +98,8 @@ int tcp_connect(int desc, struct sockaddr *addr, int addrlen) {
 
     acquire_lock(&tcplock);
     cb = &tcp_cb_table[desc]; 
-    
+    cb->net_iface = (struct net_interface *)&net_interface[0];
+
     if (!cb->used || cb->state != TCP_CB_STATE_CLOSED) {
         kprintf("tcp_connect: Invalid control block: cb->used %d cb->state %d\n", cb->used, cb->state);
         release_lock(&tcplock);
@@ -474,7 +475,7 @@ void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num,
                      uint32_t ack_num, uint8_t flags, uint8_t *buf, int len) {
     
     uint8_t segment[1500];
-    uint8_t pseudo[100];
+    uint8_t pseudo[12];
     struct tcp_header *tcp_header;
     struct tcp_pseudo_hdr *pseudo_hdr;
     //uint32_t pseudo;
@@ -508,10 +509,14 @@ void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num,
     */
     pseudo_hdr = (struct tcp_pseudo_hdr *)pseudo;
     memset(&pseudo, 0, sizeof(pseudo));
+    pseudo_hdr->src_addr = cb->net_iface->ip;
     pseudo_hdr->dst_addr = cb->peer.ip_addr.s_addr;
-    
+    pseudo_hdr->reserved = 0;
+    pseudo_hdr->protocol = PROTOCOL_TYPE_TCP;
+    uint16_t checksum =  ipv4_checksum((uint16_t *)tcp_header, (sizeof(struct tcp_header) + len), pseudo);
+    kprintf("%p\n", checksum);
     return;
-    //tcp_header->tcp_checksum = ipv4_checksum((uint16_t *)tcp_header, (sizeof(struct tcp_header) + len), pseudo);
+    tcp_header->tcp_checksum = ipv4_checksum((uint16_t *)tcp_header, (sizeof(struct tcp_header) + len), pseudo);
     
     
     // args = net_iface?, dst_ip_addr, data, len, flags, protocol

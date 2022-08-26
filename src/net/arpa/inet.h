@@ -23,6 +23,6 @@ uint32_t ntohl(uint32_t s);
 #define ntohl(s) NTOHL(s)
 
 int inet_aton(const char *cp, struct in_addr *addr);
-//uint32_t inet_addr(const char *cp);
+uint32_t inet_addr(const char *cp);
 
 #endif
