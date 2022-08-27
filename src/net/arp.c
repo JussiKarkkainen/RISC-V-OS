@@ -33,8 +33,9 @@ void arp_receive_packet(uint8_t *data, uint32_t len) {
     }
 }
 
+
 // Send arp request
-void arp_request(uint8_t ip_addr[4]) {
+void arp_request(uint32_t ip_addr) {
     
     uint8_t broadcast_mac[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 

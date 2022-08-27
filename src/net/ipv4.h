@@ -1,6 +1,9 @@
 #ifndef IPV4_H
 #define IPV4_H
 
+#include "net.h"
+#include <stdint.h>
+
 #define ETHERTYPE_IPV4 0x0800
 #define PROTOCOL_TYPE_UDP 17
 #define PROTOCOL_TYPE_TCP 6
@@ -14,13 +17,13 @@ struct ipv4hdr {
     uint16_t len;
     uint16_t id;
     uint16_t flags : 3;
-    uint16_t frag_offset : 13;
+    uint16_t fragment_offset : 13;
     uint8_t ttl;
     uint8_t protocol;
     uint16_t csum;
     uint32_t src_addr;
     uint32_t dst_addr;
-} __attribute__((packed));
+};
 
 struct ipv4_pseudo_hdr {
     uint32_t src_ipaddr;
@@ -35,7 +38,8 @@ struct ipv4_pseudo_hdr {
 };
 
 uint16_t ipv4_checksum(void *addr, int size, uint32_t init);
-void ipv4_send_packet(uint8_t *dst_ip_addr, uint8_t *data, int len);
-void ipv4_handle_packet(struct ipv4hdr *ipv4_packet);
+void ipv4_send_packet(struct net_interface *netif, uint32_t dst_ip_addr, uint8_t *data, int len,
+                      uint16_t flags, uint8_t protocol);
+void ipv4_handle_packet(struct net_interface *netif, uint8_t *data, uint32_t data_len);
 
 #endif

@@ -20,5 +20,7 @@ struct arp_packet {
 } __attribute__((packed));
 
 void arp_receive_packet(uint8_t *data, uint32_t len);
+void arp_request(uint32_t ip_addr);
+void arp_reply(struct arp_packet *request);
 
 #endif

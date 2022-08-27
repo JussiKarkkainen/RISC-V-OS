@@ -23,7 +23,6 @@ void udp_init() {
     initlock(&udplock, "udplock");
 }
 
-
 int udp_assign_desc(void) {
 
     struct udp_control_block *cb;
@@ -92,7 +91,7 @@ void udp_recvfrom(int desc, uint8_t *buf, int n, struct sockaddr *addr, int *add
 }
 */
 /*
-void udp_sendto(int desc, uint8_t *buf, int n, struct sockaddr, *addr, int *addrlen) {
+void udp_sendto(int desc, uint8_t *buf, int n, struct sockaddr *addr, int *addrlen) {
 
     struct sockaddr_in *sin;
     struct net_interface *netif;

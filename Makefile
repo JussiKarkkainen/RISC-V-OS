@@ -43,7 +43,9 @@ OBJS = \
     $(NET)/socket.o \
     $(NET)/tcp.o \
     $(NET)/udp.o \
-    $(NET)/net.o \
+    $(NET)/ipv4.o \
+	$(NET)/ethernet.o \
+	$(NET)/net.o \
     $(NET)/inet_addr.o \
 	$(LIBC)/isdigit.o \
     $(LIBC)/isascii.o \
