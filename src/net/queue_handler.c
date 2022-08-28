@@ -1,11 +1,12 @@
 #include "queue_handler.h"
-#include "../kernel/paging.c"
+#include "../kernel/paging.h"
 
+/*
 struct queue_entry push_to_queue(struct queue_head *q, void *data, int size) {
 
     struct queue_entry *qe = (struct queue_entry *)kalloc();
     if (!qe) {
-        return 0;
+        return -1;
     }
     qe->data = data;
     qe->size = size;
@@ -42,5 +43,5 @@ struct queue_entry get_from_queue(struct queue_head *q) {
 
 }
 
-
+*/
 

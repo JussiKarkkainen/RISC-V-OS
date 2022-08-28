@@ -5,7 +5,7 @@
 #include "arpa/inet.h"
 #include <stddef.h>
 
-
+/*
 static uint8_t last_arp_mac_addr[6] = {0};
 
 
@@ -75,3 +75,4 @@ void arp_reply(struct arp_packet *request) {
     ethernet_send_frame(reply->src_mac, packet, packet_len, ETHERTYPE_ARP); 
 
 }
+*/

@@ -75,6 +75,7 @@ struct buffer *buffer_get(unsigned int dev, unsigned int blockno) {
         }
     }
     panic("buffer_get, no buffers");
+    return buf;
 }
 
 struct buffer *buffer_read(unsigned int dev, unsigned int blockno) {

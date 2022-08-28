@@ -141,7 +141,7 @@ fs.img: src/makefs README.md $(UPROGS)
 
 clean:
 	rm -f *.tex *.dvi *.idx *.aux *.log *.ind *.ilg \
-	*/*.o */*.d */*.asm */*.sym \
+	/*.o */*.d */*.asm */*.sym $(OBJS) \
 	$(USER)/initcode $(USER)/initcode.out $(KERNEL)/kern fs.img \
 	src/makefs $(USER)/usyscall.S \
 	$(UPROGS) 

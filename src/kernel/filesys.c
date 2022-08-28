@@ -240,6 +240,7 @@ unsigned int buffer_alloc(unsigned int dev) {
         buffer_release(buf);
     }
     panic("buffer_alloc: no blocks left");
+    return -1;
 }
 
 void buffer_zero(int dev, int buffer_num) {
@@ -312,6 +313,8 @@ struct inode *inode_alloc(int dev, uint16_t type) {
         buffer_release(buf);
     }
     panic("no inodes found");
+    // Just to silence control reaches end of non-void function
+    return inode_get(dev, inode_num);
 }
 
 // Finds the inode on disk with inode_num, and returns the in memory copy of that inode
@@ -487,9 +490,9 @@ unsigned int buffer_map(struct inode *inode, unsigned int buffer_num) {
         }
         buffer_release(buf);
         return addr;
-  }
-
-  panic("buffer_map: out of range");
+    }
+    panic("buffer_map: out of range");
+    return -1;
 }
 
 struct inode *inode_dup(struct inode *inode) {
