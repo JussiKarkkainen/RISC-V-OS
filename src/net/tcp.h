@@ -32,6 +32,10 @@
 #define TCP_FLG_ACK 0x10
 #define TCP_FLG_URG 0x20
 
+
+#define MAX_NET_INTERFACE 1     // For now...
+//struct net_interface net_interface_table[MAX_NET_INTERFACE];
+
 struct tcp_header {
     uint16_t src_port;
     uint16_t dst_port;

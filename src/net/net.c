@@ -8,7 +8,7 @@ void net_interface_init(void) {
     struct net_interface *netif = (struct net_interface *)net_f; 
     netif->id = 0;      
     netif->ip = inet_addr("10.0.2.0");
-    net_interface[netif->id] = *netif; 
+    net_interface_table[netif->id] = *netif; 
 /*
     memcpy(netif->mac, 52:54:00:12:34:56, 6);
     memcpy(netif->ip, ip, 6);

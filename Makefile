@@ -46,7 +46,9 @@ OBJS = \
     $(NET)/ipv4.o \
 	$(NET)/ethernet.o \
 	$(NET)/net.o \
-    $(NET)/inet_addr.o \
+    $(NET)/arp.o \
+	$(NET)/queue_handler.o \
+	$(NET)/inet_addr.o \
 	$(LIBC)/isdigit.o \
     $(LIBC)/isascii.o \
     $(LIBC)/isspace.o \

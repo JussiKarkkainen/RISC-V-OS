@@ -36,7 +36,7 @@ static uint16_t ipv4_id = 1;
 void ipv4_send_packet(struct net_interface *netif, uint32_t dst_ip_addr, uint8_t *data, 
                       int len, uint16_t flags, uint8_t protocol) {
 
-    int packet_len = sizeof(struct ipv4hdr) + len;
+   // int packet_len = sizeof(struct ipv4hdr) + len;
     struct ipv4hdr ipv4_header;
     
     ipv4_header.version = IPV4_VERSION;
@@ -57,9 +57,9 @@ void ipv4_send_packet(struct net_interface *netif, uint32_t dst_ip_addr, uint8_t
     memcpy(packet, &ipv4_header, sizeof(struct ipv4hdr));
     memcpy(packet + sizeof(struct ipv4hdr), data, len);
     
-    uint8_t dst_mac_addr[6] = {0};    // isn't actually 0 
+ //   uint8_t dst_mac_addr[6] = {0};    // isn't actually 0 
 
-    ethernet_send_frame(dst_mac_addr, packet, packet_len, ETHERTYPE_IPV4);
+//    ethernet_send_frame(dst_mac_addr, packet, packet_len, ETHERTYPE_IPV4);
     
     kfree(packet); 
 }
@@ -75,7 +75,7 @@ void ipv4_handle_packet(struct net_interface *netif, uint8_t *data, uint32_t dat
     
     uint8_t *payload = ((uint8_t *)ipv4_header) + hdr_len;
     uint32_t payload_len = ntohs(ipv4_header->len) - hdr_len;
-
+    
     if (!ipv4_header->ttl) {
         kprintf("IPV4 time to live = 0");
         return;
@@ -87,10 +87,12 @@ void ipv4_handle_packet(struct net_interface *netif, uint8_t *data, uint32_t dat
     }
 
     switch (ipv4_header->protocol) {
+/*
         case PROTOCOL_TYPE_UDP:
             udp_receive_packet(netif, payload, (uint32_t*)&ipv4_header->src_addr, 
                                (uint32_t*)&ipv4_header->dst_addr, payload_len);
             break;
+*/
         case PROTOCOL_TYPE_TCP:
             tcp_receive_packet(netif, payload, (uint32_t*)&ipv4_header->src_addr, 
                                (uint32_t*)&ipv4_header->dst_addr, payload_len);
@@ -99,5 +101,6 @@ void ipv4_handle_packet(struct net_interface *netif, uint8_t *data, uint32_t dat
         default:
             kprintf("Unrecognized ipv4 header protocol %p\n", ipv4_header->protocol);
     }
-}
 
+
+}

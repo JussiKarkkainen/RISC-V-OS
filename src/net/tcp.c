@@ -98,7 +98,7 @@ int tcp_connect(int desc, struct sockaddr *addr, int addrlen) {
 
     acquire_lock(&tcplock);
     cb = &tcp_cb_table[desc]; 
-    cb->net_iface = (struct net_interface *)&net_interface[0];
+    cb->net_iface = (struct net_interface *)&net_interface_table[0];
 
     if (!cb->used || cb->state != TCP_CB_STATE_CLOSED) {
         kprintf("tcp_connect: Invalid control block: cb->used %d cb->state %d\n", cb->used, cb->state);
