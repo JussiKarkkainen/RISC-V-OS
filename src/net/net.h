@@ -12,7 +12,7 @@ struct net_interface {
 };
 
 #define MAX_NET_INTERFACE 1     // For now...
-static const struct net_interface net_interface_table[MAX_NET_INTERFACE];
+extern struct net_interface net_interface_table[MAX_NET_INTERFACE];
 
 uint32_t inet_addr(const char *cp); 
 void net_config(void);

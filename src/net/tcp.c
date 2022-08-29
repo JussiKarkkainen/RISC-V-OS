@@ -471,7 +471,7 @@ void tcp_receive_packet(struct net_interface *netif, uint8_t *segment,
 }
 
 */
-void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num, 
+int tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num, 
                      uint32_t ack_num, uint8_t flags, uint8_t *buf, int len) {
     
     uint8_t segment[1500];
@@ -514,20 +514,15 @@ void tcp_send_packet(struct tcp_control_block *cb, uint32_t seq_num,
     pseudo_hdr->reserved = 0;
     pseudo_hdr->protocol = PROTOCOL_TYPE_TCP;
     */
-    uint16_t checksum =  ipv4_checksum((uint16_t *)tcp_header, (sizeof(struct tcp_header) + len), pseudo);
-    kprintf("%p\n", checksum);
-    return;
     tcp_header->tcp_checksum = ipv4_checksum((uint16_t *)tcp_header, (sizeof(struct tcp_header) + len), pseudo);
     
     
     // args = net_iface?, dst_ip_addr, data, len, flags, protocol
-    /*
-    ipv4_send_packet(cb->net_iface, peer, (uint8_t *)hdr, 
-                     sizeof(struct tcp_hdr) + len, flags, IP_PROTOCOL_TCP);
+    ipv4_send_packet(cb->net_iface, peer, (uint8_t *)tcp_header, 
+                     sizeof(struct tcp_header) + len, flags, PROTOCOL_TYPE_TCP);
   
-    tcp_txq_add(cb, hdr, sizeof(struct tcp_hdr) + len);
+    //tcp_txq_add(cb, tcp_header, sizeof(struct tcp_header) + len);
     return len; 
-*/
 }
 
 /*
