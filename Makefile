@@ -36,7 +36,6 @@ OBJS = \
     $(KERNEL)/syscall.o \
     $(KERNEL)/sysproc.o \
     $(LIBCSTDIO)/putchar.o \
-    $(LIBCSTDIO)/asmprint.o \
 
 AS = riscv64-unknown-elf-as
 ASFLAGS = -march=rv32ima -mabi=ilp32

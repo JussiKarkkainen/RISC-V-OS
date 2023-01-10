@@ -9,6 +9,8 @@
 #include "paging.h"
 
 void ktrapvec();
+unsigned int ticks;
+struct spinlock tickslock;
 
 int handle_device_intr(void) {
     // Check if external/device interrupt
