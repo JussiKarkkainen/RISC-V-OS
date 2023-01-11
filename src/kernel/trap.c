@@ -57,7 +57,6 @@ int handle_device_intr(void) {
 }
 
 void timer_interrupt(void) {
-    
     acquire_lock(&tickslock);
     ticks++;
     wakeup(&ticks);
@@ -82,7 +81,6 @@ void utrap(void) {
 
     // save user pc
     proc->trapframe->saved_pc = get_sepc(); 
-    
     // check if syscall
     if (scause == 8) {
         // Return to next instruction 
