@@ -9,9 +9,9 @@ OBJS = \
     $(KERNEL)/console.o \
     $(LIBCSTDIO)/kprintf.o \
     $(KERNEL)/uart.o \
-    $(KERNEL)/pmm.o \
     $(KERNEL)/locks.o \
-    $(LIBCSTRING)/memset.o \
+    $(KERNEL)/kalloc.o \
+	$(LIBCSTRING)/memset.o \
     $(LIBCSTRING)/memcmp.o \
     $(LIBCSTRING)/memcpy.o \
     $(LIBCSTRING)/memmove.o \
@@ -36,6 +36,8 @@ OBJS = \
     $(KERNEL)/syscall.o \
     $(KERNEL)/sysproc.o \
     $(LIBCSTDIO)/putchar.o \
+
+    #$(KERNEL)/pmm.o \
 
 AS = riscv64-unknown-elf-as
 ASFLAGS = -march=rv32ima -mabi=ilp32

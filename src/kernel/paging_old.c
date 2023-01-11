@@ -22,37 +22,37 @@ static inline void satp_write(uint32_t kpagetable) {
 }
 
 // create the kernel pagetable
-void kpage_init(void) {
+uint32_t *kpagemake(void) {
+    uint32_t *kpage = kalloc();
+    memset(kpage, 0, PGESIZE);
 
-    kpagetable = kalloc();
-    if (kpagetable == 0) {
-        kprintf("kalloc failed\n");
-    }
-
-    memset(kpagetable, 0, PGESIZE);
-    
     // Create a virtual memory map
-    kmap(UART0, UART0, PGESIZE, PTE_R | PTE_W);
+    kmap(kpage, UART0, UART0, PGESIZE, PTE_R | PTE_W);
+   /* 
+    kprintf("UART0 %p\nVIRTIO %p\nPLIC %p\nKERNEL_BASE %p\nTEXT_END %p\nUSERVEC %p\nMAXVA %p\n", 
+            UART0, VIRTIO0, PLIC, KERNEL_BASE, (uint32_t)text_end, (uint32_t)uvec, MAXVA);
+    */
+    kmap(kpage, VIRTIO0, VIRTIO0, PGESIZE, PTE_R | PTE_W);
     
-    kmap(VIRTIO0, VIRTIO0, PGESIZE, PTE_R | PTE_W);
-    
-    kmap(CLINT, CLINT, 0x10000, PTE_R | PTE_W);
+    kmap(kpage, CLINT, CLINT, 0x10000, PTE_R | PTE_W);
 
-    kmap(PLIC, PLIC, PLICSIZE, PTE_R | PTE_W);
+    kmap(kpage, PLIC, PLIC, PLICSIZE, PTE_R | PTE_W);
     
-    kmap(KERNEL_BASE, KERNEL_BASE, (uint32_t)text_end-KERNEL_BASE, PTE_R | PTE_X);
+    kmap(kpage, KERNEL_BASE, KERNEL_BASE, (uint32_t)text_end-KERNEL_BASE, PTE_R | PTE_X);
     
-    kmap((uint32_t)text_end, (uint32_t)text_end, PHYSTOP-(uint32_t)text_end, PTE_R | PTE_W);
+    kmap(kpage, (uint32_t)text_end, (uint32_t)text_end, PHYSTOP-(uint32_t)text_end, PTE_R | PTE_W);
      
-    kmap(USERVEC, (uint32_t)uvec, PGESIZE, PTE_R | PTE_X);
-}    
+    kmap(kpage, USERVEC, (uint32_t)uvec, PGESIZE, PTE_R | PTE_X);
+    
+    map_kstack(kpage);
 
-/*
+    return kpage;
+}
+
 // Initializes the kernel page table
 void kpage_init(void) {
     kpagetable = kpagemake();
 }
-*/
 
 // Write address of kernel/root pagetable to satp reg and flush TLBs
 void init_paging(void) {
@@ -60,11 +60,32 @@ void init_paging(void) {
     flush_tlb();
 }
 
-void kmap(uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int perm) {
-    if (map_pages(kpagetable, vir_addr, phy_addr, size, perm) != 0) {
-        panic("kmap failed");
+// Finds the PTE for a virtual address
+uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc) {
+    
+    if (vir_addr >= MAXVA) {
+        panic("vir_addr out of range");
     }
-}
+    
+    for (int i = 1; i > 0; i--) {
+
+        uint32_t *pte = &pagetable[((vir_addr >> (PGEOFFSET + (10 * i))) & VPNMASK)];
+        
+        // Turn pte into phy_addr
+        if (*pte & PTE_V) {
+            // Shift PPNs to correct places from pte
+            pagetable = (uint32_t *)((*pte >> 10) << 12);
+        }
+        // Turn phy_addr into pte
+        else {
+            if (!alloc || ((pagetable = kalloc()) == 0)) {
+                return 0;
+            }
+            *pte = (((uint32_t)pagetable >> 12) << 10) | PTE_V;
+        }
+    }
+    return &pagetable[((vir_addr >> (PGEOFFSET + (10 * 0))) & VPNMASK)];
+}   
 
 uint32_t fetch_pa_addr(uint32_t *pagetable, uint32_t va) {
     uint32_t *pte;
@@ -98,62 +119,33 @@ uint32_t fetch_kpa(uint32_t va) {
     if (pte == 0) {
         panic("pte = 0, fetch_kpa");
     }
-    if ((*pte & PTE_V) == 0) {
+    if ((*pte && PTE_V) == 0) {
         panic("PTE_V == 0, fetch_kpa");
     }
-    pa = ((*pte >> 10) << 12);
+    pa = ((*pte << 10) << 12);
     return pa + off;
 }
 
-// Finds the PTE for a virtual address
-uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc) {
-    
-    if (vir_addr >= MAXVA) {
-        panic("vir_addr out of range");
-    }
-    
-    for (int i = 1; i > 0; i--) {
-
-        uint32_t *pte = &pagetable[((vir_addr >> (PGEOFFSET + (10 * i))) & VPNMASK)];
-         
-        // Turn pte into phy_addr
-        if (*pte & PTE_V) {
-            // Shift PPNs to correct places from pte
-            pagetable = (uint32_t *)((*pte >> 10) << 12);
-        }
-        // Turn phy_addr into pte
-        else {
-            if (!alloc || ((pagetable = (uint32_t*)kalloc()) == 0)) {
-                return 0;
-            }
-            memset(pagetable, 0, PGESIZE);
-            *pte = (((uint32_t)pagetable >> 12) << 10) | PTE_V;
-        }
-    }
-    return &pagetable[((vir_addr >> (PGEOFFSET + (10 * 0))) & VPNMASK)];
-}   
-
 // Install PTEs for new mappings
-int map_pages(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int permissions) {
+int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int permissions) {
 
     uint32_t *pte;
     uint32_t last;
     uint32_t vir;
     
-        
     if (size == 0) {
-        panic("map_pages: size == 0!");
+        panic("kmap: size == 0!");
     }
     last = ((vir_addr + size - 1) & ~(PGESIZE - 1));
     vir = (vir_addr & ~(PGESIZE - 1));
     
     while(1) {
+        
         if ((pte = walk(kpage, vir, 1)) == 0) { 
             return -1;
         }
-
         if (*pte & PTE_V) {
-            panic("map_pages, PTE_V and pte");
+            panic("kmap, PTE_V and pte");
         }
 
         *pte = ((phy_addr >> 12) << 10) | permissions | PTE_V;
@@ -170,7 +162,7 @@ uint32_t *upaging_create(void) {
     uint32_t *pagetable;
     pagetable = kalloc();
     if (pagetable == 0) {
-        panic("out of memory");
+        return 0;
     }
     memset(pagetable, 0, PGESIZE);
     return pagetable;
@@ -186,7 +178,7 @@ void upaging_init(uint32_t *pagetable, unsigned char *src, unsigned int size) {
 
     mem = kalloc();
     memset(mem, 0, PGESIZE);
-    map_pages(pagetable, 0, (uint32_t)mem, PGESIZE, PTE_W | PTE_R | PTE_X | PTE_U);
+    kmap(pagetable, 0, (uint32_t)mem, PGESIZE, PTE_W | PTE_R | PTE_X | PTE_U);
 
     memmove(mem, src, size);
 }
@@ -202,15 +194,14 @@ uint32_t uvmalloc(uint32_t *pagetable, uint32_t oldsize, uint32_t newsize) {
     }
 
     oldsize = (((oldsize) + PGESIZE-1) & ~(PGESIZE-1));      // Round up to pagesize
-    a = oldsize;
-    for (; a < newsize; a += PGESIZE) {
+    for (a = oldsize; a < newsize; a += PGESIZE) {
         mem = kalloc();
         if (mem == 0) {
             uvmdealloc(pagetable, a, oldsize);
             return 0;
         }
         memset(mem, 0, PGESIZE);
-        if (map_pages(pagetable, a, (uint32_t)mem, PGESIZE, PTE_W|PTE_X|PTE_R|PTE_U) != 0) {
+        if (kmap(pagetable, a, (uint32_t)mem, PGESIZE, PTE_W|PTE_X|PTE_R|PTE_U) != 0) {
             kfree(mem);
             uvmdealloc(pagetable, a, oldsize);
             return 0;
@@ -247,12 +238,13 @@ void uvmclear(uint32_t *pagetable, uint32_t va) {
     *pte &= ~PTE_U;
 }
 
-int uvmcopy(uint32_t *old, uint32_t *new_addr, uint32_t size) {
+int uvmcopy(uint32_t *old, uint32_t *new, uint32_t size) {
 
     uint32_t *pte;
     uint32_t pa, i;
     unsigned int flags;
     uint32_t *mem;
+
     for (i = 0; i < size; i += PGESIZE) {
         if ((pte = walk(old, i, 0)) == 0) {
             panic("uvmcopy: pte should exist");
@@ -266,7 +258,7 @@ int uvmcopy(uint32_t *old, uint32_t *new_addr, uint32_t size) {
             goto err;
         }
         memmove(mem, (char*)pa, PGESIZE);
-        if (map_pages(new_addr, i, (uint32_t)mem, PGESIZE, flags) != 0) {
+        if (kmap(new, i, PGESIZE, (uint32_t)mem, flags) != 0) {
             kfree(mem);
             goto err;
         }
@@ -274,22 +266,20 @@ int uvmcopy(uint32_t *old, uint32_t *new_addr, uint32_t size) {
     return 0;
 
     err:
-        uvmunmap(new_addr, 0, i, 1);
+        uvmunmap(new, 0, i / PGESIZE, 1);
         return -1;
 }
 
 void uvmunmap(uint32_t *pagetable, uint32_t va, uint32_t num_pages, int free) {
   
-    uint32_t a, last;
+    uint32_t a;
     uint32_t *pte;
-    uint32_t pa;
 
     if ((va % PGESIZE) != 0) {
         panic("uvmunmap: not aligned");
     }
-    a = (((va)) & ~(PGESIZE - 1));
-    last = (((va + num_pages - 1)) & ~(PGESIZE-1));
-    while (1) {
+
+    for (a = va; a < va + num_pages*PGESIZE; a += PGESIZE) {
         if ((pte = walk(pagetable, a, 0)) == 0) {
             panic("uvmunmap: walk");
         }
@@ -304,17 +294,12 @@ void uvmunmap(uint32_t *pagetable, uint32_t va, uint32_t num_pages, int free) {
             kfree((void*)pa);
         }
         *pte = 0;
-        if (a == last) {
-            break;
-        }
-        a += PGESIZE;
-        pa += PGESIZE;
     }
 }
 
 void freewalk(uint32_t *pagetable) {
 
-    for (int i = 0; i < 512; i++) {
+    for (int i = 0; i < 1024; i++) {
         uint32_t pte = pagetable[i];
         if ((pte & PTE_V) && (pte & (PTE_R|PTE_W|PTE_X)) == 0) {
             uint32_t child = ((pte >> 10) << 12);
@@ -331,7 +316,7 @@ void freewalk(uint32_t *pagetable) {
 void uvmfree(uint32_t *pagetable, uint32_t size) {
 
     if (size > 0) {
-        uvmunmap(pagetable, 0, size,  1);
+        uvmunmap(pagetable, 0, (((size) + PGESIZE-1) & ~(PGESIZE-1)) / PGESIZE, 1);
     }
     freewalk(pagetable);
 } 

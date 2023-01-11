@@ -25,41 +25,40 @@ extern char uvec[];
 int nextpid = 1;
 
 // Map each processes kernel stack
-void process_init(void) {
+void map_kstack(uint32_t *pagetable) {
     struct process *proc;
-    initlock(&pid_lock, "pid_lock");
-    
+
     for (proc = p; proc < &p[MAXPROC]; proc++) {
-        
-        initlock(&proc->lock, "proc");
         uint32_t *phy_addr = kalloc();
-        
         if (phy_addr == 0) {
             panic("map_kstack, phy_addr = 0, error with kalloc");
         }
         uint32_t va = (USERVEC - ((proc - p) + 1) * 2 * PGESIZE);
-        kmap(va, (uint32_t)phy_addr, PGESIZE, PTE_R | PTE_W);
-        proc->kernel_stack = va;
+        kmap(pagetable, va, (uint32_t)phy_addr, PGESIZE, PTE_R | PTE_W);
     }
-    init_paging();
 }
 
-// od -t xC initcode
+void process_init(void) {
+    struct process *proc;
+    initlock(&pid_lock, "pid_lock");
+    initlock(&wait_lock, "wait_lock");
+
+    for (proc = p; proc < &p[MAXPROC]; proc++) {
+        initlock(&proc->lock, "proc");
+        proc->kernel_stack = (USERVEC - ((int)(proc - p) + 1) * 2 * PGESIZE);;
+    }
+}
+
+// This is src/user/initcode.S
 unsigned char initcode[] = {
     0x17, 0x05, 0x00, 0x00, 0x13, 0x05, 0x45, 0x02,
-    0x97, 0x05, 0x00, 0x00, 0x93, 0x85, 0x85, 0x03,
+    0x97, 0x05, 0x00, 0x00, 0x93, 0x85, 0x35, 0x02,
     0x93, 0x08, 0x70, 0x00, 0x73, 0x00, 0x00, 0x00,
     0x93, 0x08, 0x20, 0x00, 0x73, 0x00, 0x00, 0x00,
     0xef, 0xf0, 0x9f, 0xff, 0x2f, 0x69, 0x6e, 0x69,
-    0x74, 0x00, 0x00, 0x13, 0x00, 0x00, 0x00, 0x13,
-    0x00, 0x00, 0x00, 0x13, 0x00, 0x00, 0x00, 0x13,
-    0x00, 0x00, 0x00, 0x13, 0x00, 0x00, 0x00, 0x01,
-    0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00
+    0x74, 0x00, 0x00, 0x24, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00
 };
-
 
 // First user process called from enter in kernel.c
 void init_user(void) {
@@ -75,7 +74,9 @@ void init_user(void) {
     proc->trapframe->kernel_sp = PGESIZE;
     strcpy(proc->name, "initcode", sizeof(proc->name));
     proc->cwd = name_inode("/");
+
     proc->state = RUNNABLE;
+
     release_lock(&proc->lock);
 }
 
@@ -97,11 +98,11 @@ uint32_t *proc_pagetable(struct process *proc) {
     if (pagetable == 0) {
         return 0;
     }
-    if (map_pages(pagetable, USERVEC, (uint32_t)uvec, PGESIZE, PTE_R | PTE_X) < 0) {
+    if (kmap(pagetable, USERVEC, (uint32_t)uvec, PGESIZE, PTE_R | PTE_X) < 0) {
         uvmfree(pagetable, 0);
         return 0;
     }
-    if (map_pages(pagetable, TRAPFRAME, (uint32_t)(proc->trapframe), PGESIZE, PTE_R | PTE_W) < 0) {
+    if (kmap(pagetable, TRAPFRAME, (uint32_t)(proc->trapframe), PGESIZE, PTE_R | PTE_W) < 0) {
         uvmunmap(pagetable, USERVEC, 1, 0);
         uvmfree(pagetable, 0);
         return 0;
@@ -122,10 +123,13 @@ struct process *alloc_process(void) {
         }
     }
     return 0;
-
+    
     found:
         proc->process_id = alloc_pid();
+        proc->state = USED;
+
         if ((proc->trapframe = (struct trapframe *)kalloc()) == 0) {
+            freeproc(proc);
             release_lock(&proc->lock);
             return 0;
         }
@@ -160,13 +164,16 @@ int growproc(int n) {
 }
 
 int fork(void) {
+
     int i, pid;
     struct process *np;
     struct process *p = get_process_struct();
+
     // Allocate process.
     if ((np = alloc_process()) == 0) {
         return -1;
     }
+
     // Copy user memory from parent to child.
     if (uvmcopy(p->pagetable, np->pagetable, p->mem_size) < 0) {
         freeproc(np);
@@ -253,9 +260,10 @@ int wait(uint32_t addrs) {
 }
 
 void forkret(void) {
+    
     static int first = 1;
     release_lock(&get_process_struct()->lock);
-    
+
     if (first) {
         first = 0;
         filesys_init(ROOTDEV);
@@ -267,9 +275,7 @@ void proc_freepagetable(uint32_t *pagetable, uint32_t size) {
 
     uvmunmap(pagetable, USERVEC, 1, 0); 
     uvmunmap(pagetable, TRAPFRAME, 1, 0);
-    if (size > 0) {
-        uvmfree(pagetable, size);
-    }
+    uvmfree(pagetable, size);
 }
 
 void freeproc(struct process *proc) {
@@ -291,6 +297,7 @@ void freeproc(struct process *proc) {
     proc->state = UNUSED;
 }
 
+
 // Wake up processes sleeping on sleep channel
 void wakeup(void *sleep_channel) {
     struct process *proc;
@@ -305,6 +312,7 @@ void wakeup(void *sleep_channel) {
         }
     }
 }
+
 // This is the scheduler for CPUS. Its called from enter()
 // and runs in an infinite loop. 
 // 1. Choose process to run
@@ -322,7 +330,7 @@ void cpu_scheduler(void) {
             if (proc->state == RUNNABLE) {
                 proc->state = RUNNING;
                 cpu->proc = proc;
-                
+     
                 transfer(&cpu->context, &proc->context);
                 cpu->proc = 0;
             }
@@ -333,6 +341,7 @@ void cpu_scheduler(void) {
 
 void scheduler(void) {
     int intr_prev_state;
+    
     struct process *proc = get_process_struct();
     if (!is_holding(&proc->lock)) {
         panic("scheduler, is_holding");
@@ -346,6 +355,7 @@ void scheduler(void) {
     if (get_intr()) {
         panic("scheduler, interrupts");
     }
+
     intr_prev_state = get_cpu_struct()->intr_prev_state;
     transfer(&proc->context, &get_cpu_struct()->context);
     get_cpu_struct()->intr_prev_state = intr_prev_state;
@@ -361,6 +371,7 @@ void yield_process(void) {
 
 void sleep(void *sleep_channel, struct spinlock *lock) {
     struct process *proc = get_process_struct();
+    
     acquire_lock(&proc->lock);
     release_lock(lock);
     
@@ -505,7 +516,6 @@ void procdump(void) {
     struct process *proc;
     char *state;
 
-    kprintf("\n");
     for (proc = p; proc < &p[MAXPROC]; proc++){
         if (proc->state == UNUSED) {
             continue;
@@ -516,7 +526,5 @@ void procdump(void) {
         else {
             state = "???";
         }
-        kprintf("%d %s %s", proc->process_id, state, proc->name);
-        kprintf("\n");
     }
 }

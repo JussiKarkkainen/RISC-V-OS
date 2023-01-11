@@ -25,13 +25,10 @@ void pmm_init(void) {
     // Bitmap starts at end 
     uint32_t *start_addr = (uint32_t *)PGROUNDUP((uint32_t)mem_end);
     
-    kprintf("start_addr %p\n", start_addr);
-    kprintf("mem_end %p\n", mem_end);
     int bitmap_size = HEAP_SIZE / page_size;
     memset(start_addr, 0, bitmap_size);
 
     alloc_start = (uint32_t)PGROUNDUP((uint32_t)mem_end + bitmap_size);
-    kprintf("alloc_start %p\n", alloc_start);
 }
 
 

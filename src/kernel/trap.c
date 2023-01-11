@@ -82,7 +82,6 @@ void utrap(void) {
 
     // save user pc
     proc->trapframe->saved_pc = get_sepc(); 
-    
     // check if syscall
     if (scause == 8) {
         // Return to next instruction 
