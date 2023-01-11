@@ -16,11 +16,9 @@ static volatile int started = 0;
 void enter(void) {  
     
     if (which_cpu() == 0) {
-        
         console_init();     // Start console
         kprintf_init();
         kprintf("%s\n", "Booting OS");
-
         pmm_init();         // Initialize physical memory manager
         kpage_init();       // Initilaize kernel pagetable
         init_paging();      // Initialize paging
