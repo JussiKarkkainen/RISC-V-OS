@@ -5,12 +5,13 @@
 #include "regs.h"
 #include "../libc/include/stdio.h"
 #include "paging.h"
+#include <stdint.h>
 
-#define MSTATUS_MIE (1 << 3)
-#define SIE_SEIE (1 << 9)
-#define SIE_STIE (1 << 5)
-#define SIE_SSIE (1 << 1)
-#define MIE_MTIE (1 << 7)
+#define MSTATUS_MIE (1L << 3)
+#define SIE_SEIE (1L << 9)
+#define SIE_STIE (1L << 5)
+#define SIE_SSIE (1L << 1)
+#define MIE_MTIE (1L << 7)
 
 #define CLINT_MTIMECMP(hartid) (CLINT + 0x4000 + 8*(hartid))
 #define CLINT_MTIME (CLINT + 0xBFF8)
@@ -54,8 +55,8 @@ void mstart(void) {
     
     // Clear the mstatus MPP bits and set them to supervisor mode
     uint32_t mstatus = get_mstatus();
-    mstatus &= ~(3 << 11);
-    mstatus |= (1 << 11);
+    mstatus &= ~(3L << 11);
+    mstatus |= (1L << 11);
     write_mstatus(mstatus);
     // Set mepc to point to enter(), so when we call mret, execution jumps there
     write_mepc((uint32_t)enter);
@@ -63,16 +64,18 @@ void mstart(void) {
     // Disable paging
     write_satp(0);
 
-    // All traps are handled in supervisor mode. This can be done by setting
+    // All traps are handled in supervisor mode. This can be done by 
     // writing to the medeleg and mideleg registers and the mie registers
     write_medeleg(0xffff);
     write_mideleg(0xffff);
-    uint32_t sie = get_sie();
-    write_sie(sie | SIE_SEIE | SIE_STIE | SIE_SSIE);
     
     // Configure physical memory protection
     write_pmpaddr0(0xffffffff);
     write_pmpcfg0(0xf);
+    
+    uint32_t a  = get_sie();
+    uint32_t b = a | 0x222L;
+    asm volatile("csrw sie, %0" : : "r" (b));
 
     // enable clock interrupts
     timer_init();

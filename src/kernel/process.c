@@ -80,7 +80,6 @@ void init_user(void) {
 }
 
 int alloc_pid(void) {
-
     int pid;
     acquire_lock(&pid_lock);
     pid = nextpid;
