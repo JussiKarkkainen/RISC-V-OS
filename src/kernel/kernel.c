@@ -20,7 +20,6 @@ void enter(void) {
         console_init();     // Start console
         kprintf_init();
         kprintf("%s\n", "Booting OS");
-
         pmm_init();         // Initialize physical memory manager
         kpage_init();       // Initilaize kernel pagetable
         init_paging();      // Initialize paging
