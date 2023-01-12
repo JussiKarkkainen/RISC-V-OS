@@ -67,7 +67,7 @@ void utrap(void) {
     uint32_t sstatus = get_sstatus(); 
     uint32_t scause = get_scause();
     int intr_result;
-
+    
     // Check if trap comes from user mode
     if ((sstatus & SSTATUS_SPP) == 0) {
         panic("trap not from user mdoe");

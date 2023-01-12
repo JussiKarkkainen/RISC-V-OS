@@ -88,6 +88,7 @@ void release_sleeplock(struct sleeplock *lock) {
 }
 
 int is_holding_sleeplock(struct sleeplock *lock) {
+
     int i;
     acquire_lock(&lock->spinlock);
     i = ((lock->locked) && (lock->process_id == get_process_struct()->process_id));
