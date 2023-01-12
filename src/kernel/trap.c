@@ -12,10 +12,14 @@ void ktrapvec();
 unsigned int ticks;
 struct spinlock tickslock;
 
+extern char uvec[], utrapvec[], utrapreturn[];
+
+extern int handle_device_intr();
+
 int handle_device_intr(void) {
     // Check if external/device interrupt
     uint32_t scause = get_scause();
-    if (((scause & 0x80000000)) && ((scause & EXT_INTERRUPT) == 9)) {  
+    if (((scause & 0x80000000L)) && ((scause & EXT_INTERRUPT) == 9)) {  
         // Interrupt given by PLIC
         int intr_id = plic_read();
 
@@ -31,9 +35,7 @@ int handle_device_intr(void) {
         }
 
         // Tell PLIC its allowed to send interrutps again
-        if (intr_id) {
-            plic_finished(intr_id);
-        }
+        plic_finished(intr_id);
 
         return 0;
     }
@@ -65,7 +67,6 @@ void timer_interrupt(void) {
 
 void utrap(void) {
     uint32_t sstatus = get_sstatus(); 
-    uint32_t scause = get_scause();
     int intr_result;
     
     // Check if trap comes from user mode
@@ -82,16 +83,22 @@ void utrap(void) {
     // save user pc
     proc->trapframe->saved_pc = get_sepc(); 
     // check if syscall
-    if (scause == 8) {
-        // Return to next instruction 
+    if (get_scause() == 8) {
+
+        if (proc->killed) {
+            kprintf("Exiting a killed process in utrap()\n");
+            exit(-1);
+        }
+
+        // Return to next instructions
         proc->trapframe->saved_pc += 4;
         
         enable_intr();
 
         handle_syscall();
-    }
-    // check if device interrupt and handle with handle_device_intr()
-    if ((intr_result = handle_device_intr()) == 2) {
+    } else if ((intr_result = handle_device_intr()) != 2) {
+    
+    } else {
         kprintf("Unexpexted scause in utrap(), scause: %x\n, sepc: %x\n, stval: %x\n", 
                 get_scause(), get_sepc(), get_stval());
         
@@ -115,22 +122,26 @@ void utrapret(void) {
     disable_intr();
     
     // Send traps to utrapvec
-    write_stvec(USERVEC);
+    write_stvec(USERVEC + (utrapvec - uvec));
     
     // Utrapvec will need these register values
     proc->trapframe->kernel_satp = get_satp();         
-    proc->trapframe->kernel_sp = proc->kernel_stack + 4096;
+    proc->trapframe->kernel_sp = proc->kernel_stack + PGESIZE;
     proc->trapframe->kernel_trap = (uint32_t)utrap;
     proc->trapframe->hartid = get_tp();
     
-    // Set previous privilige mode to user
     uint32_t sstatus = get_sstatus();
-    // Clear SIE and set SPIE
-    write_sstatus(((sstatus & SSTATUS_SIE_CLEAR) | SSTATUS_SPIE));
+    sstatus &= ~SSTATUS_SPP;
+    sstatus |= SSTATUS_SPIE;
+    write_sstatus(sstatus);
 
     // Set exception program counter to saved user pc
     write_sepc(proc->trapframe->saved_pc);
- 
+
+    uint32_t satp = MAKE_SATP(proc->pagetable);
+    uint32_t fn = USERVEC + (utrapreturn - uvec);
+    ((void (*)(uint32_t,uint32_t))fn)(TRAPFRAME, satp);
+
 }
 
 void ktrap(void) {

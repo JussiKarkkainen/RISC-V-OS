@@ -70,6 +70,7 @@ utrapvec:
 # utrapreturn is called from utrapret() in trap.c
 # Its job is to switch from kernel to user mode
 
+.globl utrapreturn
 utrapreturn:
     
     # Switch to a user pagetable

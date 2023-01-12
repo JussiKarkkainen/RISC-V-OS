@@ -33,10 +33,10 @@ uint32_t (*syscall[])(void) = {
 int fetchaddr(uint32_t addr, uint32_t *ip) {
 
     struct process *proc = get_process_struct();
-    if (addr >= proc->mem_size || addr+sizeof(uint32_t) > proc->state) {
+    if (addr >= proc->mem_size || addr+sizeof(uint32_t) > proc->mem_size) {
         return -1;
     }
-    if (copyto(proc->pagetable, (char *)ip, addr, sizeof(*ip) != 0)) {
+    if (copyto(proc->pagetable, (char *)ip, addr, sizeof(*ip)) != 0) {
         return -1;
     }
     return 0;
