@@ -119,16 +119,19 @@ static inline void write_sip(uint32_t x) {
 }
 
 static inline void enable_intr(void) {
+    uint32_t a  = get_sie();
+    uint32_t b = a | 0x222L;
+    asm volatile("csrw sie, %0" : : "r" (b));
     write_sstatus(get_sstatus() | SSTATUS_SIE);
 }
 
 static inline void disable_intr(void) {
-    write_sstatus(get_sstatus() & SSTATUS_SIE_CLEAR);
+    write_sstatus(get_sstatus() & ~SSTATUS_SIE);
 }
 
 static inline int get_intr(void) {
     uint32_t sstatus = get_sstatus();
-    return (sstatus & SSTATUS_SIE);
+    return (sstatus & SSTATUS_SIE) != 0;
 }
 
 static inline void write_tp(uint32_t x) {

@@ -19,7 +19,7 @@
 void enter();
 void timer_init();
 
-void tvec();
+extern void tvec();
 
 __attribute__((aligned (16))) char stacks[4096 * MAXCPUS];
 

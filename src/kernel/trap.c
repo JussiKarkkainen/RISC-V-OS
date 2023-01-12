@@ -67,6 +67,7 @@ void utrap(void) {
     uint32_t sstatus = get_sstatus(); 
     uint32_t scause = get_scause();
     int intr_result;
+    kprintf("utrap\n"); 
 
     // Check if trap comes from user mode
     if ((sstatus & SSTATUS_SPP) == 0) {
@@ -140,16 +141,17 @@ void ktrap(void) {
     uint32_t scause = get_scause();
     uint32_t stval = get_stval();
     int intr_result = 2;
-    
+    kprintf("ktrap\n"); 
     // Make sure interrupt comes from supervisor mode
     if ((sstatus & SSTATUS_SPP) == 0) {
         panic("trap not in supervisor mode");
     }
+    /*
     // Make sure interrupts are not enabled
     if (sstatus & SSTATUS_SIE) {
         panic("interrupts are enabled");
     }
-
+    */
     // trap can be either device interrupt or exceptions.
     // handle_interrupt deals with device interrupt. If trap is
     // an external interrupt, we call panic() and stop executing
