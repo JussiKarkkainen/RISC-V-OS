@@ -112,6 +112,8 @@ void end_op(void) {
         wakeup(&log);
     }
 
+    release_lock(&log.lock);
+
     if (make_commit) {
         commit();
         acquire_lock(&log.lock);

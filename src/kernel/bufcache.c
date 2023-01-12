@@ -91,7 +91,7 @@ struct buffer *buffer_read(unsigned int dev, unsigned int blockno) {
 
 // Write to disk
 void buffer_write(struct buffer *buf) {
-    if (!is_holding_sleeplock) {
+    if (!is_holding_sleeplock(&buf->lock)) {
         panic("buffer_write");
     }
     disk_read_write(buf, 1);
@@ -100,7 +100,7 @@ void buffer_write(struct buffer *buf) {
 // Buffer returned by buffer_read is still holding a lock, release it.jjkkk
 void buffer_release(struct buffer *buf) {
     
-    if (is_holding_sleeplock(&buf->lock)) {
+    if (!is_holding_sleeplock(&buf->lock)) {
         panic("buffer_release, not holding lock");
     }
     
@@ -115,11 +115,8 @@ void buffer_release(struct buffer *buf) {
         buf->prev = &buffer_cache.list_head;
         buffer_cache.list_head.next->prev = buf;
         buffer_cache.list_head.next = buf;
-  
+    }
     release_lock(&buffer_cache.lock);
-
-  }
-
 }
 
 void inc_buf_refcount(struct buffer *buf) {

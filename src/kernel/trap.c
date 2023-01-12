@@ -31,7 +31,7 @@ int handle_device_intr(void) {
             virtio_disk_intr();
         }
         else if (intr_id) {
-            kprintf("Device interrupt not recognizedc: %d\n", intr_id);
+            kprintf("Device interrupt not recognized: %d\n", intr_id);
         }
 
         // Tell PLIC its allowed to send interrutps again
@@ -70,8 +70,8 @@ void utrap(void) {
     int intr_result;
     
     // Check if trap comes from user mode
-    if ((sstatus & SSTATUS_SPP) == 0) {
-        panic("trap not from user mdoe");
+    if ((sstatus & SSTATUS_SPP) != 0) {
+        panic("trap not from user mode");
     }
 
     // send interrupts and exceptions to ktrap
@@ -99,7 +99,7 @@ void utrap(void) {
     } else if ((intr_result = handle_device_intr()) != 2) {
     
     } else {
-        kprintf("Unexpexted scause in utrap(), scause: %x\n, sepc: %x\n, stval: %x\n", 
+        kprintf("Unexpexted scause in utrap(), scause: %p\n, sepc: %p\n, stval: %p\n", 
                 get_scause(), get_sepc(), get_stval());
         
         proc->killed = 1;
