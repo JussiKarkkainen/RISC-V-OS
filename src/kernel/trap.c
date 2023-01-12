@@ -67,7 +67,6 @@ void utrap(void) {
     uint32_t sstatus = get_sstatus(); 
     uint32_t scause = get_scause();
     int intr_result;
-    kprintf("utrap\n"); 
 
     // Check if trap comes from user mode
     if ((sstatus & SSTATUS_SPP) == 0) {
@@ -141,7 +140,7 @@ void ktrap(void) {
     uint32_t scause = get_scause();
     uint32_t stval = get_stval();
     int intr_result = 2;
-    kprintf("ktrap\n"); 
+
     // Make sure interrupt comes from supervisor mode
     if ((sstatus & SSTATUS_SPP) == 0) {
         panic("trap not in supervisor mode");
@@ -157,7 +156,7 @@ void ktrap(void) {
     // an external interrupt, we call panic() and stop executing
     if ((intr_result = handle_device_intr()) == 2) {
         // Print out register info and panic
-        kprintf("scause: %p\nsstatus: %p\nstval: %p\n", scause, sstatus, stval);
+        kprintf("sepc: %p\nscause: %p\nsstatus: %p\nstval: %p\n", sepc, scause, sstatus, stval);
         panic("kernel interrupt, ktrap");
     }
         

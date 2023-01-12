@@ -47,6 +47,8 @@ void release_lock(struct spinlock *lock) {
         panic("release_lock, not current holder");
     }
     
+    lock->cpu = 0;
+
     // Tell compiler and preprocessor to ensure, that the critical section's 
     // memory references happen strictly after the lock is acquired.
     __sync_synchronize();
@@ -59,7 +61,9 @@ void release_lock(struct spinlock *lock) {
 
 int is_holding(struct spinlock *lock) {
     int r;
+    lock_intr_disable();
     r = (lock->locked && lock->cpu == get_cpu_struct());
+    lock_intr_enable();
     return r;
 }
 
@@ -84,11 +88,10 @@ void release_sleeplock(struct sleeplock *lock) {
 }
 
 int is_holding_sleeplock(struct sleeplock *lock) {
-    
+    int i;
     acquire_lock(&lock->spinlock);
-    int i = ((lock->locked) && (lock->process_id == get_process_struct()->process_id));
+    i = ((lock->locked) && (lock->process_id == get_process_struct()->process_id));
     release_lock(&lock->spinlock);
-    
     return i;
 }
 
