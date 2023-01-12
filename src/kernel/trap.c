@@ -162,22 +162,24 @@ void ktrap(void) {
         panic("interrupts are enabled");
     }
     */
-    // trap can be either device interrupt or exceptions.
-    // handle_interrupt deals with device interrupt. If trap is
-    // an external interrupt, we call panic() and stop executing
+    
+    if (get_intr() != 0) {
+        panic("Trap not in supervisor mode");
+    }
+    
     if ((intr_result = handle_device_intr()) == 2) {
         // Print out register info and panic
         kprintf("sepc: %p\nscause: %p\nsstatus: %p\nstval: %p\n", sepc, scause, sstatus, stval);
         panic("kernel interrupt, ktrap");
     }
         
-    if (intr_result == 1) {
+    if (intr_result == 1 && get_process_struct() != 0 && get_process_struct()->state == RUNNING) {
         yield_process();
+    }
 
     // Restore trap registers if changed by yield_process()
     write_sepc(sepc);
     write_sstatus(sstatus);
-    }
 }
 
 void init_trapvec(void) {
