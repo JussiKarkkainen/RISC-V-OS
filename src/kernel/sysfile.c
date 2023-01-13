@@ -222,7 +222,6 @@ uint32_t sys_exec(void) {
     if (argstr(0, path, MAXPATH) < 0 || argaddr(1, &uargv) < 0) {
         return -1;
     }
-    memset(argv, 0, sizeof(argv));
     for (i = 0;; i++) {
         if (i >= (int)NUM_ELEM(argv)) {
             goto bad;
@@ -248,6 +247,7 @@ uint32_t sys_exec(void) {
     for(i = 0; i < (int)NUM_ELEM(argv) && argv[i] != 0; i++) {
         kfree((uint32_t *)argv[i]);
     }
+    kprintf("ret %d\n", ret);
 
     return ret;
 

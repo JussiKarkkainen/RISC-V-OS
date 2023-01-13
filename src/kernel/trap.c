@@ -22,7 +22,6 @@ int handle_device_intr(void) {
     if (((scause & 0x80000000L)) && ((scause & EXT_INTERRUPT) == 9)) {  
         // Interrupt given by PLIC
         int intr_id = plic_read();
-
         // Check if interrupt is from uart, disk or neither
         if (intr_id == UART_INTR) {
             uart_intr();
@@ -79,7 +78,6 @@ void utrap(void) {
 
     // get process struct
     struct process *proc = get_process_struct();
-
     // save user pc
     proc->trapframe->saved_pc = get_sepc(); 
     // check if syscall
@@ -97,9 +95,9 @@ void utrap(void) {
 
         handle_syscall();
     } else if ((intr_result = handle_device_intr()) != 2) {
-    
+        
     } else {
-        kprintf("Unexpexted scause in utrap(), scause: %p\n, sepc: %p\n, stval: %p\n", 
+        kprintf("Unexpexted scause in utrap()\nscause: %p\nsepc: %p\nstval: %p\n", 
                 get_scause(), get_sepc(), get_stval());
         
         proc->killed = 1;

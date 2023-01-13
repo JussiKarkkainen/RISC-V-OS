@@ -195,7 +195,7 @@ void cpy_log_to_home(int recover) {
     for (int i = 0; i < log.loghead.count; i++) {
         struct buffer *logbuf = buffer_read(log.dev, log.start+i+1);
         struct buffer *dest = buffer_read(log.dev, log.loghead.block[i]);
-        memmove(logbuf, dest, BUFFER_SIZE);
+        memmove(dest->data, logbuf->data, BUFFER_SIZE);
         buffer_write(dest);
 
         if (recover == 0) {
@@ -217,6 +217,7 @@ void commit(void) {
         write_log();
         write_header();
         cpy_log_to_home(0);
+        log.loghead.count = 0;
         write_header();
     }
 }
