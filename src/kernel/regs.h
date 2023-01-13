@@ -4,6 +4,11 @@
 #include <stdint.h>
 #include "trap.h"
 
+#define SIE_SEIE (1L << 9)
+#define SIE_STIE (1L << 5)
+#define SIE_SSIE (1L << 1)
+#define MIE_MTIE (1L << 7)
+
 static inline uint32_t get_mstatus(void) {
     uint32_t mstatus;
     asm volatile("csrr %0, mstatus" : "=r" (mstatus));

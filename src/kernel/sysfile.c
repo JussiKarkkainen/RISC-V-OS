@@ -73,7 +73,7 @@ int loadseg(uint32_t *pagetable, uint32_t va, struct inode *ip, unsigned int off
 int exec(char *path, char **argv) {
     char *s, *last;
     int i, off;
-    uint32_t argc, sz = 0, sp, ustack[MAXARG], stackbase;       // These need to be added
+    uint32_t argc, sz, sp, ustack[MAXARG], stackbase;       // These need to be added
     struct elf_header elf;
     struct inode *ip;
     struct prog_header ph;
