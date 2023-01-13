@@ -48,7 +48,7 @@ ktrapvec:
     lw ra, 0(sp)
     lw sp, 4(sp)
     lw gp, 8(sp)
-    lw tp, 12(sp)
+    #lw tp, 12(sp)
     lw t0, 16(sp)
     lw t1, 20(sp)
     lw t2, 24(sp)

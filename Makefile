@@ -34,7 +34,6 @@ OBJS = \
     $(KERNEL)/process.o \
     $(KERNEL)/syscall.o \
     $(KERNEL)/sysproc.o \
-    $(LIBCSTDIO)/putchar.o \
     $(KERNEL)/kalloc.o \
     #$(KERNEL)/pmm.o 
 

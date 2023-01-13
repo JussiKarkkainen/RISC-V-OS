@@ -75,6 +75,7 @@ struct buffer *buffer_get(unsigned int dev, unsigned int blockno) {
         }
     }
     panic("buffer_get, no buffers");
+    return buf;
 }
 
 struct buffer *buffer_read(unsigned int dev, unsigned int blockno) {
@@ -116,6 +117,7 @@ void buffer_release(struct buffer *buf) {
         buffer_cache.list_head.next->prev = buf;
         buffer_cache.list_head.next = buf;
     }
+
     release_lock(&buffer_cache.lock);
 }
 

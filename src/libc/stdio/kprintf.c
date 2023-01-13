@@ -59,10 +59,10 @@ void intprint(int num, int base, int sign) {
 
 void ptr_print(uint32_t x) {
     unsigned int i;
-    uart_putchar('0');
-    uart_putchar('x');
+    console_putc('0');
+    console_putc('x');
     for (i = 0; i < (sizeof(uint32_t) * 2); i++, x <<= 4) {
-        uart_putchar(digits[x >> (sizeof(uint32_t) * 8 - 4)]);
+        console_putc(digits[x >> (sizeof(uint32_t) * 8 - 4)]);
     }
 }
 
@@ -83,7 +83,7 @@ void kprintf(char *format, ...) {
 
     while (*traverse != '\0') {
         if (*traverse != '%') {
-            uart_putchar(*traverse);
+            console_putc(*traverse);
 
         }
         else {
@@ -91,11 +91,13 @@ void kprintf(char *format, ...) {
             switch (*traverse) {
                 
                 case 'c' : i = va_arg(arg, int);
-                    uart_putchar(i);
+                    console_putc(i);
                     break;
-                
-                case 's' : str = va_arg(arg, char *); // Returns pointer to beginning of string.
-                    write_uart(str);
+                case 's' :
+                    if((str = va_arg(arg, char*)) == 0)
+                        str = "(null)";
+                    for(; *str; str++)
+                        console_putc(*str);
                     break;
 
                 case 'd' : i = va_arg(arg, int);

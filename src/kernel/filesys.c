@@ -243,6 +243,7 @@ unsigned int buffer_alloc(unsigned int dev) {
         buffer_release(buf);
     }
     panic("buffer_alloc: no blocks left");
+    return -1;
 }
 
 void buffer_zero(int dev, int buffer_num) {
@@ -305,7 +306,7 @@ struct inode *inode_alloc(int dev, uint16_t type) {
         buf = buffer_read(dev, (inode_num / INODE_PER_BLOCK + sb.inode_start));
         dinode = (struct disk_inode *)buf->data + inode_num % INODE_PER_BLOCK;
         
-        if (dinode == 0) {
+        if (dinode->type == 0) {
             memset(dinode, 0, sizeof(dinode));
             dinode->type = type;
             log_write(buf);
@@ -315,6 +316,7 @@ struct inode *inode_alloc(int dev, uint16_t type) {
         buffer_release(buf);
     }
     panic("no inodes found");
+    return inode_get(dev, inode_num);
 }
 
 // Finds the inode on disk with inode_num, and returns the in memory copy of that inode
@@ -490,9 +492,9 @@ unsigned int buffer_map(struct inode *inode, unsigned int buffer_num) {
         }
         buffer_release(buf);
         return addr;
-  }
-
-  panic("buffer_map: out of range");
+    }
+    panic("buffer_map: out of range");
+    return -1;
 }
 
 struct inode *inode_dup(struct inode *inode) {
@@ -516,6 +518,10 @@ int read_inode(struct inode *inode, int user_dst, uint32_t dst, unsigned int off
     }
 
     for (i = 0; i < n; i += j, off += j, dst += j) {
+        unsigned int addr = buffer_map(inode, off/BUFFER_SIZE);
+        if (addr == 0) {
+            break;
+        }
         buf = buffer_read(inode->dev, buffer_map(inode, off / BUFFER_SIZE));
         j = (n - i) < (BUFFER_SIZE - off % BUFFER_SIZE) ? (n - i) : (BUFFER_SIZE - off % BUFFER_SIZE);
         if (either_copyout(user_dst, dst, buf->data + (off % BUFFER_SIZE), j) == -1) {

@@ -2,7 +2,6 @@
 .global _start
 
 
-
 _start:
   la t5, bss_start        # Load bss_start and end addresses to tmp regs and clear bss
   la t6, bss_end          # bss_start and end are defined in linker script.
