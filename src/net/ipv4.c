@@ -53,7 +53,7 @@ void ipv4_send_packet(struct net_interface *netif, uint32_t dst_ip_addr, uint8_t
 
     ipv4_id++;
     
-    uint32_t *packet = kalloc();
+    uint8_t *packet = (uint8_t*)kalloc();
     memcpy(packet, &ipv4_header, sizeof(struct ipv4hdr));
     memcpy(packet + sizeof(struct ipv4hdr), data, len);
 

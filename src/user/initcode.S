@@ -8,6 +8,7 @@ start:
     li a7, SYS_exec
     ecall
 
+
 exit:
     li a7, SYS_exit
     ecall 

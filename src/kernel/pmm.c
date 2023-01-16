@@ -30,12 +30,8 @@ void pmm_init(void) {
     alloc_start = (uint32_t)PGROUNDUP((uint32_t)mem_end + bitmap_size);
 }
 
-<<<<<<< HEAD
 
-void *kalloc(int size) {
-=======
 void *kalloc(void) {
->>>>>>> origin/prod
    
     uint32_t num_pages = HEAP_SIZE / page_size;
     uint32_t *start_addr = (uint32_t *)PGROUNDUP((uint32_t)mem_end);
@@ -45,34 +41,11 @@ void *kalloc(void) {
     acquire_lock(&pmm_lock);
 
     for (uint32_t i = 0; i < num_pages; i++) {
-        if (size < PGESIZE) {
-            if (!IS_SET(i)) {
-                SET_BIT(i);
-                release_lock(&pmm_lock);
-                return (uint32_t *)(alloc_start + (i * page_size));
-            }
-        } else {
-            int num_pages = size / page_size;       // Make sure this rounds up
-            if (!IS_SET(i)) {
-                uint32_t j;
-                int found = 1; 
-                for (j = i; j < (i + num_pages); j++) {
-                    if (IS_SET(j)) {
-                        found = 0;
-                        break;
-                    }
-                }
-                if (found) {
-                    for (int u = i; u < num_pages; u++) {
-                        SET_BIT(u);
-                    }
-                    release_lock(&pmm_lock);
-                    return (uint32_t *)(alloc_start + (i * page_size));
-                }
-                
-            }
+        if (!IS_SET(i)) {
+            SET_BIT(i);
+            release_lock(&pmm_lock);
+            return (void *)(alloc_start + (i * page_size));
         }
-
     }
     release_lock(&pmm_lock);
     panic("no more memory, kalloc");
@@ -82,7 +55,7 @@ void *kalloc(void) {
 
 uint32_t *zalloc(void) {
 
-    uint32_t *addr = kalloc(1);
+    uint32_t *addr = kalloc();
 
     if (addr != 0) {
         uint32_t *ptr = addr;
@@ -117,9 +90,9 @@ void kfree(void *ptr) {
 // Used to verify that allocations work as expected
 void test_alloc(void) { 
         
-    uint32_t *a = kalloc(1);
-    uint32_t *o = kalloc(1);
-    uint32_t *s = kalloc(1);
+    uint32_t *a = kalloc();
+    uint32_t *o = kalloc();
+    uint32_t *s = kalloc();
     kprintf("first page %p\n", a); 
     kprintf("next page %p\n", o);
     kprintf("third page %p\n", s);

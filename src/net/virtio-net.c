@@ -89,9 +89,6 @@ void init_queue(int index) {
     uint32_t buf_page = buf >> 12;
 
     struct virtq *vq = (struct virtq *)buf;
-
-    
-
 }
 
 int alloc_desc(void) {
@@ -132,6 +129,7 @@ int virtionet_send_packet(uint32_t *payload, unsigned int size) {
 
 int virtio_net_recv() {
 
-
-
 }
+
+
+

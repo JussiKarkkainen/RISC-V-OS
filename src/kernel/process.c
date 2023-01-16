@@ -80,6 +80,7 @@ void init_user(void) {
 }
 
 int alloc_pid(void) {
+
     int pid;
     acquire_lock(&pid_lock);
     pid = nextpid;
@@ -333,10 +334,6 @@ void cpu_scheduler(void) {
 void scheduler(void) {
     int intr_prev_state;
     struct process *proc = get_process_struct();
-<<<<<<< HEAD
-    
-=======
->>>>>>> origin/prod
     if (!is_holding(&proc->lock)) {
         panic("scheduler, is_holding");
     }

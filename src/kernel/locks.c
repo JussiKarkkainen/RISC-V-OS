@@ -21,13 +21,8 @@ void acquire_lock(struct spinlock *lock) {
     lock_intr_disable();
     // Check if current cpu is holding the lock
     if (is_holding(lock)) {
-<<<<<<< HEAD
         kprintf("lock %s\n", lock->name);
         panic("acquire_lock, is_holding");
-=======
-        kprintf("name: %s\n", lock->name);
-        panic("acquire_lock, is_holding, locks.c");
->>>>>>> origin/prod
     }
     
     // When cpu needs to acquire a lock, we need to check if some other
@@ -94,15 +89,12 @@ void release_sleeplock(struct sleeplock *lock) {
 }
 
 int is_holding_sleeplock(struct sleeplock *lock) {
-<<<<<<< HEAD
     
-=======
-
->>>>>>> origin/prod
     int i;
     acquire_lock(&lock->spinlock);
     i = ((lock->locked) && (lock->process_id == get_process_struct()->process_id));
     release_lock(&lock->spinlock);
+    
     return i;
 }
 
@@ -122,10 +114,10 @@ void lock_intr_enable(void) {
     if (get_intr()) {
         panic("lock_intr_enable");
     }
-    if (c->depth_lock_intr_disable < 1) {
+    c->depth_lock_intr_disable -= 1;
+    if (c->depth_lock_intr_disable < 0) {
         panic("lock_intr_enablei, intr depth");
     }
-    c->depth_lock_intr_disable -= 1;
     if ((c->depth_lock_intr_disable == 0) && (c->intr_prev_state)) {
         enable_intr();
     }

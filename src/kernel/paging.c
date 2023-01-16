@@ -252,11 +252,7 @@ int uvmcopy(uint32_t *old, uint32_t *new_addr, uint32_t size) {
     uint32_t *pte;
     uint32_t pa, i;
     unsigned int flags;
-<<<<<<< HEAD
     uint32_t *mem;
-=======
-    char *mem;
->>>>>>> origin/prod
     for (i = 0; i < size; i += PGESIZE) {
         if ((pte = walk(old, i, 0)) == 0) {
             panic("uvmcopy: pte should exist");

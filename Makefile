@@ -37,7 +37,6 @@ OBJS = \
     $(KERNEL)/process.o \
     $(KERNEL)/syscall.o \
     $(KERNEL)/sysproc.o \
-<<<<<<< HEAD
     $(LIBCSTDIO)/putchar.o \
 	$(LIBC)/isdigit.o \
     $(LIBC)/isascii.o \
@@ -45,16 +44,10 @@ OBJS = \
     $(LIBC)/isxdigit.o \
     $(LIBC)/islower.o
 
-#   $(NET)/virtio-net.o \
-#   $(NET)/pcie.o
 
-    #$(KERNEL)/pmm.o \
     #$(KERNEL)/disk.o \
-=======
-    $(KERNEL)/kalloc.o \
     #$(KERNEL)/pmm.o 
 
->>>>>>> origin/prod
 
 AS = riscv64-unknown-elf-as
 ASFLAGS = -march=rv32ima -mabi=ilp32

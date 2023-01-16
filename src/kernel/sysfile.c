@@ -73,11 +73,7 @@ int loadseg(uint32_t *pagetable, uint32_t va, struct inode *ip, unsigned int off
 int exec(char *path, char **argv) {
     char *s, *last;
     int i, off;
-<<<<<<< HEAD
     uint32_t argc, sz, sp, ustack[MAXARG], stackbase;       // These need to be added
-=======
-    uint32_t argc, sz, sp, ustack[MAXARG+1], stackbase;       // These need to be added
->>>>>>> origin/prod
     struct elf_header elf;
     struct inode *ip;
     struct prog_header ph;
@@ -91,7 +87,6 @@ int exec(char *path, char **argv) {
         return -1;
     }
     inode_lock(ip);
-
     // Check ELF header
     if (read_inode(ip, 0, (uint32_t)&elf, 0, sizeof(elf)) != sizeof(elf)) {
         goto bad;
@@ -103,13 +98,9 @@ int exec(char *path, char **argv) {
     if ((pagetable = proc_pagetable(p)) == 0) {
         goto bad;
     }
-<<<<<<< HEAD
        
     sz = 0; 
 
-=======
-    sz = 0;
->>>>>>> origin/prod
     // Load program into memory.
     for (i=0, off=elf.phoff; i<elf.phnum; i++, off+=sizeof(ph)) {
         if (read_inode(ip, 0, (uint32_t)&ph, off, sizeof(ph)) != sizeof(ph)) {
@@ -124,10 +115,6 @@ int exec(char *path, char **argv) {
         if (ph.vaddr + ph.memsz < ph.vaddr) {
             goto bad;
         }
-<<<<<<< HEAD
-        
-=======
->>>>>>> origin/prod
         if ((sz = uvmalloc(pagetable, sz, ph.vaddr + ph.memsz)) == 0) {
             goto bad;
         }

@@ -115,31 +115,19 @@ struct trapframe {
 struct elf_header {
     unsigned int magic;
     unsigned char elf[12];
-<<<<<<< HEAD
     unsigned short type;
     unsigned short machine;
-=======
-    uint16_t type;
-    uint16_t machine;
->>>>>>> origin/prod
     uint32_t version;
     uint32_t entry;
     uint32_t phoff;
     uint32_t shoff;
     uint32_t flags;
-<<<<<<< HEAD
     unsigned short ehsize;
+    unsigned short phentsize;
     unsigned short phnum;
     unsigned short shentsize;
     unsigned short shnum;
     unsigned short shstrndx;
-=======
-    uint16_t phentsize;
-    uint16_t phnum;
-    uint16_t shentsize;
-    uint16_t shnum;
-    uint16_t shstrndx;
->>>>>>> origin/prod
 };
 
 struct prog_header {

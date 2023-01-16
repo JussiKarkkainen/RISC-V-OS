@@ -9,24 +9,24 @@
 #include <stddef.h>
 #include "arpa/inet.h"
 
-/*
-void ethernet_send_frame(uint8_t dst_mac_addr, uint8_t *data, uint32_t len, uint16_t protocol) {
+
+void ethernet_send_frame(struct net_interface *netif, uint8_t *dst_mac_addr, uint8_t *data, 
+                         uint32_t len, uint16_t protocol) {
     uint8_t src_mac_addr[6];
 
-    struct ethernet_hdr eth_hdr = kalloc();
+    struct ethernet_hdr *eth_hdr = (struct ethernet_hdr*)kalloc();
     void *hdr_data = (void *)eth_hdr + sizeof(struct ethernet_hdr);
 
-    get_mac_addr(src_mac_addr);
 
-    memcpy(eth_hdr->src_mac_addr, src_mac_addr, 6);
-    memcpy(eth_hdr->dst_mac_addr, dst_mac_addr, 6);
+    memcpy(eth_hdr->src_mac, src_mac_addr, 6);
+    memcpy(eth_hdr->dst_mac, dst_mac_addr, 6);
     memcpy(hdr_data, data, len);
 
-    virtio_net_send_packet(frame, sizeof(struct ethernet_hdr) + len);
-    kfree(frame);
+//    virtio_net_send_packet(frame, sizeof(struct ethernet_hdr) + len);
+    kfree((uint32_t*)eth_hdr);
 }
 
-*/
+
 /*
 void ethernet_receive_frame(uint8_t *data, uint32_t len) {
 

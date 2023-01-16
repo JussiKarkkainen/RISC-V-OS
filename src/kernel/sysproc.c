@@ -15,7 +15,6 @@ uint32_t sys_exit(void) {
 }
 
 uint32_t sys_getpid(void) {
-
     return get_process_struct()->process_id;
 }
 

@@ -63,7 +63,7 @@ void mstart(void) {
     // Disable paging
     write_satp(0);
 
-    // All traps are handled in supervisor mode. This can be done by 
+    // All traps are handled in supervisor mode. This can be done by setting
     // writing to the medeleg and mideleg registers and the mie registers
     write_medeleg(0xffff);
     write_mideleg(0xffff);
@@ -74,11 +74,7 @@ void mstart(void) {
     
     uint32_t a  = get_sie();
     uint32_t b = a | 0x222L;
-<<<<<<< HEAD
     asm volatile("csrw sie, %0" : : "r" (b)); 
-=======
-    asm volatile("csrw sie, %0" : : "r" (b));
->>>>>>> origin/prod
 
     // enable clock interrupts
     timer_init();

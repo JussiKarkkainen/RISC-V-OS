@@ -116,10 +116,7 @@ void buffer_release(struct buffer *buf) {
         buf->prev = &buffer_cache.list_head;
         buffer_cache.list_head.next->prev = buf;
         buffer_cache.list_head.next = buf;
-<<<<<<< HEAD
   
-=======
->>>>>>> origin/prod
     }
 
     release_lock(&buffer_cache.lock);

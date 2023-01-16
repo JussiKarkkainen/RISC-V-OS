@@ -93,22 +93,12 @@ void kprintf(char *format, ...) {
                 case 'c' : i = va_arg(arg, int);
                     console_putc(i);
                     break;
-<<<<<<< HEAD
                 
                 case 's' : 
-=======
-                case 's' :
->>>>>>> origin/prod
                     if((str = va_arg(arg, char*)) == 0)
                         str = "(null)";
                     for(; *str; str++)
                         console_putc(*str);
-<<<<<<< HEAD
-                    break;
-
-
-=======
->>>>>>> origin/prod
                     break;
 
                 case 'd' : i = va_arg(arg, int);
