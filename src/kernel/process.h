@@ -131,12 +131,12 @@ struct elf_header {
 
 struct prog_header {
     uint32_t type;
-    // uint32_t flags;
     uint32_t off;
     uint32_t vaddr;
     uint32_t paddr;
     uint32_t filesz;
     uint32_t memsz;
+    uint32_t flags;
     uint32_t align;
 };
 

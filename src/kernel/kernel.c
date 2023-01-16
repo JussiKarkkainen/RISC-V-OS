@@ -28,7 +28,6 @@ void enter(void) {
         kprintf_init();
         kprintf("\n");
         kprintf("%s\n\n", "Booting OS");
-//        virtio_net_init();              // Initialize virtio-net driver
         pmm_init();                     // Initialize physical memory manager
         kpage_init();                   // Initilaize kernel pagetable
         init_paging();                  // Initialize paging
@@ -37,7 +36,6 @@ void enter(void) {
         init_ktrapvec();                // Write ktrapvec addr into stvec to init trap handling
         plic_init();                    // Setup interrupt controller  
         plic_init_hart();               // request device interrupts
-        net_config();                   // Configure network protocols
         buffer_init();                  // Initialize the buffer cache for filesystem
         inode_init();                   // Initialize the inode table
         file_init();                    // Initialize file table

@@ -38,17 +38,6 @@ OBJS = \
     $(KERNEL)/syscall.o \
     $(KERNEL)/sysproc.o \
     $(LIBCSTDIO)/putchar.o \
-    $(LIBCSTDIO)/asmprint.o \
-    $(NET)/sysnet.o \
-    $(NET)/socket.o \
-    $(NET)/tcp.o \
-    $(NET)/udp.o \
-    $(NET)/ipv4.o \
-	$(NET)/ethernet.o \
-	$(NET)/net.o \
-    $(NET)/arp.o \
-	$(NET)/queue_handler.o \
-	$(NET)/inet_addr.o \
 	$(LIBC)/isdigit.o \
     $(LIBC)/isascii.o \
     $(LIBC)/isspace.o \
@@ -66,7 +55,7 @@ ASFLAGS = -march=rv32ima -mabi=ilp32
 
 
 CC = riscv64-unknown-elf-gcc
-CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb
+CFLAGS = -Wall -O -fno-omit-frame-pointer -ggdb
 CFLAGS += -MD
 CFLAGS += -mcmodel=medany 
 CFLAGS += -nostdlib -ffreestanding -fno-common -mno-relax
@@ -132,7 +121,6 @@ UPROGS = \
     $(USER)/_sh\
     $(USER)/_wc\
     $(USER)/_ls\
-    $(USER)/_getwebsite
 	
 fs.img: src/makefs README.md $(UPROGS)
 	src/makefs fs.img README.md $(UPROGS)
