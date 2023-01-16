@@ -121,7 +121,6 @@ void utrapret(void) {
     
     // Send traps to utrapvec
     write_stvec(USERVEC + (utrapvec - uvec));
-    
     // Utrapvec will need these register values
     proc->trapframe->kernel_satp = get_satp();         
     proc->trapframe->kernel_sp = proc->kernel_stack + PGESIZE;
@@ -132,7 +131,6 @@ void utrapret(void) {
     sstatus &= ~SSTATUS_SPP;
     sstatus |= SSTATUS_SPIE;
     write_sstatus(sstatus);
-
     // Set exception program counter to saved user pc
     write_sepc(proc->trapframe->saved_pc);
 
