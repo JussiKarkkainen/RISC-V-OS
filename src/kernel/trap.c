@@ -14,6 +14,12 @@ unsigned int ticks;
 extern char uvec[], utrapvec[], utrapreturn[];
 
 void ktrapvec();
+unsigned int ticks;
+struct spinlock tickslock;
+
+extern char uvec[], utrapvec[], utrapreturn[];
+
+extern int handle_device_intr();
 
 extern int handle_device_intr();
 
@@ -31,10 +37,16 @@ int handle_device_intr(void) {
             virtio_disk_intr();
         }
         else if (intr_id) {
-            kprintf("Device interrupt not recognizedc: %d\n", intr_id);
+            kprintf("Device interrupt not recognized: %d\n", intr_id);
         }
 
+<<<<<<< HEAD
         plic_finished(intr_id);
+=======
+        // Tell PLIC its allowed to send interrutps again
+        plic_finished(intr_id);
+
+>>>>>>> origin/prod
         return 0;
     }
   
@@ -56,7 +68,6 @@ int handle_device_intr(void) {
 }
 
 void timer_interrupt(void) {
-    
     acquire_lock(&tickslock);
     ticks++;
     wakeup(&ticks);
@@ -65,11 +76,19 @@ void timer_interrupt(void) {
 
 void utrap(void) {
     uint32_t sstatus = get_sstatus(); 
+<<<<<<< HEAD
     int intr_result = 2;
     
     // Check if trap comes from user mode
     if ((sstatus & SSTATUS_SPP) != 0) {
         panic("trap not from user mdoe");
+=======
+    int intr_result;
+    
+    // Check if trap comes from user mode
+    if ((sstatus & SSTATUS_SPP) != 0) {
+        panic("trap not from user mode");
+>>>>>>> origin/prod
     }
 
     // send interrupts and exceptions to ktrap
@@ -77,29 +96,46 @@ void utrap(void) {
 
     // get process struct
     struct process *proc = get_process_struct();
-
     // save user pc
     proc->trapframe->saved_pc = get_sepc(); 
-    
     // check if syscall
     if (get_scause() == 8) {
+<<<<<<< HEAD
         // Return to next instruction 
          
         if (proc->killed) {
             exit(-1);
         }
     
+=======
+
+        if (proc->killed) {
+            kprintf("Exiting a killed process in utrap()\n");
+            exit(-1);
+        }
+
+        // Return to next instructions
+>>>>>>> origin/prod
         proc->trapframe->saved_pc += 4;
         
         enable_intr();
 
         handle_syscall();
+<<<<<<< HEAD
     
     } else if ((intr_result = handle_device_intr()) != 2) {
 
     } else {
         kprintf("Unexpexted scause in utrap(), scause: %p\n, sepc: %p\n, stval: %p\nname %s\n", 
                  get_scause(), get_sepc(), get_stval(), proc->name);
+=======
+    } else if ((intr_result = handle_device_intr()) != 2) {
+        
+    } else {
+        kprintf("Unexpexted scause in utrap()\nscause: %p\nsepc: %p\nstval: %p\n", 
+                get_scause(), get_sepc(), get_stval());
+        
+>>>>>>> origin/prod
         proc->killed = 1;
     }
     // Otherwise kill process
@@ -121,25 +157,41 @@ void utrapret(void) {
     
     // Send traps to utrapvec
     write_stvec(USERVEC + (utrapvec - uvec));
+<<<<<<< HEAD
     
+=======
+>>>>>>> origin/prod
     // Utrapvec will need these register values
     proc->trapframe->kernel_satp = get_satp();         
     proc->trapframe->kernel_sp = proc->kernel_stack + PGESIZE;
     proc->trapframe->kernel_trap = (uint32_t)utrap;
     proc->trapframe->hartid = get_tp();
+<<<<<<< HEAD
     // Set previous privilige mode to user
+=======
+    
+>>>>>>> origin/prod
     uint32_t sstatus = get_sstatus();
     sstatus &= ~SSTATUS_SPP;
     sstatus |= SSTATUS_SPIE;
     write_sstatus(sstatus);
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/prod
     // Set exception program counter to saved user pc
     write_sepc(proc->trapframe->saved_pc);
 
     uint32_t satp = MAKE_SATP(proc->pagetable);
+<<<<<<< HEAD
 
     uint32_t fn = USERVEC + (utrapreturn - uvec);
     ((void (*)(uint32_t,uint32_t))fn)(TRAPFRAME, satp);
+=======
+    uint32_t fn = USERVEC + (utrapreturn - uvec);
+    ((void (*)(uint32_t,uint32_t))fn)(TRAPFRAME, satp);
+
+>>>>>>> origin/prod
 }
 
 void ktrap(void) {
@@ -148,7 +200,7 @@ void ktrap(void) {
     uint32_t scause = get_scause();
     uint32_t stval = get_stval();
     int intr_result = 2;
-    
+
     // Make sure interrupt comes from supervisor mode
     if ((sstatus & SSTATUS_SPP) == 0) {
         panic("trap not in supervisor mode");
@@ -159,6 +211,7 @@ void ktrap(void) {
         panic("interrupts are enabled");
     }
     */
+<<<<<<< HEAD
     if (get_intr() != 0) {
         panic("trap not in supervisor mode");
     }
@@ -169,6 +222,19 @@ void ktrap(void) {
         panic("kernel interrupt, ktrap");
     }
      
+=======
+    
+    if (get_intr() != 0) {
+        panic("Trap not in supervisor mode");
+    }
+    
+    if ((intr_result = handle_device_intr()) == 2) {
+        // Print out register info and panic
+        kprintf("sepc: %p\nscause: %p\nsstatus: %p\nstval: %p\n", sepc, scause, sstatus, stval);
+        panic("kernel interrupt, ktrap");
+    }
+        
+>>>>>>> origin/prod
     if (intr_result == 1 && get_process_struct() != 0 && get_process_struct()->state == RUNNING) {
         yield_process();
     }
@@ -176,7 +242,10 @@ void ktrap(void) {
     // Restore trap registers if changed by yield_process()
     write_sepc(sepc);
     write_sstatus(sstatus);
+<<<<<<< HEAD
     
+=======
+>>>>>>> origin/prod
 }
 
 void init_trapvec(void) {

@@ -30,8 +30,12 @@ void pmm_init(void) {
     alloc_start = (uint32_t)PGROUNDUP((uint32_t)mem_end + bitmap_size);
 }
 
+<<<<<<< HEAD
 
 void *kalloc(int size) {
+=======
+void *kalloc(void) {
+>>>>>>> origin/prod
    
     uint32_t num_pages = HEAP_SIZE / page_size;
     uint32_t *start_addr = (uint32_t *)PGROUNDUP((uint32_t)mem_end);

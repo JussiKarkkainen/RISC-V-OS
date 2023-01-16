@@ -13,7 +13,7 @@ OBJS = \
     $(KERNEL)/kalloc.o \
     $(KERNEL)/uart.o \
     $(KERNEL)/locks.o \
-    $(LIBCSTRING)/memset.o \
+	$(LIBCSTRING)/memset.o \
     $(LIBCSTRING)/memcmp.o \
     $(LIBCSTRING)/memcpy.o \
     $(LIBCSTRING)/memmove.o \
@@ -37,6 +37,7 @@ OBJS = \
     $(KERNEL)/process.o \
     $(KERNEL)/syscall.o \
     $(KERNEL)/sysproc.o \
+<<<<<<< HEAD
     $(LIBCSTDIO)/putchar.o \
 	$(LIBC)/isdigit.o \
     $(LIBC)/isascii.o \
@@ -49,6 +50,11 @@ OBJS = \
 
     #$(KERNEL)/pmm.o \
     #$(KERNEL)/disk.o \
+=======
+    $(KERNEL)/kalloc.o \
+    #$(KERNEL)/pmm.o 
+
+>>>>>>> origin/prod
 
 AS = riscv64-unknown-elf-as
 ASFLAGS = -march=rv32ima -mabi=ilp32

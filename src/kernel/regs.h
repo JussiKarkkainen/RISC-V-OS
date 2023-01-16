@@ -126,7 +126,11 @@ static inline void write_sip(uint32_t x) {
 static inline void enable_intr(void) {
     uint32_t a  = get_sie();
     uint32_t b = a | 0x222L;
+<<<<<<< HEAD
     asm volatile("csrw sie, %0" : : "r" (b)); 
+=======
+    asm volatile("csrw sie, %0" : : "r" (b));
+>>>>>>> origin/prod
     write_sstatus(get_sstatus() | SSTATUS_SIE);
 }
 

@@ -3,15 +3,18 @@
 char *argv[] = { "sh", 0 };
 
 int main(void) {
+    printf("init\n");   
     int pid, wpid;
-    
     if (open("console", O_RDWR) < 0) {
         mknod("console", CONSOLE, 1);
         open("console", O_RDWR);
     }
     dup(0);  // stdout
     dup(0);  // stderr
+<<<<<<< HEAD
     
+=======
+>>>>>>> origin/prod
     for (;;) {
         printf("init: starting sh\n");
         pid = fork();

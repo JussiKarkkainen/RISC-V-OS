@@ -31,9 +31,6 @@ extern char mem_end[];
 #define PLICSIZE 0x400000
 #define TRAPFRAME (USERVEC - PGESIZE)
 
-#define SATP_SV32 (1L << 31)
-#define MAKE_SATP(pagetable) (SATP_SV32 | (((uint32_t)pagetable) >> 12))
-
 // Functions from pmm.c
 void pmm_init(void);
 void *kalloc(void);
@@ -44,11 +41,9 @@ void test_alloc(void);
 // Functions from paging.c
 uint32_t *walk(uint32_t *pagetable, uint32_t vir_addr, int alloc);
 uint32_t fetch_pa_addr(uint32_t *pagetable, uint32_t va);
-void kmap(uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int permission);
-int map_pages(uint32_t *pagetable, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int perm);
+int kmap(uint32_t *kpage, uint32_t vir_addr, uint32_t phy_addr, uint32_t size, int permission);
 void kpage_init(void);
-uint32_t fetch_kpa(uint32_t va);
-//uint32_t *kpagemake(void);
+uint32_t *kpagemake(void);
 void init_paging(void);
 void test_alloc(void);
 void upaging_init(uint32_t *pagetable, unsigned char *src, unsigned int size);

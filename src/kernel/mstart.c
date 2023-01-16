@@ -5,6 +5,7 @@
 #include "regs.h"
 #include "../libc/include/stdio.h"
 #include "paging.h"
+#include <stdint.h>
 
 #define MSTATUS_MIE (1L << 3)
 #define SIE_SEIE (1L << 9)
@@ -62,7 +63,7 @@ void mstart(void) {
     // Disable paging
     write_satp(0);
 
-    // All traps are handled in supervisor mode. This can be done by setting
+    // All traps are handled in supervisor mode. This can be done by 
     // writing to the medeleg and mideleg registers and the mie registers
     write_medeleg(0xffff);
     write_mideleg(0xffff);
@@ -73,7 +74,11 @@ void mstart(void) {
     
     uint32_t a  = get_sie();
     uint32_t b = a | 0x222L;
+<<<<<<< HEAD
     asm volatile("csrw sie, %0" : : "r" (b)); 
+=======
+    asm volatile("csrw sie, %0" : : "r" (b));
+>>>>>>> origin/prod
 
     // enable clock interrupts
     timer_init();

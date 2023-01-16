@@ -111,6 +111,8 @@ void end_op(void) {
     
     release_lock(&log.lock);
 
+    release_lock(&log.lock);
+
     if (make_commit) {
         commit();
         acquire_lock(&log.lock);
@@ -303,7 +305,11 @@ struct inode *inode_alloc(int dev, uint16_t type) {
         dinode = (struct disk_inode *)buf->data + inode_num % INODE_PER_BLOCK;
         
         if (dinode->type == 0) {
+<<<<<<< HEAD
             memset(dinode, 0, sizeof(*dinode));
+=======
+            memset(dinode, 0, sizeof(dinode));
+>>>>>>> origin/prod
             dinode->type = type;
             log_write(buf);
             buffer_release(buf);
@@ -313,7 +319,10 @@ struct inode *inode_alloc(int dev, uint16_t type) {
         buffer_release(buf);
     }
     panic("no inodes found");
+<<<<<<< HEAD
     // Just to silence control reaches end of non-void function
+=======
+>>>>>>> origin/prod
     return inode_get(dev, inode_num);
 }
 
@@ -516,6 +525,10 @@ int read_inode(struct inode *inode, int user_dst, uint32_t dst, unsigned int off
     }
 
     for (i = 0; i < n; i += j, off += j, dst += j) {
+        unsigned int addr = buffer_map(inode, off/BUFFER_SIZE);
+        if (addr == 0) {
+            break;
+        }
         buf = buffer_read(inode->dev, buffer_map(inode, off / BUFFER_SIZE));
         j = (n - i) < (BUFFER_SIZE - off % BUFFER_SIZE) ? (n - i) : (BUFFER_SIZE - off % BUFFER_SIZE);
         if (either_copyout(user_dst, dst, buf->data + (off % BUFFER_SIZE), j) == -1) {
