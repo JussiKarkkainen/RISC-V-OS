@@ -3,7 +3,6 @@ USER=src/user
 LIBCSTRING=src/libc/string
 LIBCSTDIO=src/libc/stdio
 LIBC=src/libc
-NET=src/net
 
 OBJS = \
     $(KERNEL)/boot.o \
@@ -45,10 +44,6 @@ OBJS = \
     $(LIBC)/islower.o
 
 
-    #$(KERNEL)/disk.o \
-    #$(KERNEL)/pmm.o 
-
-
 AS = riscv64-unknown-elf-as
 ASFLAGS = -march=rv32ima -mabi=ilp32
 
@@ -79,7 +74,6 @@ LDFLAGS += -m elf32lriscv
 
 $(KERNEL)/kern: $(OBJS) $(KERNEL)/kernel.ld $(USER)/initcode
 	$(LD) $(LDFLAGS) -T $(KERNEL)/kernel.ld -o $(KERNEL)/kern $(OBJS) 
-	$(OBJCOPY) -S -O binary $(USER)/initcode.out $(USER)/initcode
 	$(OBJDUMP) -S $(KERNEL)/kern > $(KERNEL)/kernel.asm
 
 $(USER)/initcode: $(USER)/initcode.S
@@ -88,15 +82,10 @@ $(USER)/initcode: $(USER)/initcode.S
 	$(OBJCOPY) -S -O binary $(USER)/initcode.out $(USER)/initcode
 	$(OBJDUMP) -S $(USER)/initcode.out > $(USER)/initcode.asm 
 
-tags: $(OBJS) _init
-	etags *.S *.c
-
-ULIB = $(USER)/inet_addr.o $(USER)/malloc.o $(USER)/ulibc.o $(USER)/printf.o $(USER)/usyscall.o
+ULIB = $(USER)/malloc.o $(USER)/ulibc.o $(USER)/printf.o $(USER)/usyscall.o
 
 _%: %.o $(ULIB)
 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
-	$(OBJDUMP) -S $@ > $*.asm
-	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
 
 $(USER)/usyscall.S: $(USER)/usyscall.pl
 	perl $(USER)/usyscall.pl > $(USER)/usyscall.S
@@ -110,17 +99,18 @@ src/makefs: src/makefs.c $(KERNEL)/filesys.h
 .PRECIOUS: %.o
 
 UPROGS = \
+    $(USER)/_rm\
+    $(USER)/_mkdir\
     $(USER)/_cat\
     $(USER)/_echo\
     $(USER)/_init\
     $(USER)/_kill\
     $(USER)/_ln\
-    $(USER)/_mkdir\
-    $(USER)/_rm\
     $(USER)/_sh\
     $(USER)/_wc\
     $(USER)/_ls\
-	
+
+
 fs.img: src/makefs README.md $(UPROGS)
 	src/makefs fs.img README.md $(UPROGS)
 
@@ -131,7 +121,7 @@ clean:
 	/*.o */*.d */*.asm */*.sym $(OBJS) \
 	$(USER)/initcode $(USER)/initcode.out $(KERNEL)/kern fs.img \
 	src/makefs $(USER)/usyscall.S \
-	$(UPROGS) 
+	$(UPROGS)
 
 GDBPORT = $(shell expr `id -u` % 5000 + 25000)
 QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \

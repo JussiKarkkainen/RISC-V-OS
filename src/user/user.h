@@ -1,6 +1,5 @@
 struct stat;
 
-#include "../net/socket.h"
 #include <stddef.h>
 
 #define O_RDONLY  0x000
@@ -33,13 +32,6 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
-int socket(int, int, int);
-int connect(int, struct sockaddr *, int);
-int recv(int, void *, int, int);
-int send(int, const void *, int, int);
-int recvfrom(int, void *, int, unsigned int, struct sockaddr *, int *);
-int sendto(int, const void *, int, unsigned int, const struct sockaddr *, socklen_t *);
-
 
 int stat(const char*, struct stat*);
 char* strcpy(char*, const char*);
@@ -61,4 +53,3 @@ int isdigit(int);
 int islower(int);
 int isspace(int);
 int isxdigit(int);
-uint32_t inet_addr(const char *);

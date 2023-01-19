@@ -72,12 +72,4 @@ uint32_t sys_sleep(void);
 uint32_t sys_kill(void);
 uint32_t sys_uptime(void);
 
-// net syscalls
-uint32_t sys_socket(void);
-uint32_t sys_connect(void);
-uint32_t sys_send(void);
-uint32_t sys_recv(void);
-uint32_t sys_sendto(void);
-uint32_t sys_recvfrom(void);
-
 #endif
