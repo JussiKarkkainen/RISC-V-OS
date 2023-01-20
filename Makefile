@@ -8,20 +8,12 @@ OBJS = \
     $(KERNEL)/boot.o \
     $(KERNEL)/mstart.o \
     $(KERNEL)/console.o \
-    $(LIBCSTDIO)/kprintf.o \
     $(KERNEL)/kalloc.o \
     $(KERNEL)/uart.o \
     $(KERNEL)/locks.o \
-	$(LIBCSTRING)/memset.o \
-    $(LIBCSTRING)/memcmp.o \
-    $(LIBCSTRING)/memcpy.o \
-    $(LIBCSTRING)/memmove.o \
-    $(LIBCSTRING)/strcpy.o \
-    $(LIBCSTRING)/strlen.o \
-    $(LIBCSTRING)/strncmp.o \
     $(KERNEL)/kernel.o \
     $(KERNEL)/pipes.o \
-    $(KERNEL)/virtio_disk.o \
+    $(KERNEL)/disk.o \
     $(KERNEL)/bufcache.o \
     $(KERNEL)/filesys.o \
     $(KERNEL)/paging.o \
@@ -32,21 +24,27 @@ OBJS = \
     $(KERNEL)/file.o \
     $(KERNEL)/plic.o \
     $(KERNEL)/utrapvec.o \
-    $(KERNEL)/transfer32.o \
+    $(KERNEL)/transfer.o \
     $(KERNEL)/process.o \
     $(KERNEL)/syscall.o \
     $(KERNEL)/sysproc.o \
+	$(LIBCSTRING)/memset.o \
+    $(LIBCSTRING)/memcmp.o \
+    $(LIBCSTRING)/memcpy.o \
+    $(LIBCSTRING)/memmove.o \
+    $(LIBCSTRING)/strcpy.o \
+    $(LIBCSTRING)/strlen.o \
+    $(LIBCSTRING)/strncmp.o \
     $(LIBCSTDIO)/putchar.o \
+    $(LIBCSTDIO)/kprintf.o \
 	$(LIBC)/isdigit.o \
     $(LIBC)/isascii.o \
     $(LIBC)/isspace.o \
     $(LIBC)/isxdigit.o \
     $(LIBC)/islower.o
 
-
 AS = riscv64-unknown-elf-as
 ASFLAGS = -march=rv32ima -mabi=ilp32
-
 
 CC = riscv64-unknown-elf-gcc
 CFLAGS = -Wall -O -fno-omit-frame-pointer -ggdb
