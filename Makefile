@@ -8,7 +8,7 @@ OBJS = \
     $(KERNEL)/boot.o \
     $(KERNEL)/mstart.o \
     $(KERNEL)/console.o \
-    $(KERNEL)/kalloc.o \
+    $(KERNEL)/pmm.o \
     $(KERNEL)/uart.o \
     $(KERNEL)/locks.o \
     $(KERNEL)/kernel.o \

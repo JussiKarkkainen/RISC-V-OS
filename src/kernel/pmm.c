@@ -33,43 +33,23 @@ void pmm_init(void) {
 
 void *kalloc(void) {
    
-    uint32_t num_pages = HEAP_SIZE / page_size;
     uint32_t *start_addr = (uint32_t *)PGROUNDUP((uint32_t)mem_end);
-    int bitmap_size = HEAP_SIZE / page_size;
-    alloc_start = PGROUNDUP((uint32_t)mem_end + bitmap_size);
-    
+    uint32_t num_pages = (PHYSTOP - (uint32_t)start_addr) / PGESIZE;
+    alloc_start = PGROUNDUP((uint32_t)mem_end + num_pages);
     acquire_lock(&pmm_lock);
 
     for (uint32_t i = 0; i < num_pages; i++) {
         if (!IS_SET(i)) {
             SET_BIT(i);
             release_lock(&pmm_lock);
-            return (void *)(alloc_start + (i * page_size));
+            uint32_t ret = (alloc_start + (i * page_size));
+            return (void *)ret;
         }
     }
     release_lock(&pmm_lock);
     panic("no more memory, kalloc");
     return 0;
 } 
-
-
-uint32_t *zalloc(void) {
-
-    uint32_t *addr = kalloc();
-
-    if (addr != 0) {
-        uint32_t *ptr = addr;
-        int size = (page_size) / 8;
-        
-        for (int i = 0; i <= size; i++) {
-            *ptr = 0;
-            ptr++;
-        }
-
-        return addr;
-    }
-    return 0;
-}
 
 
 void kfree(void *ptr) {
@@ -86,63 +66,4 @@ void kfree(void *ptr) {
     release_lock(&pmm_lock);
 }
 
-
-// Used to verify that allocations work as expected
-void test_alloc(void) { 
-        
-    uint32_t *a = kalloc();
-    uint32_t *o = kalloc();
-    uint32_t *s = kalloc();
-    kprintf("first page %p\n", a); 
-    kprintf("next page %p\n", o);
-    kprintf("third page %p\n", s);
-    
-    int num_pages = HEAP_SIZE / page_size;
-    kfree(s);
-    kfree(o);
-    
-    uint32_t *start_addr = (uint32_t *)PGROUNDUP((uint32_t)mem_end);
-    kprintf("bitmap_start %p\n", *start_addr);
-
-    kprintf("alloc_start %p\n", alloc_start);
-
-
-    uint32_t start = PGROUNDUP((uint32_t)mem_end); 
-    uint32_t *p = (uint32_t *)start;
-    kprintf("should be 1: %p\n", *p);
-    kprintf("address of p + 1: %p\n", (p + 1));
-    
-    uint32_t end = start + num_pages;
-    uint32_t allocation_start = alloc_start;
-    uint32_t alloc_end = allocation_start + num_pages * page_size;
-
-    kprintf("Page allocation tables\nBITMAP: %p -> %p\nPAGES: %p -> %p\n\
-------------------------------------\n\n", start, end, allocation_start, alloc_end);
-    
-    int i = 0;
-    while ((uint32_t)p < end) {
-        if (*(p) == 1) {
-            int beg = start;
-            uint32_t memaddr = alloc_start + (beg - (uint32_t)mem_end) + PGESIZE;
-            kprintf("%p -> ", memaddr);
-            
-            while(1) { 
-                i += 1;
-                if ((*(p + 1)) == 0) {
-                    uint32_t end = start;
-                    memaddr = alloc_start + (end - (uint32_t)mem_end) * PGESIZE + PGESIZE - 1;
-                    kprintf("%p : %x pages\n", memaddr, (end - beg + 1));
-                    break;
-                }
-                p = p + 1;
-            }
-        }
-        p = p + 1;
-    }
-
-    kprintf("------------------------------------\n\n");
-
-    kprintf("Allocated %x pages and %x bytes\n", i, (i * PGESIZE));
-    kprintf("Free %x pages and %x bytes\n\n\n", (num_pages - 1), ((num_pages - i) * PGESIZE));
-}
 
