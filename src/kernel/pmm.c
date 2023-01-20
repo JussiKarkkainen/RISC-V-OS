@@ -25,11 +25,9 @@ void pmm_init(void) {
     uint32_t *start_addr = (uint32_t *)PGROUNDUP((uint32_t)mem_end);
     
     int bitmap_size = HEAP_SIZE / page_size;
+    bitmap_size = bitmap_size / 8;
     memset(start_addr, 0, bitmap_size);
-
-    alloc_start = (uint32_t)PGROUNDUP((uint32_t)mem_end + bitmap_size);
 }
-
 
 void *kalloc(void) {
    
@@ -51,7 +49,6 @@ void *kalloc(void) {
     return 0;
 } 
 
-
 void kfree(void *ptr) {
     acquire_lock(&pmm_lock);
     
@@ -59,11 +56,10 @@ void kfree(void *ptr) {
     int bitmap_size = HEAP_SIZE / page_size;
     alloc_start = PGROUNDUP((uint32_t)mem_end + bitmap_size);
     
-    uint32_t i = (((uint32_t)ptr - (uint32_t)alloc_start) / 0x1000);
+    uint32_t i = (((uint32_t)ptr - (uint32_t)alloc_start) / PGESIZE);
     
     CLEAR_BITS(i);   
 
     release_lock(&pmm_lock);
 }
-
 
